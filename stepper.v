@@ -16,6 +16,6 @@ assign wifi_gpio0 = 1'b1;
 
 wire [ 39: 0 ] out;
 
-spi#( .SIZE( 40 ), .CLK_DIV( 4 ) ) spi_1 ( .data_in( 'b1111000000000000000000000000000000001111 ), .clk_in( clk_25mhz ), .serial_in( gn[ 0 ] ), .data_out( out ), .clk_out( gn[ 0 ] ), .serial_out( gp[ 0 ] ) );
+spi#( .SIZE( 40 ), .CLK_DIV( 3 ) ) spi_1 ( .data_in( 'b1111000000000000000000000000000000001111 ), .clk_in( clk_25mhz ), .serial_in( gn[ 0 ] ), .send_enable_in( btn[ 1 ] ), .data_out( out ), .clk_out( gn[ 0 ] ), .serial_out( gp[ 0 ] ) );
 
 endmodule
