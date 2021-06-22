@@ -1,8 +1,7 @@
 
 // a module generating a pwm signal on out
-module pwm #( parameter SIZE = 8 ) ( input [ SIZE - 1: 0 ] set, input clk, output out );
+module pwm #( parameter SIZE = 8 ) ( input [ SIZE - 1: 0 ] set, input clk, output reg r_out );
 
-reg r_out;
 reg [ SIZE - 1: 0 ] r_count;
 
 always @( posedge clk ) begin
@@ -17,6 +16,4 @@ always @( posedge clk ) begin
 
     r_count = r_count + 1'b1;
 end
-
-assign out = r_out;
 endmodule
