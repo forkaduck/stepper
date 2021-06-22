@@ -18,7 +18,12 @@ reg [ 39: 0 ] data_outgoing;
 wire [ 39: 0 ] data_ingoing;
 reg send_enable;
 
-spi#( .SIZE( 40 ), .CLK_DIV( 3 ) ) spi_1 ( .data_in( data_outgoing ), .clk_in( clk_in ), .serial_in( serial_in ), .send_enable_in( 1'b0 ), .data_out( data_ingoing ), .clk_out( clk_out ), .serial_out( serial_out ) );
+spi#( .SIZE( 40 ), .CLK_DIV( 3 ) ) spi_1 ( .data_in( data_outgoing ), .clk_in( clk_25mhz ), .serial_in( gn[ 0 ] ), .send_enable_in( 1'b0 ), .data_out( data_ingoing ), .clk_out( gn[ 2 ] ), .serial_out( gn[ 3 ] ) );
+
+initial
+begin
+
+end
 
 
 endmodule
