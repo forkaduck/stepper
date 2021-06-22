@@ -1,6 +1,6 @@
 
 `include "pwm.v"
-`include "clock.v"
+`include "spi.v"
 
 // top module
 module top( input clk_25mhz,
@@ -14,10 +14,8 @@ module top( input clk_25mhz,
 // Tie GPIO0, keep board from rebooting
 assign wifi_gpio0 = 1'b1;
 
-wire div8_clk;
+wire [ 39: 0 ] out;
 
-divider#( .DIV( 3 ) ) divider_1 ( .clk_in( clk_25mhz ), .clk_out( div8_clk ) );
-
-pwm#( .SIZE( 8 ) ) pwm_1 ( .set( 8'b10000000 ), .clk( div8_clk ), .r_out( gp[ 0 ] ) );
+spi#( .SIZE( 40 ), .CLK_DIV( 4 ) ) spi_1 ( .data_in( 'b1111000000000000000000000000000000001111 ), .clk_in( clk_25mhz ), .serial_in( gn[ 0 ] ), .data_out( out ), .clk_out( gn[ 0 ] ), .serial_out( gp[ 0 ] ) );
 
 endmodule

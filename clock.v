@@ -16,7 +16,12 @@ reg [ SIZE - 1: 0 ] r_count;
 reg [ SIZE - 1: 0 ] r_buff;
 
 always@( posedge clk_in ) begin
-    assign r_out = data_in[ r_count ];
+    if ( r_count >= SIZE )
+    begin
+        r_count = 0;
+    end
+
+    r_out = data_in[ r_count ];
     r_count = r_count + 1;
 end
 endmodule
