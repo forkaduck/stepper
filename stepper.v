@@ -14,8 +14,11 @@ module top( input clk_25mhz,
 // Tie GPIO0, keep board from rebooting
 assign wifi_gpio0 = 1'b1;
 
-wire [ 39: 0 ] out;
+reg [ 39: 0 ] data_outgoing;
+wire [ 39: 0 ] data_ingoing;
+reg send_enable;
 
-spi#( .SIZE( 40 ), .CLK_DIV( 3 ) ) spi_1 ( .data_in( 'b1111000000000000000000000000000000001111 ), .clk_in( clk_25mhz ), .serial_in( gn[ 0 ] ), .send_enable_in( btn[ 1 ] ), .data_out( out ), .clk_out( gn[ 0 ] ), .serial_out( gp[ 0 ] ) );
+spi#( .SIZE( 40 ), .CLK_DIV( 3 ) ) spi_1 ( .data_in( data_outgoing ), .clk_in( clk_in ), .serial_in( serial_in ), .send_enable_in( 1'b0 ), .data_out( data_ingoing ), .clk_out( clk_out ), .serial_out( serial_out ) );
+
 
 endmodule
