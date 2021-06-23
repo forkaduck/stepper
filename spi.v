@@ -12,20 +12,25 @@ module spi#( parameter SIZE = 40, parameter CLK_DIV = 6 ) (
 
 wire r_internal_clk;
 reg r_internal_clk_switched;
+reg r_counter;
 
 assign clk_out = r_internal_clk_switched;
 
 // initialize clock divider to spit out approximately 3.2 MHz
 divider#( .DIV( CLK_DIV ) ) divider_1 ( .clk_in( clk_in ), .clk_out( r_internal_clk ) );
 
-always @( posedge clk_in ) begin
-    if ( send_enable_in )
+// decide if something should be sent
+always @( posedge r_internal_clk ) begin
+    if ( send_enable_in && r_counter < SIZE )
     begin
         r_internal_clk_switched <= r_internal_clk;
+        r_counter = r_counter + 1;
     end
-    else
+
+    if ( ~send_enable_in )
     begin
         r_internal_clk_switched <= 1'b0;
+        r_counter = 1'b0;
     end
 end
 
