@@ -9,33 +9,6 @@ end
 assign clk_out = r_count[ DIV - 1 ];
 endmodule
 
-    // generates one pulse if on_in is set to high
-    module pulse#( parameter LENGTH = 8 ) ( input clk_in, input on_in, output reg pulse_out );
-
-reg init = 1'b0;
-reg [ LENGTH - 1 : 0 ] r_counter;
-
-always@( posedge clk_in ) begin
-    if ( on_in && !init )
-    begin
-        pulse_out <= 1;
-        r_counter <= 2 ^ ^ LENGTH;
-        init = 1'b1;
-    end
-
-    if ( r_counter != 0 )
-    begin
-        r_counter = r_counter - 1;
-    end
-
-    if ( r_counter == 0 )
-    begin
-        pulse_out <= 0;
-        init = 1'b0;
-    end
-end
-endmodule
-
 
     // converts parallel data into serial data
     module piso#( parameter SIZE = 8 ) ( input [ SIZE - 1: 0 ] data_in, input clk_in, output reg r_out );
