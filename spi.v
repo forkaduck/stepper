@@ -41,12 +41,13 @@ always @( posedge internal_clk ) begin
         r_counter <= r_counter + 1;
     end
 
-    // disable clock and cs on last counter state
+    // disable clock to form a frame end
     if ( r_counter == SIZE )
     begin
         r_clk_enable <= 1'b0;
     end
 
+    // disable cs a bit later to avoid a malformed frame
     if ( r_counter == SIZE + 1 )
     begin
         r_curr_cs <= 1'b1;
@@ -59,14 +60,15 @@ always @( posedge internal_clk ) begin
     end
 end
 
+// handle clock enable signal
 always@( posedge clk_in ) begin
     if ( r_clk_enable )
     begin
-        r_internal_clk_switched = internal_clk;
+        r_internal_clk_switched <= internal_clk;
     end
     else
     begin
-        r_internal_clk_switched = 1'b1;
+        r_internal_clk_switched <= 1'b1;
     end
 end
 
