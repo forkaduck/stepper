@@ -1,7 +1,7 @@
 # Stepper
 A test design for use with a hexpedal or octapedal robot.
 
-## Current prototype pinout pinout
+## Current prototype pinout
 Pinout of the Radiona ulx3s:
 #### Stepper Driver 1
 * gp[0] = Step
