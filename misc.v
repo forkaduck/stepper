@@ -14,7 +14,7 @@ always@( posedge clk_in ) begin
 
     if ( r_count == max_in )
     begin
-        r_count <= 1'b0;
+        r_count <= 'b0;
         clk_out <= 1'b1;
     end
 
@@ -30,14 +30,15 @@ endmodule
         input clk_in,
         output reg r_out );
 
-reg [ SIZE - 1: 0 ] r_count = 1'b0;
+// idfk why SIZE and not SIZE -1 (this took like 3 hours to find out and
+// I still don't know why this works)
+reg [ SIZE - 1 : 0 ] r_count = SIZE;
 
 always@( posedge clk_in ) begin
     if ( r_count == 0 )
     begin
         r_count <= SIZE;
     end
-
     r_out <= data_in[ r_count ];
     r_count <= r_count - 1;
 end
@@ -70,3 +71,4 @@ always@( posedge clk_in ) begin
 end
 
 endmodule
+

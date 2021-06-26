@@ -1,7 +1,7 @@
 
 `include "misc.v"
 
-module spi#( parameter SIZE = 40, parameter CLK_DIV = 6, parameter CS_SIZE = 1, parameter CLK_SIZE = 3 ) (
+module spi#( parameter SIZE = 40, parameter CS_SIZE = 1, parameter CLK_SIZE = 3 ) (
            input [ SIZE - 1: 0 ] data_in,
            input clk_in,
            input [ CLK_SIZE - 1: 0 ] clk_count_max,
@@ -11,12 +11,12 @@ module spi#( parameter SIZE = 40, parameter CLK_DIV = 6, parameter CS_SIZE = 1, 
            output [ SIZE - 1: 0 ] data_out,
            output clk_out,
            output serial_out,
-           output [ CS_SIZE - 1 : 0 ] r_cs_out
+           output [ CS_SIZE - 1 : 0 ] r_cs_out_n
        );
 
-reg [ SIZE - 1: 0 ] r_counter = 1'b0;
+reg [ SIZE - 1 : 0 ] r_counter = 'b0;
 
-reg r_curr_cs = 1'b1;
+reg r_curr_cs_n = 1'b1;
 
 wire internal_clk;
 reg r_clk_enable = 1'b0;
@@ -36,7 +36,7 @@ always @( posedge internal_clk ) begin
         if ( r_counter == 0 )
         begin
             r_clk_enable <= 1'b1;
-            r_curr_cs <= 1'b0;
+            r_curr_cs_n <= 1'b0;
         end
         r_counter <= r_counter + 1;
     end
@@ -50,13 +50,13 @@ always @( posedge internal_clk ) begin
     // disable cs a bit later to avoid a malformed frame
     if ( r_counter == SIZE + 1 )
     begin
-        r_curr_cs <= 1'b1;
+        r_curr_cs_n <= 1'b1;
     end
 
     // reset counter
     if ( !send_enable_in )
     begin
-        r_counter <= 1'b0;
+        r_counter <= 'b0;
     end
 end
 
@@ -72,7 +72,7 @@ always@( posedge clk_in ) begin
     end
 end
 
-mux#( .SIZE( CS_SIZE ) ) mux_1( .select_in( cs_select ), .sig_in( r_curr_cs ), .clk_in( clk_in ), .r_sig_out( r_cs_out ) );
+mux#( .SIZE( CS_SIZE ) ) mux_1( .select_in( cs_select ), .sig_in( r_curr_cs_n ), .clk_in( clk_in ), .r_sig_out( r_cs_out_n ) );
 
 // parallel in serial out module driving the mosi pin
 piso#( .SIZE( SIZE ) ) piso_1 ( .data_in( data_in ), .clk_in( r_internal_clk_switched ), .r_out( serial_out ) );
