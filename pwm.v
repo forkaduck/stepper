@@ -14,6 +14,6 @@ always @( posedge clk_in ) begin
         r_out <= 1'b1;
     end
 
-    r_count <= r_count + 1'b1;
+    r_count <= r_count + 1;
 end
 endmodule

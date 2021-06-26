@@ -11,6 +11,7 @@ module spi#( parameter SIZE = 40, parameter CS_SIZE = 1, parameter CLK_SIZE = 3 
            output [ SIZE - 1: 0 ] data_out,
            output clk_out,
            output serial_out,
+           output send_out_n,
            output [ CS_SIZE - 1 : 0 ] r_cs_out_n
        );
 
@@ -21,7 +22,9 @@ reg r_curr_cs_n = 1'b1;
 wire internal_clk;
 reg r_clk_enable = 1'b0;
 reg r_internal_clk_switched = 1'b0;
+
 assign clk_out = r_internal_clk_switched;
+assign send_out_n = r_curr_cs_n;
 
 // initialize clock divider
 clk_divider#( .SIZE( CLK_SIZE ) ) divider_1 ( .clk_in( clk_in ), .max_in( clk_count_max ), .clk_out( internal_clk ) );
@@ -41,17 +44,14 @@ always @( posedge internal_clk ) begin
         r_counter <= r_counter + 1;
     end
 
-    // disable clock to form a frame end
-    if ( r_counter == SIZE )
-    begin
-        r_clk_enable <= 1'b0;
-    end
-
-    // disable cs a bit later to avoid a malformed frame
-    if ( r_counter == SIZE + 1 )
-    begin
-        r_curr_cs_n <= 1'b1;
-    end
+    case ( r_counter )
+        // disable clock to form a frame end
+        SIZE:
+            r_clk_enable <= 1'b0;
+        // disable cs a bit later to avoid a malformed frame
+        SIZE + 1:
+            r_curr_cs_n <= 1'b1;
+    endcase
 
     // reset counter
     if ( !send_enable_in )
