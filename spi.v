@@ -1,5 +1,4 @@
 
-`include "misc.v"
 
 module spi#( parameter SIZE = 40, parameter CS_SIZE = 1, parameter CLK_SIZE = 3 ) (
            input [ SIZE - 1: 0 ] data_in,
