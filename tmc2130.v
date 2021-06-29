@@ -1,5 +1,4 @@
 
-
 // General Configuration Registers
 `define GCONF 'h00
 `define GSTAT 'h01
@@ -41,7 +40,7 @@
 `define ENCM_CTRL 'h72
 `define LOST_STEPS 'h73
 
-module tmc2310( input clk_in, input reset_n_in, input serial_in, output clk_out, output serial_out, output cs_out_n );
+module tmc2310#( parameter SPEED_SIZE = 64 ) ( input clk_in, input reset_n_in, input serial_in, input [ SPEED_SIZE - 1: 0 ] speed, output clk_out, output serial_out, output cs_out_n, output step );
 
 reg [ 39: 0 ] r_data_outgoing = 'b0;
 wire [ 39: 0 ] data_ingoing;
@@ -80,7 +79,6 @@ always@( posedge r_state_clk, negedge reset_n_in ) begin
         end
         else
         begin
-            r_enable_send <= 1'b1;
             case ( state )
                 ChopConf:
                 begin
@@ -88,40 +86,43 @@ always@( posedge r_state_clk, negedge reset_n_in ) begin
                     r_data_outgoing <= 40'hEC000100C3;
                 end
 
-                IHold_IRun:
-                begin
-                    // IHOLD_IRUN: IHOLD=10, IRUN=31 (max. current), IHOLDDELAY=6
-                    r_data_outgoing <= 40'h9000061F0A;
-                end
-
-                TPowerDown:
-                begin
-                    // TPOWERDOWN=10: Delay before power down in stand still
-                    r_data_outgoing <= 40'h910000000A;
-                end
-
-                En_Pwm_Mode:
-                begin
-                    // EN_PWM_MODE=1 enables StealthChop (with default PWMCONF)
-                    r_data_outgoing <= 40'h8000000004;
-                end
-
-                TPwm_Thrs:
-                begin
-                    // TPWM_THRS=500 yields a switching velocity about 35000 = ca. 30RPM
-                    r_data_outgoing <= 40'h93000001F4;
-                end
-
-                PwmConf:
-                begin
-                    // PWMCONF: AUTO=1, 2/1024 Fclk, Switch amplitude limit=200, Grad=1
-                    r_data_outgoing <= 40'hF0000401C8;
-                end
+                // IHold_IRun:
+                // begin
+                //     // IHOLD_IRUN: IHOLD=10, IRUN=31 (max. current), IHOLDDELAY=6
+                //     r_data_outgoing <= 40'h9000061F0A;
+                // end
+                //
+                // TPowerDown:
+                // begin
+                //     // TPOWERDOWN=10: Delay before power down in stand still
+                //     r_data_outgoing <= 40'h910000000A;
+                // end
+                //
+                // En_Pwm_Mode:
+                // begin
+                //     // EN_PWM_MODE=1 enables StealthChop (with default PWMCONF)
+                //     r_data_outgoing <= 40'h8000000004;
+                // end
+                //
+                // TPwm_Thrs:
+                // begin
+                //     // TPWM_THRS=500 yields a switching velocity about 35000 = ca. 30RPM
+                //     r_data_outgoing <= 40'h93000001F4;
+                // end
+                //
+                // PwmConf:
+                // begin
+                //     // PWMCONF: AUTO=1, 2/1024 Fclk, Switch amplitude limit=200, Grad=1
+                //     r_data_outgoing <= 40'hF0000401C8;
+                // end
             endcase
+            r_enable_send <= 1'b1;
         end
 
         ready <= !ready;
         state <= state + 1;
     end
 end
+
+clk_divider#( .SIZE( SPEED_SIZE ) ) clk_divider_2 ( .clk_in( clk_in ), .max_in( speed ), .clk_out( step ) );
 endmodule

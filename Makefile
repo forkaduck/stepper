@@ -76,7 +76,7 @@ ulx3s_out.config: $(TOPMOD).json
 		--textcfg ulx3s_out.config
 
 $(TOPMOD).json: $(TOPMOD).v
-	yosys -p "read_verilog $(TOPMOD).v; synth_ecp5 -noccu2 -nomux -nodram -json $(TOPMOD).json"
+	yosys -p "read_verilog *.v; synth_ecp5 -noccu2 -nomux -nodram -json $(TOPMOD).json"
 
 prog: ulx3s.bit
 	openFPGALoader -b ulx3s -v -m ulx3s.bit
