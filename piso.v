@@ -4,13 +4,12 @@ module piso#( parameter SIZE = 8 ) (
            input clk_in,
            output reg r_out );
 
-// TODO wrong number of bits shifted out
 reg [ SIZE - 1 : 0 ] r_count = SIZE;
 
 always@( posedge clk_in ) begin
     if ( r_count == 0 )
     begin
-        r_count <= SIZE;
+        r_count <= SIZE - 1;
     end
     else
     begin

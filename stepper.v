@@ -12,16 +12,29 @@ module stepper ( input clk_25mhz,
 assign wifi_gpio0 = 1'b1;
 reg r_slowclock;
 
-tmc2310 #( .SPEED_SIZE( 64 ) ) tmc21301( .clk_in( clk_25mhz ), .reset_n_in( btn[ 1 ] ), .serial_in( gn[ 0 ] ), .speed( 'd25000000 ), .clk_out( gn[ 2 ] ), .serial_out( gn[ 3 ] ), .cs_out_n( gn[ 1 ] ), .step( gp[ 0 ] ) );
-
 // btn debouncer
-clk_divider #( .SIZE( 16 ) ) divider1( .clk_in( clk_25mhz ), .max_in( 16'd2500 ), .clk_out( r_slowclock ) );
+clk_divider #( .SIZE( 8 ) ) clk_divider1( .clk_in( clk_25mhz ), .max_in( 8'd250 ), .clk_out( r_slowclock ) );
 
-reg r_state1;
+reg r_state1, r_state2;
 always@( posedge r_slowclock ) begin
-    r_state1 <= btn[ 1 ];
-    r_slowclock <= r_state1;
+    r_state1 <= ~btn[ 1 ];
+    r_state2 <= r_state1;
 end
 
-// assign led[ 7: 0 ] = data_ingoing[ 39: 32 ];
+motor_driver driver1( .clk_in( clk_25mhz ), .reset_n_in( r_state2 ), .serial_in( gn[ 0 ] ), .speed_in( 'd25000000 ), .step_enable_in( 1'b1 ), .clk_out( gn[ 2 ] ), .serial_out( gn[ 3 ] ), .cs_n_out( gn[ 1 ] ), .step_out( gp[ 0 ] ) );
+
+// reg [ 39: 0 ] data_outgoing;
+// wire [ 39: 0 ] data_ingoing;
+// reg enable_send = 1'b0;
+//
+// //spi clk is approximately 3.2 MHz
+// spi#( .SIZE( 40 ), .CS_SIZE( 1 ), .CLK_SIZE( 3 ) ) spi_1 ( .data_in( data_outgoing ), .clk_in( clk_25mhz ), .clk_count_max( 3'b111 ), .serial_in( gn[ 0 ] ), .send_enable_in( enable_send ), .cs_select( 1'b0 ), .data_out( data_ingoing ), .clk_out( gn[ 2 ] ), .serial_out( gn[ 3 ] ), .r_cs_out_n( gn[ 1 ] ) );
+//
+// initial
+// begin
+//     data_outgoing = 40'h4206900000;
+//     enable_send = 1'b1;
+// end
+
+
 endmodule
