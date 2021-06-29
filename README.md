@@ -21,9 +21,11 @@ This project was written with the following utilities:
 
 #### Commands
 Synthesize design and load into SRAM on the ULX3S:
+
 `$ make clean && make prog`
 
 Programm into flash:
+
 `$ openFPGALoader -b ulx3s -v -f ulx3s.bit`
 
 
@@ -36,6 +38,7 @@ Programm into flash:
 * Every name of every reg should contain `r_` as a prefix.
 * Every reg or wire which is active low has to have `_n_` before a input output surfix (`_in/_out`) but before the real name.
 
-###### Example
+###### Example:
 `Register Output which is active low: r_<name>_n_out`
+
 `Wire which is an input: <name>_in`
