@@ -10,10 +10,8 @@ cd "$tests_dir" || exit
 dirlist=($(find . -name "test_*.v" | tr -s '\n' ' '))
 
 for i in "${dirlist[@]}"; do
-    IFS='_' read -ra curr <<< "$i"
-
     echo "[+] Compiling $i into vvp file"
-    iverilog -o "$i"vp "$i" "$src_dir"/"${curr[1]}"
+    iverilog -o "$i"vp "$i"
 
     echo -e "\n[+] Running Simulation for $i"
     vvp "$i"vp
