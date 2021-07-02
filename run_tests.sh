@@ -7,12 +7,20 @@ mkdir -v -p "$tests_dir"
 
 cd "$tests_dir" || exit
 
+echo "[+] Deleting old simulation results"
+rm ./*.vvp ./*.vcd
+
 dirlist=($(find . -name "test_*.v" | tr -s '\n' ' '))
 
 for i in "${dirlist[@]}"; do
     echo "[+] Compiling $i into vvp file"
     iverilog -o "$i"vp "$i"
 
-    echo -e "\n[+] Running Simulation for $i"
-    vvp "$i"vp
+    if [ $? -eq 0 ]; then
+        echo -e "\n[+] Running simulation for $i"
+        vvp "$i"vp
+    else
+        echo -e "\n[!] Simulation was hasn't been started" \
+        "because no vvp file was found!"
+    fi
 done
