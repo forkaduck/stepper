@@ -34,7 +34,7 @@ begin
     $dumpfile( "test_mux.vcd" );
     $dumpvars( 0, testbench );
 
-    $display( "%0t:\tReseting system", $time );
+    $display( "%0t:\tResetting system", $time );
 
     // pull reset high and wait for 30 clk cycles
     reset = #TP 1'b1;
@@ -43,7 +43,7 @@ begin
     reset = #TP 1'b0;
     repeat ( 30 ) @ ( posedge clk );
 
-    $display( "%0t:\tBeginning test of mux", $time );
+    $display( "%0t:\tBeginning test of the mux module", $time );
 
 
     for ( i = 0; i < 3; i = i + 1 )
@@ -63,7 +63,7 @@ begin
 
     end
 
-    $display( "%0t:\tEnd of mux test", $time );
+    $display( "%0t:\tEnd", $time );
     $finish;
 end
 
