@@ -13,11 +13,11 @@ rm ./*.vvp ./*.vcd
 dirlist=($(find . -name "test_*.v" | tr -s '\n' ' '))
 
 for i in "${dirlist[@]}"; do
-    echo "[+] Compiling $i into vvp file"
+    echo -e "\n[+] Compiling $i into vvp file"
     iverilog -o "$i"vp "$i"
 
     if [ $? -eq 0 ]; then
-        echo -e "\n[+] Running simulation for $i"
+        echo -e "\n[+] --- Simulation output of $i ---"
         vvp "$i"vp
     else
         echo -e "\n[!] Simulation was hasn't been started" \
