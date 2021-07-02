@@ -32,6 +32,12 @@ Simulation of all designs:
 
 `$ ./run_tests.sh`
 
+## Project structure
+#### Subfolders
+* docs -> contains most of the documentation either written per hand or generated
+* src -> holds all the verilog src files that are synthesizeable
+* tests -> consists of all verilog testbenches (for each model one with the naming convention `test_<name>.v`)
+
 ## Coding conventions
 * One module per file (file should have the same name as the module does).
 * Split code in functional blocks with spaces.
