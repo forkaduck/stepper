@@ -38,7 +38,6 @@ parameter ChopConf = 'h0,
           Wait5 = 'hb,
           End = 'hc;
 
-
 reg [ 4: 0 ] state = ChopConf;
 
 // driver setup state machine

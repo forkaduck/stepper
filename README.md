@@ -17,7 +17,7 @@ This project was written with the following utilities:
 * Yosys (for synthesis)
 * nextpnr (for routing and placing)
 * prjtrellis (bitstream documentation for the LATTICE LFE5U-12F)
-* verilator (optional; used for simulation)
+* icarus verilog (used for simulation)
 
 #### Commands
 Synthesize design and load into SRAM on the ULX3S:
@@ -28,6 +28,9 @@ Programm into flash:
 
 `$ openFPGALoader -b ulx3s -v -f ulx3s.bit`
 
+Simulation of all designs:
+
+`$ ./run_tests.sh`
 
 ## Coding conventions
 * One module per file (file should have the same name as the module does).
