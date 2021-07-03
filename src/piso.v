@@ -4,7 +4,7 @@ module piso#( parameter SIZE = 8 ) (
            input clk_in,
            output reg r_out );
 
-reg [ SIZE - 1 : 0 ] r_count = SIZE;
+reg [ SIZE - 1 : 0 ] r_count = SIZE - 1;
 
 always@( posedge clk_in ) begin
     if ( r_count == 0 )
@@ -17,5 +17,6 @@ always@( posedge clk_in ) begin
     end
 
     r_out <= data_in[ r_count ];
+    $display( "piso>\tr_out: %x r_count: %x", r_out, r_count );
 end
 endmodule
