@@ -19,18 +19,18 @@ begin
         r_clk = #( CLK_HALF_PERIOD ) ~r_clk;
 end
 
-reg r_piso_clk;
+reg r_clk_switched;
 reg [ 31: 0 ] i;
 reg [ 7: 0 ] r_parallel_data = 8'b10101100;
 wire serial_output;
 
-piso #( .SIZE( 8 ) ) piso1 ( .data_in( r_parallel_data ), .clk_in( r_piso_clk ), .r_out( serial_output ) );
+piso #( .SIZE( 8 ) ) piso1 ( .data_in( r_parallel_data ), .clk_in( r_clk_switched ), .r_out( serial_output ) );
 
 initial
 begin
 
     // dump waveform file
-    $dumpfile( "test_mux.vcd" );
+    $dumpfile( "test_piso.vcd" );
     $dumpvars( 0, testbench );
 
     $display( "%0t:\tResetting system", $time );
@@ -44,7 +44,7 @@ begin
 
     $display( "%0t:\tBeginning test of the piso module", $time );
 
-    assign r_piso_clk = r_clk;
+    assign r_clk_switched = r_clk;
 
     for ( i = 0; i < 8; i = i + 1 )
     begin

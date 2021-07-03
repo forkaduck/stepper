@@ -17,6 +17,6 @@ always@( posedge clk_in ) begin
     end
 
     r_out <= data_in[ r_count ];
-    $display( "piso>\tr_out: %x r_count: %x", r_out, r_count );
+    $display( "%m>\tr_out: %x r_count: %x", r_out, r_count );
 end
 endmodule
