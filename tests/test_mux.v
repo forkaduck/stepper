@@ -47,7 +47,6 @@ begin
 
     $display( "%0t:\tBeginning test of the mux module", $time );
 
-
     for ( i = 0; i < 3; i = i + 1 )
     begin
         repeat ( 1 ) @ ( posedge r_clk );
@@ -73,7 +72,7 @@ begin
         `assert( r_mux_out[ i ], 1'b1 );
     end
 
-    $display( "%0t:\tEnd", $time );
+    $display( "%0t:\tNo errors", $time );
     $finish;
 end
 
