@@ -1,5 +1,5 @@
 `define assert(signal, value) \
         if (signal !== value) begin \
-            $display("ASSERTION FAILED in %m: signal != value"); \
+            $display("%0t:\tASSERTION FAILED in %m | signal != value | 0x%x != 0x%x", $time, signal, value); \
             $finish; \
         end
