@@ -20,7 +20,9 @@ begin
 end
 
 
-reg [ 31: 0 ] r_i;
+reg [ 31: 0 ] i;
+reg [ 31: 0 ] k;
+
 reg [ 2: 0 ] r_select;
 wire [ 2: 0 ] r_mux_out;
 reg r_mux_in;
@@ -46,21 +48,29 @@ begin
     $display( "%0t:\tBeginning test of the mux module", $time );
 
 
-    for ( r_i = 0; r_i < 3; r_i = r_i + 1 )
+    for ( i = 0; i < 3; i = i + 1 )
     begin
         repeat ( 1 ) @ ( posedge r_clk );
-        r_select = r_i;
-        r_mux_in = 1'b0;
 
+        r_select = i[ 2: 0 ];
+        r_mux_in = 1'b0;
         repeat ( 1 ) @ ( posedge r_clk );
 
-        `assert( r_mux_out[ r_i ], 1'b0 );
+        for ( k = i; k < 3; k = k + 1 )
+        begin
+            `assert( r_mux_out[ i ], 1'b0 );
+        end
 
         r_mux_in = 1'b1;
         repeat ( 2 ) @ ( posedge r_clk );
 
-        `assert( r_mux_out[ r_i ], 1'b1 );
+        for ( k = 0; k <= i; k = k + 1 )
+        begin
+            `assert( r_mux_out[ i ], 1'b1 );
+        end
 
+
+        `assert( r_mux_out[ i ], 1'b1 );
     end
 
     $display( "%0t:\tEnd", $time );

@@ -44,7 +44,7 @@ Simulation of all designs:
 
 #### Variable naming conventions
 * Every input and output wire or reg of a module (except for the top module) should contain either `_in` or `_out` as a surfix.
-* Every name of every reg should contain `r_` as a prefix.
+* Every name of every reg should contain `r_` as a prefix if it is not a counter variable in a loop.
 * Every reg or wire which is active low has to have `_n_` before a input output surfix (`_in/_out`) but before the real name.
 
 ###### Example:
