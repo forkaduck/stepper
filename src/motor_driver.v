@@ -21,7 +21,7 @@ assign cs_n_out = r_curr_cs_n;
 
 // spi motor driver communication instance
 //spi clk is approximately 3.2 MHz
-spi#( .SIZE( 40 ), .CS_SIZE( 1 ), .CLK_SIZE( 3 ) ) spi1 ( .data_in( r_data_outgoing ), .clk_in( clk_in ), .clk_count_max( 3'b111 ), .serial_in( serial_in ), .send_enable_in( r_enable_send ), .cs_select( 1'b0 ), .data_out( data_ingoing ), .clk_out( clk_out ), .serial_out( serial_out ), .cs_out_n( r_curr_cs_n ) );
+spi#( .SIZE( 40 ), .CS_SIZE( 1 ), .CLK_SIZE( 3 ) ) spi1 ( .data_in( r_data_outgoing ), .clk_in( clk_in ), .clk_count_max( 3'b111 ), .serial_in( serial_in ), .send_enable_in( r_enable_send ), .cs_select_in( 1'b0 ), .reset_n_in(reset_n_in), .data_out( data_ingoing ), .clk_out( clk_out ), .serial_out( serial_out ), .cs_out_n( r_curr_cs_n ) );
 
 // all possible states of the setup state machine
 parameter ChopConf = 'h0,
