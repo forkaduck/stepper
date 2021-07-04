@@ -36,15 +36,20 @@ initial begin
 
     $display( "%0t:\tResetting system", $time );
 
-    // pull reset high and wait for 30 r_clk cycles
+    // create reset pulse
     r_reset = #TP 1'b1;
     repeat ( 30 ) @ ( posedge r_clk );
 
     r_reset = #TP 1'b0;
     repeat ( 30 ) @ ( posedge r_clk );
 
+    r_reset = #TP 1'b1;
+    repeat (30) @ (posedge r_clk);
+
     $display( "%0t:\tBeginning test of the mux module", $time );
 
+    // test if the output of the mux is switchable and
+    // sets the output in the array accordingly
     for ( i = 0; i < 3; i = i + 1 ) begin
         repeat ( 1 ) @ ( posedge r_clk );
 

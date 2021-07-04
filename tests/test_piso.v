@@ -33,7 +33,7 @@ initial begin
 
     $display( "%0t:\tResetting system", $time );
 
-    // pull reset high and wait for 30 clk cycles
+    // create reset pulse
     r_reset_n = #TP 1'b1;
     repeat ( 30 ) @ ( posedge r_clk );
 
@@ -45,6 +45,8 @@ initial begin
 
     $display( "%0t:\tBeginning test of the piso module", $time );
 
+    // test if the piso delivers the data in the right order
+    // and doesn't miss a bit
     assign r_clk_switched = r_clk;
 
     for ( i = 0; i < 8; i = i + 1 ) begin
