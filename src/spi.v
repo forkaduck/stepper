@@ -9,7 +9,7 @@ module spi#( parameter SIZE = 40, parameter CS_SIZE = 1, parameter CLK_SIZE = 3 
            output [ SIZE - 1: 0 ] data_out,
            output clk_out,
            output serial_out,
-           output [ CS_SIZE - 1 : 0 ] r_cs_out_n
+           output [ CS_SIZE - 1 : 0 ] cs_out_n
        );
 
 reg [ SIZE - 1 : 0 ] r_counter = 'b0;
@@ -68,7 +68,7 @@ always@( posedge clk_in ) begin
     end
 end
 
-mux#( .SIZE( CS_SIZE ) ) mux1( .select_in( cs_select ), .sig_in( r_curr_cs_n ), .clk_in( clk_in ), .r_sig_out( r_cs_out_n ) );
+mux#( .SIZE( CS_SIZE ) ) mux1( .select_in( cs_select ), .sig_in( r_curr_cs_n ), .clk_in( clk_in ), .r_sig_out( cs_out_n ) );
 
 // parallel in serial out module driving the mosi pin
 piso#( .SIZE( SIZE ) ) piso1 ( .data_in( data_in ), .clk_in( r_internal_clk_switched ), .r_out( serial_out ) );
