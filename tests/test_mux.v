@@ -11,8 +11,7 @@ parameter TP = 1;
 parameter CLK_HALF_PERIOD = 5;
 
 // separate initial process that generates the r_clk
-initial
-begin
+initial begin
     r_clk = 0;
     #5;
     forever
@@ -29,8 +28,7 @@ reg r_mux_in;
 
 mux#( .SIZE( 3 ) ) mux1( .select_in( r_select ), .sig_in( r_mux_in ), .clk_in( r_clk ), .r_sig_out( r_mux_out ) );
 
-initial
-begin
+initial begin
 
     // dump waveform file
     $dumpfile( "test_mux.vcd" );
@@ -47,24 +45,21 @@ begin
 
     $display( "%0t:\tBeginning test of the mux module", $time );
 
-    for ( i = 0; i < 3; i = i + 1 )
-    begin
+    for ( i = 0; i < 3; i = i + 1 ) begin
         repeat ( 1 ) @ ( posedge r_clk );
 
         r_select = i[ 2: 0 ];
         r_mux_in = 1'b0;
         repeat ( 1 ) @ ( posedge r_clk );
 
-        for ( k = i; k < 3; k = k + 1 )
-        begin
+        for ( k = i; k < 3; k = k + 1 ) begin
             `assert( r_mux_out[ i ], 1'b0 );
         end
 
         r_mux_in = 1'b1;
         repeat ( 2 ) @ ( posedge r_clk );
 
-        for ( k = 0; k <= i; k = k + 1 )
-        begin
+        for ( k = 0; k <= i; k = k + 1 ) begin
             `assert( r_mux_out[ i ], 1'b1 );
         end
 

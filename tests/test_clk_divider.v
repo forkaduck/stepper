@@ -11,8 +11,7 @@ parameter TP = 1;
 parameter CLK_HALF_PERIOD = 5;
 
 // separate initial process that generates the clk
-initial
-begin
+initial begin
     r_clk = 0;
     #5;
     forever
@@ -25,8 +24,7 @@ wire clk_output;
 
 clk_divider #( .SIZE( 8 ) ) clk_divider1 ( .clk_in( r_clk_switched ), .max_in( 8'd100 ), .clk_out( clk_output ) );
 
-initial
-begin
+initial begin
 
     // dump waveform file
     $dumpfile( "test_clk_divider.vcd" );
@@ -44,8 +42,7 @@ begin
     $display( "%0t:\tBeginning test of the clk_divider module", $time );
 
     assign r_clk_switched = r_clk;
-    for ( i = 0; i < 2; i = i + 1 )
-    begin
+    for ( i = 0; i < 2; i = i + 1 ) begin
         // fix timing offset created by last repeat
         // (works only for i < 2)
         repeat ( 99 - i ) @( posedge r_clk );

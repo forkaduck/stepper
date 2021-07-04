@@ -42,37 +42,30 @@ reg [ 4: 0 ] state = ChopConf;
 
 // driver setup state machine
 always@( posedge clk_in, negedge reset_n_in ) begin
-    if ( !reset_n_in )
-    begin
+    if ( !reset_n_in ) begin
         state <= ChopConf;
         r_enable_send <= 1'b0;
     end
-    else
-    begin
-        if ( r_curr_cs_n )
-        begin
+    else begin
+        if ( r_curr_cs_n ) begin
             case ( state )
-                ChopConf:
-                begin
+                ChopConf: begin
                     // CHOPCONF: TOFF=3, HSTRT=4, HEND=1, TBL=2, CHM=0 (SpreadCycle)
                     r_data_outgoing <= 40'hEC000100C3;
                     r_enable_send <= 1'b1;
                 end
 
-                Wait0:
-                begin
+                Wait0: begin
                     r_enable_send <= 1'b0;
                 end
 
-                IHold_IRun:
-                begin
+                IHold_IRun: begin
                     // IHOLD_IRUN: IHOLD=10, IRUN=31 (max. current), IHOLDDELAY=6
                     r_data_outgoing <= 40'h9000061F0A;
                     r_enable_send <= 1'b1;
                 end
 
-                Wait1:
-                begin
+                Wait1: begin
                     r_enable_send <= 1'b0;
                 end
 
@@ -101,8 +94,7 @@ always@( posedge clk_in, negedge reset_n_in ) begin
                 // end
             endcase
 
-            if ( state < End )
-            begin
+            if ( state < End ) begin
                 state <= state + 1;
             end
         end
@@ -116,12 +108,10 @@ reg r_step_buff;
 clk_divider#( .SIZE( 64 ) ) clk_divider2 ( .clk_in( clk_in ), .max_in( speed_in ), .clk_out( r_step_buff ) );
 
 always@( posedge clk_in ) begin
-    if ( step_enable_in )
-    begin
+    if ( step_enable_in ) begin
         step_out <= r_step_buff;
     end
-    else
-    begin
+    else begin
         step_out <= 1'b0;
     end
 end

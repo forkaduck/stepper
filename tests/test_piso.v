@@ -11,8 +11,7 @@ parameter TP = 1;
 parameter CLK_HALF_PERIOD = 5;
 
 // separate initial process that generates the clk
-initial
-begin
+initial begin
     r_clk = 0;
     #5;
     forever
@@ -26,8 +25,7 @@ wire serial_output;
 
 piso #( .SIZE( 8 ) ) piso1 ( .data_in( r_parallel_data ), .clk_in( r_clk_switched ), .reset_n_in( r_reset_n ), .r_out( serial_output ) );
 
-initial
-begin
+initial begin
 
     // dump waveform file
     $dumpfile( "test_piso.vcd" );
@@ -49,8 +47,7 @@ begin
 
     assign r_clk_switched = r_clk;
 
-    for ( i = 0; i < 8; i = i + 1 )
-    begin
+    for ( i = 0; i < 8; i = i + 1 ) begin
         repeat ( 1 ) @( posedge r_clk );
         `assert( r_parallel_data[ 7 - i ], serial_output );
     end
