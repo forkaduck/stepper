@@ -41,7 +41,7 @@ begin
     r_reset = #TP 1'b0;
     repeat ( 30 ) @ ( posedge r_clk );
 
-    $display( "%0t:\tBeginning test of the piso module", $time );
+    $display( "%0t:\tBeginning test of the clk_divider module", $time );
 
     assign r_clk_switched = r_clk;
     for ( i = 0; i < 2; i = i + 1 )
