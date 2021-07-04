@@ -50,7 +50,7 @@ If you think that the feature you are working on is done then open a **pull-requ
 The code is then checked by another member of the team. Feedback on improvements should be given via the github comments in the pull request.
 If all team members are happy with the changes then those changes will be merged into the develop branch.
 
-After some major improvements is the develop branch finally merged into the master branch.
+Only after some major improvements will the develop branch finally merged into the master branch.
 
 ## Coding conventions
 * One module per file (file should have the same name as the module does).
