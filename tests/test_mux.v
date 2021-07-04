@@ -22,9 +22,9 @@ end
 reg [ 31: 0 ] i;
 reg [ 31: 0 ] k;
 
-reg [ 2: 0 ] r_select;
+reg [ 2: 0 ] r_select = 'b0;
 wire [ 2: 0 ] r_mux_out;
-reg r_mux_in;
+reg r_mux_in = 1'b0;
 
 mux#( .SIZE( 3 ) ) mux1( .select_in( r_select ), .sig_in( r_mux_in ), .clk_in( r_clk ), .r_sig_out( r_mux_out ) );
 
