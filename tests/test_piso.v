@@ -6,7 +6,7 @@
 module testbench;
 
 reg r_clk;
-reg r_reset;
+reg r_reset_n;
 parameter TP = 1;
 parameter CLK_HALF_PERIOD = 5;
 
@@ -24,7 +24,7 @@ reg [ 31: 0 ] i;
 reg [ 7: 0 ] r_parallel_data = 8'b10101100;
 wire serial_output;
 
-piso #( .SIZE( 8 ) ) piso1 ( .data_in( r_parallel_data ), .clk_in( r_clk_switched ), .r_out( serial_output ) );
+piso #( .SIZE( 8 ) ) piso1 ( .data_in( r_parallel_data ), .clk_in( r_clk_switched ), .reset_n_in( r_reset_n ), .r_out( serial_output ) );
 
 initial
 begin
@@ -36,10 +36,13 @@ begin
     $display( "%0t:\tResetting system", $time );
 
     // pull reset high and wait for 30 clk cycles
-    r_reset = #TP 1'b1;
+    r_reset_n = #TP 1'b1;
     repeat ( 30 ) @ ( posedge r_clk );
 
-    r_reset = #TP 1'b0;
+    r_reset_n = #TP 1'b0;
+    repeat ( 30 ) @ ( posedge r_clk );
+
+    r_reset_n = #TP 1'b1;
     repeat ( 30 ) @ ( posedge r_clk );
 
     $display( "%0t:\tBeginning test of the piso module", $time );
