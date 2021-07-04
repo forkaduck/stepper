@@ -18,6 +18,7 @@ This project was written/created with the following utilities:
 * nextpnr (For routing and placing)
 * prjtrellis (Bitstream documentation for the LATTICE LFE5U-12F)
 * icarus verilog (Used for simulation)
+* gtkwave (For opening the produced waveforms of the simulation as a vcd file)
 * freecad (Used for 3d modeling)
 
 #### Commands
