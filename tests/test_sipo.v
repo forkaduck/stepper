@@ -1,10 +1,9 @@
 `timescale 1ns/100ps
 
 `include "macros.v"
-`include "../src/piso.v"
+`include "../src/sipo.v"
 
 module testbench();
-    
     reg r_clk;
     reg r_reset_n;
     parameter TP = 1;
@@ -15,18 +14,20 @@ module testbench();
         r_clk = 0;
         #5;
         forever
-            r_clk = #(CLK_HALF_PERIOD) ~r_clk;
+            r_clk = #(CLK_HALF_PERIOD)  ~r_clk;
     end
     
-    reg r_clk_switched = 1'b0;
     reg [31: 0] i;
-    reg [7: 0] r_parallel_data = 8'b10101100;
-    wire serial_output;
+    reg r_clk_switched = 'b0;
     
-    piso #(.SIZE(8)) piso1 (.data_in(r_parallel_data), .clk_in(r_clk_switched), .reset_n_in(r_reset_n), .r_data_out(serial_output));
+    reg [15: 0] r_test_data_in;
+    
+    reg data_in;
+    wire [7: 0] data_out;
+    
+    sipo #(.SIZE(8))  sipo1 (.data_in(data_in), .clk_in(r_clk), .r_data_out(data_out));
     
     initial begin
-        
         // dump waveform file
         $dumpfile("test_piso.vcd");
         $dumpvars(0, testbench);
@@ -35,24 +36,35 @@ module testbench();
         
         // create reset pulse
         r_reset_n = #TP 1'b1;
-        repeat (30) @ (posedge r_clk);
+        repeat(30) @(posedge r_clk);
         
         r_reset_n = #TP 1'b0;
-        repeat (30) @ (posedge r_clk);
+        repeat(30) @(posedge r_clk);
         
         r_reset_n = #TP 1'b1;
-        repeat (30) @ (posedge r_clk);
+        repeat(30) @(posedge r_clk);
         
         $display("%0t:\tBeginning test of the piso module", $time);
+        
+        r_test_data_in = 16'hafde;
         
         // test if the piso delivers the data in the right order
         // and doesn't miss a bit
         assign r_clk_switched = r_clk;
         
-        for (i = 0; i < 8; i++) begin
-            repeat (1) @(posedge r_clk);
-            `assert(r_parallel_data[7 - i], serial_output);
+        for (i = 0; i < 8; i++)  begin
+            data_in = r_test_data_in[i];
+            repeat(1) @(posedge r_clk);
         end
+        
+        `assert(data_out, r_test_data_in[7: 0]);
+        
+        for (i = 8; i < 15; i++)  begin
+            data_in = r_test_data_in[i];
+            repeat(1)  @ (posedge r_clk);
+        end
+        
+        `assert(data_out, r_test_data_in[15: 8]);
         
         $display("%0t:\tNo errors", $time);
         $finish;
