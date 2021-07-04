@@ -50,7 +50,7 @@ initial begin
 
     // test if the output of the mux is switchable and
     // sets the output in the array accordingly
-    for ( i = 0; i < 3; i = i + 1 ) begin
+    for ( i = 0; i < 3; i++ ) begin
         repeat ( 1 ) @ ( posedge r_clk );
 
         r_select = i[ 2: 0 ];

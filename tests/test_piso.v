@@ -49,7 +49,7 @@ initial begin
     // and doesn't miss a bit
     assign r_clk_switched = r_clk;
 
-    for ( i = 0; i < 8; i = i + 1 ) begin
+    for ( i = 0; i < 8; i++ ) begin
         repeat ( 1 ) @( posedge r_clk );
         `assert( r_parallel_data[ 7 - i ], serial_output );
     end

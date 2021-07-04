@@ -42,7 +42,7 @@ initial begin
     $display( "%0t:\tBeginning test of the clk_divider module", $time );
 
     assign r_clk_switched = r_clk;
-    for ( i = 0; i < 2; i = i + 1 ) begin
+    for ( i = 0; i < 2; i++ ) begin
         // fix timing offset created by last repeat
         // (works only for i < 2)
         repeat ( 99 - i ) @( posedge r_clk );
