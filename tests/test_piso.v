@@ -18,7 +18,7 @@ initial begin
         r_clk = #( CLK_HALF_PERIOD ) ~r_clk;
 end
 
-reg r_clk_switched;
+reg r_clk_switched = 1'b0;
 reg [ 31: 0 ] i;
 reg [ 7: 0 ] r_parallel_data = 8'b10101100;
 wire serial_output;

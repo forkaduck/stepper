@@ -7,6 +7,9 @@ module piso#( parameter SIZE = 8 ) (
 
 reg [ SIZE - 1 : 0 ] r_count = SIZE - 1;
 
+initial
+    r_out = 1'b0;
+
 always@( posedge clk_in, negedge reset_n_in ) begin
     if ( !reset_n_in ) begin
         r_out <= 1'b0;
