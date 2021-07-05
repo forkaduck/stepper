@@ -29,7 +29,7 @@ else
     if [ -f "$1" ]; then
         echo "[+] Running just $1"
 
-        echo -e "\n[+] Compiling $i into vvp file"
+        echo -e "\n[+] Compiling $1 into vvp file"
 
         if iverilog -o "$1"vp "$1"; then
             echo -e "\n[+] --- Simulation output of $1 ---"
