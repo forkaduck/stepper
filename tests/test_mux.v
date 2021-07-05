@@ -63,7 +63,7 @@ module testbench();
             r_mux_in = 1'b1;
             repeat (2) @ (posedge r_clk);
             
-            for (k = 0; k < = i; k = k + 1) begin
+            for (k = 0; k <= i; k = k + 1) begin
                 `assert(r_mux_out[i], 1'b1);
             end
             
