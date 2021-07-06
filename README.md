@@ -1,6 +1,8 @@
 # Stepper
 A test design for use with a hexapedal or octapedal robot.
 
+[![Lint](https://github.com/0xDEADC0DEx/stepper/actions/workflows/lint.yml/badge.svg)](https://github.com/0xDEADC0DEx/stepper/actions/workflows/lint.yml)
+
 For most of the projects documentation have a look at the github wiki.
 
 ## Current prototype pinout

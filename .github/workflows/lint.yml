@@ -1,0 +1,12 @@
+on: [push]
+
+jobs:
+  clean-verilog:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2 # Checkout source
+    - uses: reviewdog/action-setup@v1 # Setup reviewdog
+    - name: Verilog Cleaner
+      uses: 0xDEADC0DEx/verilog-cleaner@v0.1.2
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
