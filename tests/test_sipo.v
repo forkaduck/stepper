@@ -18,18 +18,17 @@ module testbench();
     end
     
     reg [31: 0] i;
-    reg r_clk_switched = 'b0;
     
     reg [15: 0] r_test_data_in;
     
-    reg data_in;
+    reg data_in = 1'b0;
     wire [7: 0] data_out;
     
-    sipo #(.SIZE(8))  sipo1 (.data_in(data_in), .clk_in(r_clk), .r_data_out(data_out));
+    sipo #(.SIZE(8))  sipo1 (.data_in(data_in), .clk_in(r_clk), .reset_n_in(r_reset_n), .r_data_out(data_out));
     
     initial begin
         // dump waveform file
-        $dumpfile("test_piso.vcd");
+        $dumpfile("test_sipo.vcd");
         $dumpvars(0, testbench);
         
         $display("%0t:\tResetting system", $time);
@@ -46,22 +45,23 @@ module testbench();
         
         $display("%0t:\tBeginning test of the piso module", $time);
         
-        r_test_data_in = 16'hafde;
+        r_test_data_in = 16'habcd;
         
-        // test if the piso delivers the data in the right order
+        // test if the sipo delivers the data in the right order
         // and doesn't miss a bit
-        assign r_clk_switched = r_clk;
-        
-        for (i = 0; i < 8; i++)  begin
+        for (i = 0; i < 8; i++) begin
+            $display("%d", i);
             data_in = r_test_data_in[i];
             repeat(1) @(posedge r_clk);
         end
         
+        
         `assert(data_out, r_test_data_in[7: 0]);
         
-        for (i = 8; i < 15; i++)  begin
+        for (i = 8; i < 16; i++) begin
+            $display("%d", i);
             data_in = r_test_data_in[i];
-            repeat(1)  @ (posedge r_clk);
+            repeat(1) @ (posedge r_clk);
         end
         
         `assert(data_out, r_test_data_in[15: 8]);
@@ -69,5 +69,4 @@ module testbench();
         $display("%0t:\tNo errors", $time);
         $finish;
     end
-    
 endmodule
