@@ -23,19 +23,6 @@ This project was written/created with the following utilities:
 * gtkwave (For opening the produced waveforms of the simulation as a vcd file)
 * freecad (Used for 3d modeling)
 
-#### Commands
-Synthesize design and load into SRAM on the ULX3S:
-
-`$ make clean && make prog`
-
-Programm into flash:
-
-`$ openFPGALoader -b ulx3s -v -f ulx3s.bit`
-
-Simulate all designs:
-
-`$ ./run_tests.sh`
-
 ## Project structure
 #### Subfolders
 * docs -> Contains most of the documentation either written per hand or generated.
