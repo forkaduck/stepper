@@ -1,6 +1,8 @@
 # Stepper
 A test design for use with a hexapedal or octapedal robot.
 
+[![Lint](https://github.com/0xDEADC0DEx/stepper/actions/workflows/lint.yml/badge.svg)](https://github.com/0xDEADC0DEx/stepper/actions/workflows/lint.yml)
+
 ## Current prototype pinout
 Pinout of the Radiona ulx3s:
 #### Stepper Driver 1
@@ -19,19 +21,6 @@ This project was written/created with the following utilities:
 * prjtrellis (Bitstream documentation for the LATTICE LFE5U-12F)
 * icarus verilog (Used for simulation)
 * freecad (Used for 3d modeling)
-
-#### Commands
-Synthesize design and load into SRAM on the ULX3S:
-
-`$ make clean && make prog`
-
-Programm into flash:
-
-`$ openFPGALoader -b ulx3s -v -f ulx3s.bit`
-
-Simulate all designs:
-
-`$ ./run_tests.sh`
 
 ## Project structure
 #### Subfolders
