@@ -7,6 +7,6 @@ jobs:
     - uses: actions/checkout@v2 # Checkout source
     - uses: reviewdog/action-setup@v1 # Setup reviewdog
     - name: Verilog Cleaner
-      uses: SuibianP/verilog-cleaner@v0.1.1
+      uses: 0xDEADC0DEx/verilog-cleaner@master
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
