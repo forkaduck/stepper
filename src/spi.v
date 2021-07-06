@@ -80,5 +80,5 @@ module spi#(parameter SIZE = 40,
     piso#(.SIZE(SIZE)) piso1 (.data_in(data_in), .clk_in(r_internal_clk_switched), .reset_n_in(reset_n_in), .r_data_out(serial_out));
     
     // serial in parallel out module spitting out received data
-    sipo#(.SIZE(SIZE)) sipo1 (.data_in(serial_in), .clk_in(r_internal_clk_switched), .r_data_out(data_out));
+    sipo#(.SIZE(SIZE)) sipo1 (.data_in(serial_in), .clk_in(r_internal_clk_switched),. reset_n_in(reset_n_in), .r_data_out(data_out));
 endmodule
