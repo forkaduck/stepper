@@ -1,0 +1,11 @@
+on: [push]
+
+jobs:
+  clean-verilog:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2 # Checkout source
+    - uses: reviewdog/action-setup@v1 # Setup reviewdog
+    - uses: SuibianP/verilog-cleaner@v1 # lint and format
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
