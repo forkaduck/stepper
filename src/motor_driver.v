@@ -41,9 +41,9 @@ module motor_driver (
   );
 
   // all possible states of the setup state machine
-  parameter integer ChopConf = 'h0,
-      Wait0 = 'h1, IHold_IRun = 'h2, Wait1 = 'h3, TPowerDown = 'd4, Wait2 = 'h5, En_Pwm_Mode = 'h6,
-      Wait3 = 'h7, TPwm_Thrs = 'h8, Wait4 = 'h9, PwmConf = 'ha, Wait5 = 'hb, End = 'hc;
+  parameter integer ChopConf = 4'h0, Wait0 = 4'h1, IHoldIRun = 4'h2, Wait1 = 4'h3,
+      TPowerDown = 4'd4, Wait2 = 4'h5, EnPwmMode = 4'h6, Wait3 = 4'h7, TPwmThrs = 4'h8,
+      Wait4 = 4'h9, PwmConf = 4'ha, Wait5 = 4'hb, End = 4'hc;
 
   reg [4:0] state = ChopConf;
 
@@ -65,7 +65,7 @@ module motor_driver (
             r_enable_send <= 1'b0;
           end
 
-          IHold_IRun: begin
+          IHoldIRun: begin
             // IHOLD_IRUN: IHOLD = 10, IRUN = 31 (max. current), IHOLDDELAY = 6
             r_data_outgoing <= 40'h9000061F0A;
             r_enable_send <= 1'b1;
@@ -75,29 +75,25 @@ module motor_driver (
             r_enable_send <= 1'b0;
           end
 
-          // TPowerDown:
-          // begin
-          // // TPOWERDOWN = 10: Delay before power down in stand still
-          // r_data_outgoing <= 40'h910000000A;
-          // end
-          //
-          // En_Pwm_Mode:
-          // begin
-          // // EN_PWM_MODE = 1 enables StealthChop (with default PWMCONF)
-          // r_data_outgoing <= 40'h8000000004;
-          // end
-          //
-          // TPwm_Thrs:
-          // begin
-          // // TPWM_THRS = 500 yields a switching velocity about 35000 = ca. 30RPM
-          // r_data_outgoing <= 40'h93000001F4;
-          // end
-          //
-          // PwmConf:
-          // begin
-          // // PWMCONF: AUTO = 1, 2/1024 Fclk, Switch amplitude limit = 200, Grad = 1
-          // r_data_outgoing <= 40'hF0000401C8;
-          // end
+          TPowerDown: begin
+            // TPOWERDOWN = 10: Delay before power down in stand still
+            r_data_outgoing <= 40'h910000000A;
+          end
+
+          EnPwmMode: begin
+            // EN_PWM_MODE = 1 enables StealthChop (with default PWMCONF)
+            r_data_outgoing <= 40'h8000000004;
+          end
+
+          TPwmThrs: begin
+            // TPWM_THRS = 500 yields a switching velocity about 35000 = ca. 30RPM
+            r_data_outgoing <= 40'h93000001F4;
+          end
+
+          PwmConf: begin
+            // PWMCONF: AUTO = 1, 2/1024 Fclk, Switch amplitude limit = 200, Grad = 1
+            r_data_outgoing <= 40'hF0000401C8;
+          end
           default: begin
           end
         endcase
