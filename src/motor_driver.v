@@ -41,11 +41,11 @@ module motor_driver (
   );
 
   // all possible states of the setup state machine
-  parameter integer ChopConf = 4'h0, Wait0 = 4'h1, IHoldIRun = 4'h2, Wait1 = 4'h3,
+  parameter reg [3 : 0] ChopConf = 4'h0, Wait0 = 4'h1, IHoldIRun = 4'h2, Wait1 = 4'h3,
       TPowerDown = 4'd4, Wait2 = 4'h5, EnPwmMode = 4'h6, Wait3 = 4'h7, TPwmThrs = 4'h8,
       Wait4 = 4'h9, PwmConf = 4'ha, Wait5 = 4'hb, End = 4'hc;
 
-  reg [4:0] state = ChopConf;
+  reg [3:0] state = ChopConf;
 
   // driver setup state machine
   always @(posedge clk_in, negedge reset_n_in) begin
