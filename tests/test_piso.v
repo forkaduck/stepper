@@ -3,7 +3,7 @@
 `include "macros.v"
 `include "../src/piso.v"
 
-module testbench ();
+module test_piso ();
 
   reg r_clk;
   reg r_reset_n;

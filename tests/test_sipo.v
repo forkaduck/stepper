@@ -3,7 +3,7 @@
 `include "macros.v"
 `include "../src/sipo.v"
 
-module testbench ();
+module test_sipo ();
   reg r_clk;
   reg r_reset_n;
   parameter integer TP = 1;

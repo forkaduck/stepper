@@ -98,6 +98,8 @@ module motor_driver (
           // // PWMCONF: AUTO = 1, 2/1024 Fclk, Switch amplitude limit = 200, Grad = 1
           // r_data_outgoing <= 40'hF0000401C8;
           // end
+          default: begin
+          end
         endcase
 
         if (state < End) begin

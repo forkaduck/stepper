@@ -3,7 +3,7 @@
 `include "macros.v"
 `include "../src/mux.v"
 
-module testbench ();
+module test_mux ();
   reg r_clk;
   reg r_reset;
   parameter integer TP = 1;

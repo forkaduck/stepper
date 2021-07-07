@@ -3,7 +3,7 @@
 `include "macros.v"
 `include "../src/clk_divider.v"
 
-module testbench ();
+module test_clk_divider ();
 
   reg r_clk;
   reg r_reset;

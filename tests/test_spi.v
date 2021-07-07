@@ -7,7 +7,7 @@
 `include "../src/sipo.v"
 `include "../src/spi.v"
 
-module testbench ();
+module test_spi ();
 
   reg r_clk;
   reg r_reset;
