@@ -3,6 +3,8 @@ A test design for use with a hexapedal or octapedal robot.
 
 [![Lint](https://github.com/0xDEADC0DEx/stepper/actions/workflows/lint.yml/badge.svg)](https://github.com/0xDEADC0DEx/stepper/actions/workflows/lint.yml)
 
+For most of the projects documentation have a look at the github wiki.
+
 ## Current prototype pinout
 Pinout of the Radiona ulx3s:
 #### Stepper Driver 1
@@ -20,6 +22,7 @@ This project was written/created with the following utilities:
 * nextpnr (For routing and placing)
 * prjtrellis (Bitstream documentation for the LATTICE LFE5U-12F)
 * icarus verilog (Used for simulation)
+* gtkwave (For opening the produced waveforms of the simulation as a vcd file)
 * freecad (Used for 3d modeling)
 
 ## Project structure
@@ -39,7 +42,7 @@ If you think that the feature you are working on is done then open a **pull-requ
 The code is then checked by another member of the team. Feedback on improvements should be given via the github comments in the pull request.
 If all team members are happy with the changes then those changes will be merged into the develop branch.
 
-After some major improvements is the develop branch finally merged into the master branch.
+Only after some major improvements will the develop branch finally merged into the master branch.
 
 ## Coding conventions
 * One module per file (file should have the same name as the module does).

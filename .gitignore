@@ -2,3 +2,6 @@ test_output
 Session.vim
 **/*.vcd
 **/*.vvp
+*.json
+*.bit
+*.config
