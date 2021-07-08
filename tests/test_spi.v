@@ -83,6 +83,7 @@ module test_spi ();
       `ASSERT(cs_out_n[0], 1'b1);
       r_send_enable_in = 1'b1;
 
+      repeat (SPI_CLK_DIV) @(posedge r_clk);
       for (k = 0; k < 64; k++) begin
         repeat (SPI_CLK_DIV) @(posedge r_clk);
         `ASSERT(cs_out_n[0], 1'b0);

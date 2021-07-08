@@ -17,7 +17,6 @@ module test_piso ();
     forever r_clk = #(CLK_HALF_PERIOD) ~r_clk;
   end
 
-  reg r_clk_switched = 1'b0;
   reg [31:0] i;
   reg [7:0] r_parallel_data = 8'b10101100;
   wire serial_output;
@@ -26,7 +25,7 @@ module test_piso ();
       .SIZE(8)
   ) piso1 (
       .data_in(r_parallel_data),
-      .clk_in(r_clk_switched),
+      .clk_in(r_clk),
       .reset_n_in(r_reset_n),
       .r_data_out(serial_output)
   );
@@ -53,8 +52,6 @@ module test_piso ();
 
     // test if the piso delivers the data in the right order
     // and doesn't miss a bit
-    assign r_clk_switched = r_clk;
-
     for (i = 0; i < 8; i++) begin
       repeat (1) @(posedge r_clk);
       `ASSERT(r_parallel_data[7-i], serial_output);
