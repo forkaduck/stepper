@@ -56,7 +56,7 @@ module test_spi ();
   initial begin
     // dump waveform file
     $dumpfile("test_spi.vcd");
-    $dumpvars(0, testbench);
+    $dumpvars(0, test_spi);
 
     $display("%0t:\tResetting system", $time);
 

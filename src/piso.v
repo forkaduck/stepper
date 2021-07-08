@@ -10,7 +10,10 @@ module piso #(
 
   reg [SIZE - 1 : 0] r_count = SIZE[SIZE - 1: 0] - 1;
 
-  initial r_data_out = 1'b0;
+  initial begin
+      r_data_out = 1'b0;
+      r_count = 'b0;
+  end
 
   always @(posedge clk_in, negedge reset_n_in) begin
     if (!reset_n_in) begin

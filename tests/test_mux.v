@@ -37,7 +37,7 @@ module test_mux ();
 
     // dump waveform file
     $dumpfile("test_mux.vcd");
-    $dumpvars(0, testbench);
+    $dumpvars(0, test_mux);
 
     $display("%0t:\tResetting system", $time);
 

@@ -61,9 +61,7 @@ module motor_driver (
             r_enable_send <= 1'b1;
           end
 
-          Wait0: begin
-            r_enable_send <= 1'b0;
-          end
+          Wait0: r_enable_send <= 1'b0;
 
           IHoldIRun: begin
             // IHOLD_IRUN: IHOLD = 10, IRUN = 31 (max. current), IHOLDDELAY = 6
@@ -71,29 +69,40 @@ module motor_driver (
             r_enable_send <= 1'b1;
           end
 
-          Wait1: begin
-            r_enable_send <= 1'b0;
-          end
+          Wait1: r_enable_send <= 1'b0;
 
           TPowerDown: begin
             // TPOWERDOWN = 10: Delay before power down in stand still
             r_data_outgoing <= 40'h910000000A;
+            r_enable_send <= 1'b1;
           end
+
+          Wait2: r_enable_send <= 1'b0;
 
           EnPwmMode: begin
             // EN_PWM_MODE = 1 enables StealthChop (with default PWMCONF)
             r_data_outgoing <= 40'h8000000004;
+            r_enable_send <= 1'b1;
           end
+
+          Wait3: r_enable_send <= 1'b0;
 
           TPwmThrs: begin
             // TPWM_THRS = 500 yields a switching velocity about 35000 = ca. 30RPM
             r_data_outgoing <= 40'h93000001F4;
+            r_enable_send <= 1'b1;
           end
+
+          Wait4: r_enable_send <= 1'b0;
 
           PwmConf: begin
             // PWMCONF: AUTO = 1, 2/1024 Fclk, Switch amplitude limit = 200, Grad = 1
             r_data_outgoing <= 40'hF0000401C8;
+            r_enable_send <= 1'b1;
           end
+
+          Wait5: r_enable_send <= 1'b0;
+
           default: begin
           end
         endcase

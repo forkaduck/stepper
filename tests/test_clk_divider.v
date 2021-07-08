@@ -33,7 +33,7 @@ module test_clk_divider ();
 
     // dump waveform file
     $dumpfile("test_clk_divider.vcd");
-    $dumpvars(0, testbench);
+    $dumpvars(0, test_clk_divider);
 
     $display("%0t:\tResetting system", $time);
 

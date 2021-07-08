@@ -35,7 +35,7 @@ module test_piso ();
 
     // dump waveform file
     $dumpfile("test_piso.vcd");
-    $dumpvars(0, testbench);
+    $dumpvars(0, test_piso);
 
     $display("%0t:\tResetting system", $time);
 

@@ -35,7 +35,7 @@ module test_sipo ();
   initial begin
     // dump waveform file
     $dumpfile("test_sipo.vcd");
-    $dumpvars(0, testbench);
+    $dumpvars(0, test_sipo);
 
     $display("%0t:\tResetting system", $time);
 
