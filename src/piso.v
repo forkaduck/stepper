@@ -8,20 +8,20 @@ module piso #(
     output reg r_data_out
 );
 
-  reg [SIZE - 1 : 0] r_count = SIZE[SIZE - 1: 0] - 1;
+  reg [SIZE - 1 : 0] r_count;
 
   initial begin
-      r_data_out = 1'b0;
-      r_count = 'b0;
+    r_data_out = 1'b0;
+    r_count = SIZE[SIZE-1:0] - 1;
   end
 
   always @(posedge clk_in, negedge reset_n_in) begin
     if (!reset_n_in) begin
       r_data_out <= 1'b0;
-      r_count <= SIZE[SIZE - 1: 0] - 1;
+      r_count <= SIZE[SIZE-1:0] - 1;
     end else begin
       if (r_count == 0) begin
-        r_count <= SIZE[SIZE - 1: 0] - 1;
+        r_count <= SIZE[SIZE-1:0] - 1;
       end else begin
         r_count <= r_count - 1;
       end
