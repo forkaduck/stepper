@@ -1,3 +1,6 @@
+
+`timescale 1ns / 100ps
+
 // clock divider
 module clk_divider #(
     parameter integer SIZE = 8
