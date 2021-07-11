@@ -16,10 +16,10 @@ async def test_clk_divider(dut):
     await RisingEdge(dut.clk_in)
     for i in range(99):
         await RisingEdge(dut.clk_in)
-        assert dut.clk_out == 0
+        assert int(dut.clk_out) == 0
 
     await RisingEdge(dut.clk_in)
-    assert dut.clk_out == 1
+    assert int(dut.clk_out) == 1
 
     await RisingEdge(dut.clk_in)
-    assert dut.clk_out == 0
+    assert int(dut.clk_out) == 0

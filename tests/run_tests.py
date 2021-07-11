@@ -1,5 +1,7 @@
 #!/sbin/python
 
+import sys
+import getopt
 import os
 import re
 import subprocess
@@ -101,5 +103,33 @@ def runalltests():
             runtest(i[len("test_") :].split(".")[0])
 
 
-delold()
-runalltests()
+def printhelp():
+    print(
+        "Simulation runner help:\n\n" + sys.argv[0] + " [-hao]\n"
+        "               -h          // print this help\n"
+        "               -a          // Run all tests\n"
+        "               -o <name>   // Run one test"
+    )
+
+
+def handleargs():
+    try:
+        args, vals = getopt.getopt(sys.argv[1:], "hao:", ["help", "rall", "rone"])
+
+        for currargs, currvals in args:
+            if currargs in ("-h", "--help"):
+                printhelp()
+
+            elif currargs in ("-a", "--rall"):
+                delold()
+                runalltests()
+
+            elif currargs in ("-o", "--rone"):
+                delold()
+                runtest(currvals)
+
+    except getopt.error as err:
+        print(str(err))
+
+
+handleargs()
