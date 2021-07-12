@@ -1,4 +1,4 @@
-`include "../src/misc_macros.v"
+`include "../src/macros.v"
 
 `define ASSERT(signal, value) \
         if (signal !== value) begin \
