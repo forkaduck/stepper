@@ -2,6 +2,10 @@ test_output
 Session.vim
 **/*.vcd
 **/*.vvp
+**/__pycache__
+**/.hypothesis
+**/results.xml
+**/sim_output
 *.json
 *.bit
 *.config
