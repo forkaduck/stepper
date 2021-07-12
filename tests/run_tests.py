@@ -22,11 +22,6 @@ def delold():
 
 
 def runtest(test):
-    try:
-        os.mkdir(output_dir, mode=0o755)
-    except FileExistsError:
-        print("[*] Output directory exists")
-
     print("[*] Preparing iverilog_dump.v")
     dump = open(output_dir + "iverilog_dump.v", "w")
 
@@ -132,4 +127,8 @@ def handleargs():
         print(str(err))
 
 
+try:
+    os.mkdir(output_dir, mode=0o755)
+except FileExistsError:
+    print("[*] Output directory exists")
 handleargs()
