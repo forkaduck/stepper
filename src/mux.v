@@ -1,8 +1,8 @@
 // multiplexes the current input signal onto one of the selected outputs
 module mux #(
-    parameter integer SIZE = 1
+    parameter integer SIZE = 4
 ) (
-    input [SIZE - 1:0] select_in,
+    input [$clog2(SIZE) - 1:0] select_in,
     input sig_in,
     input clk_in,
     output reg [SIZE - 1:0] r_sig_out
