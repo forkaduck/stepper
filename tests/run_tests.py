@@ -21,7 +21,7 @@ def delold():
             os.remove(output_dir + i)
 
 
-def runtest(test):
+def runtest(test, single):
     print("[*] Preparing iverilog_dump.v")
     dump = open(output_dir + "iverilog_dump.v", "w")
 
@@ -62,10 +62,10 @@ def runtest(test):
         ],
     )
 
-    print(rv)
+    print("[*] subprocess returned " + str(rv.returncode))
 
     if rv.returncode != 0:
-        exit()
+        exit(1)
 
     rv = subprocess.run(
         [
@@ -83,19 +83,26 @@ def runtest(test):
             "COCOTB_HDL_TIMEUNIT": "1ns",
             "COCOTB_HDL_TIMEPRECISION": "1ns",
         },
+        capture_output=True,
     )
+    output = str(rv.stdout, encoding="UTF-8")
 
-    print(rv)
+    print(output)
+    print("[*] subprocess returned " + str(rv.returncode))
 
     if rv.returncode != 0:
-        exit()
+        exit(1)
+
+    if single:
+        if "FAIL" in output:
+            exit(1)
 
 
 def runalltests():
     for i in os.listdir("."):
         if re.search("\.py$", i) is not None and i != "run_tests.py":
             print("[*] Running " + i)
-            runtest(i[len("test_") :].split(".")[0])
+            runtest(i[len("test_") :].split(".")[0], False)
 
 
 def printhelp():
@@ -121,7 +128,7 @@ def handleargs():
 
             elif currargs in ("-o", "--rone"):
                 delold()
-                runtest(currvals)
+                runtest(currvals, True)
 
     except getopt.error as err:
         print(str(err))
