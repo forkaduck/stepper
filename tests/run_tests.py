@@ -9,6 +9,8 @@ import subprocess
 src_dir = "../src/"
 output_dir = "sim_output/"
 
+failed = 0
+
 
 def delold():
     print("[*] Deleting old simulation files")
@@ -21,7 +23,7 @@ def delold():
             os.remove(output_dir + i)
 
 
-def runtest(test, single):
+def runtest(test):
     print("[*] Preparing iverilog_dump.v")
     dump = open(output_dir + "iverilog_dump.v", "w")
 
@@ -93,16 +95,17 @@ def runtest(test, single):
     if rv.returncode != 0:
         exit(1)
 
-    if single:
-        if "FAIL" in output:
-            exit(1)
+    if " FAIL " in output:
+        global failed
+
+        failed += 1
 
 
 def runalltests():
     for i in os.listdir("."):
         if re.search("\.py$", i) is not None and i != "run_tests.py":
             print("[*] Running " + i)
-            runtest(i[len("test_") :].split(".")[0], False)
+            runtest(i[len("test_") :].split(".")[0])
 
 
 def printhelp():
@@ -128,7 +131,7 @@ def handleargs():
 
             elif currargs in ("-o", "--rone"):
                 delold()
-                runtest(currvals, True)
+                runtest(currvals)
 
     except getopt.error as err:
         print(str(err))
@@ -139,3 +142,5 @@ try:
 except FileExistsError:
     print("[*] Output directory exists")
 handleargs()
+
+exit(failed)
