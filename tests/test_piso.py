@@ -26,4 +26,4 @@ async def test_piso(dut):
     # test simple 8 bit data conversion
     for i in range(8):
         await RisingEdge(dut.clk_in)
-        assert (int(dut.data_in) & (0x1 << 7 - i)) >> 7 - i == dut.r_data_out
+        assert dut.data_in.value[i] == dut.r_data_out
