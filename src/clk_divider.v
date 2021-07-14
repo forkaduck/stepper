@@ -4,12 +4,12 @@ module clk_divider #(
     parameter integer SIZE = 8
 ) (
     input clk_in,
-    input [$clog2(SIZE) - 1:0] max_in,
+    input [SIZE - 1:0] max_in,
     output reg clk_out
 );
 
 
-  reg [$clog2(SIZE) - 1:0] r_count = 0;
+  reg [SIZE - 1:0] r_count = 0;
 
   always @(posedge clk_in) begin
     clk_out <= (r_count == (max_in - 1));

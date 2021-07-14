@@ -13,8 +13,7 @@ async def test_clk_divider(dut):
     clock = Clock(dut.clk_in, 40, units="ns")
     cocotb.fork(clock.start())
 
-    await RisingEdge(dut.clk_in)
-    for i in range(99):
+    for i in range(100):
         await RisingEdge(dut.clk_in)
         assert int(dut.clk_out) == 0
 
