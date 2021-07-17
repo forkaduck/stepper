@@ -1,5 +1,6 @@
 test_output
 Session.vim
+tests/srclist.txt
 **/*.vcd
 **/*.vvp
 **/__pycache__
