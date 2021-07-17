@@ -44,8 +44,17 @@ def runtest(test):
 
     dump.close()
 
-    print("[*] Compiling python tests to vpp file")
+    print("[*] Enumerating source files")
+    sources = open("srclist.txt", "w")
 
+    sources.write(output_dir + "iverilog_dump.v\n")
+
+    for i in os.listdir(src_dir):
+        sources.write(src_dir + i + "\n")
+
+    sources.close()
+
+    print("[*] Compiling python tests to vpp file")
     rv = subprocess.run(
         [
             "iverilog",
@@ -59,8 +68,10 @@ def runtest(test):
             test,
             "-s",
             "iverilog_dump",
-            src_dir + test + ".v",
-            output_dir + "iverilog_dump.v",
+            "-I",
+            src_dir,
+            "-f",
+            "srclist.txt",
         ],
     )
 
