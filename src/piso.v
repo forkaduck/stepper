@@ -12,12 +12,6 @@ module piso #(
 
   reg [$clog2(SIZE) - 1 : 0] r_count;
 
-  initial begin
-    r_data_out = 1'b0;
-    // next line seems to trigger a verilator bug
-    r_count = `FIT($clog2(SIZE), SIZE);
-  end
-
   always @(posedge clk_in, negedge reset_n_in) begin
     if (!reset_n_in) begin
       r_data_out <= 1'b0;
