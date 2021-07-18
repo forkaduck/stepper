@@ -1,4 +1,6 @@
 
+`include "macros.v"
+
 module spi #(
     parameter integer SIZE = 40,
     parameter integer CS_SIZE = 1,
@@ -9,7 +11,7 @@ module spi #(
     input [CLK_SIZE - 1:0] clk_count_max,
     input serial_in,
     input send_enable_in,
-    input [CS_SIZE - 1:0] cs_select_in,
+    input [$clog2(CS_SIZE) - 1:0] cs_select_in,
     input reset_n_in,
     output [SIZE - 1:0] data_out,
     output clk_out,
@@ -36,39 +38,43 @@ module spi #(
       .clk_out(internal_clk)
   );
 
+  parameter integer Idle = 'h0, Start = 'h1, EndClk = SIZE, EndCs = SIZE + 'h1;
+
   // decide if something should be sent (a sort of monoflop/delay mechanism
   // which sends out the length of the buffer and then waits for another pulse
   // on the enable line)
   always @(posedge internal_clk, negedge reset_n_in) begin
     if (!reset_n_in) begin
-      r_counter <= 'b0;
-      r_curr_cs_n <= 1'b1;
-      r_clk_enable <= 1'b0;
+      r_counter <= `FIT(SIZE, Idle);
     end else begin
-      if (send_enable_in && r_counter <= SIZE) begin
-        // enable clock and cs on first counter state
-        if (r_counter == 0) begin
-          r_curr_cs_n <= 1'b0;
-          r_clk_enable <= 1'b1;
+      if (send_enable_in) begin
+        if(r_counter < `FIT(SIZE, EndCs)) begin
+          r_counter <= r_counter + 1;
         end
-        r_counter <= r_counter + 1;
+      end else begin
+        r_counter <= `FIT(SIZE, Idle);
       end
 
       case (r_counter)
+        `FIT(SIZE, Idle): begin
+          r_curr_cs_n <= 1'b1;
+          r_clk_enable <= 1'b0;
+        end
+
+        `FIT(SIZE, Start): begin
+          r_curr_cs_n <= 1'b0;
+          r_clk_enable <= 1'b1;
+        end
+
         // disable clock to form a frame end
-        SIZE: r_clk_enable <= 1'b0;
+        `FIT(SIZE, EndClk): r_clk_enable <= 1'b0;
 
         // disable cs a bit later to avoid a malformed frame
-        SIZE + 1: r_curr_cs_n <= 1'b1;
+        `FIT(SIZE, EndCs): r_curr_cs_n <= 1'b1;
 
         default: begin
         end
       endcase
-
-      // reset counter
-      if (!send_enable_in) begin
-        r_counter <= 'b0;
-      end
     end
 
     $display("%m>\t\tsend_enable_in:%x r_counter:%x r_curr_cs_n:%x r_clk_enable:%x", send_enable_in,
