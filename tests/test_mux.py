@@ -32,6 +32,7 @@ async def test_mux(dut):
 
         # There is a bug where cocotb doesn't refresh
         # the value of a single bit. BinaryValue will probably
-        # be replaced in the future.
+        # be replaced in the future. This bug persists only with registers
+        # not wires
         # assert dut.r_sig_out.value[i] == 1
         assert (int(dut.r_sig_out.value) & (0x1 << i)) >> i == 1
