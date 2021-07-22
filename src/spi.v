@@ -42,8 +42,8 @@ module spi #(
   );
 
   // decide if something should be sent (a sort of monoflop/delay mechanism
-  // which sends out the length of the buffer and then waits for another pulse
-  // on the enable line)
+  // which sends out the length of the buffer and then waits for another constant 1
+  // on the enable line while pulling the ready line to 1)
   always @(posedge internal_clk, negedge reset_n_in) begin
     if (!reset_n_in) begin
       r_counter <= SIZE + 2;

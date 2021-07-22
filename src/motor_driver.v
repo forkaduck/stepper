@@ -1,4 +1,5 @@
 
+`include "macros.v"
 `include "motor_driver_define.v"
 
 module motor_driver (
@@ -13,12 +14,10 @@ module motor_driver (
     output reg step_out
 );
 
-  reg r_curr_cs_n;
   reg [39:0] r_data_outgoing = 'b0;
   wire [39:0] data_ingoing;
   reg r_enable_send = 1'b0;
-
-  assign cs_n_out = r_curr_cs_n;
+  wire ready_spi;
 
   // spi motor driver communication instance
   // spi clk is approximately 3.2 MHz
@@ -32,90 +31,79 @@ module motor_driver (
       .clk_count_max(3'b111),
       .serial_in(serial_in),
       .send_enable_in(r_enable_send),
-      .cs_select_in(1'b0),
+      .cs_select_in(2'b0),
       .reset_n_in(reset_n_in),
       .data_out(data_ingoing),
       .clk_out(clk_out),
       .serial_out(serial_out),
-      .cs_out_n(r_curr_cs_n)
+      .cs_out_n(cs_n_out),
+      .r_ready_out(ready_spi)
   );
 
   // all possible states of the setup state machine
-  parameter reg [3 : 0] ChopConf = 4'h0, Wait0 = 4'h1, IHoldIRun = 4'h2, Wait1 = 4'h3,
-      TPowerDown = 4'd4, Wait2 = 4'h5, EnPwmMode = 4'h6, Wait3 = 4'h7, TPwmThrs = 4'h8,
-      Wait4 = 4'h9, PwmConf = 4'ha, Wait5 = 4'hb, End = 4'hc;
+  parameter integer ChopConf = 0,
+      IHoldIRun = 1, TPowerDown = 2, EnPwmMode = 3, TPwmThrs = 4, PwmConf = 5, End = 6;
 
-  reg [3:0] state = ChopConf;
+  integer r_state = ChopConf;
 
   // driver setup state machine
   always @(posedge clk_in, negedge reset_n_in) begin
     if (!reset_n_in) begin
-      state <= ChopConf;
+      r_state <= ChopConf;
       r_enable_send <= 1'b0;
     end else begin
-      if (r_curr_cs_n) begin
-        case (state)
-          ChopConf: begin
-            // CHOPCONF: TOFF = 3, HSTRT = 4, HEND = 1, TBL = 2, CHM = 0 (SpreadCycle)
-            r_data_outgoing <= 40'hEC000100C3;
-            r_enable_send <= 1'b1;
-          end
-
-          Wait0: r_enable_send <= 1'b0;
-
-          IHoldIRun: begin
-            // IHOLD_IRUN: IHOLD = 10, IRUN = 31 (max. current), IHOLDDELAY = 6
-            r_data_outgoing <= 40'h9000061F0A;
-            r_enable_send <= 1'b1;
-          end
-
-          Wait1: r_enable_send <= 1'b0;
-
-          TPowerDown: begin
-            // TPOWERDOWN = 10: Delay before power down in stand still
-            r_data_outgoing <= 40'h910000000A;
-            r_enable_send <= 1'b1;
-          end
-
-          Wait2: r_enable_send <= 1'b0;
-
-          EnPwmMode: begin
-            // EN_PWM_MODE = 1 enables StealthChop (with default PWMCONF)
-            r_data_outgoing <= 40'h8000000004;
-            r_enable_send <= 1'b1;
-          end
-
-          Wait3: r_enable_send <= 1'b0;
-
-          TPwmThrs: begin
-            // TPWM_THRS = 500 yields a switching velocity about 35000 = ca. 30RPM
-            r_data_outgoing <= 40'h93000001F4;
-            r_enable_send <= 1'b1;
-          end
-
-          Wait4: r_enable_send <= 1'b0;
-
-          PwmConf: begin
-            // PWMCONF: AUTO = 1, 2/1024 Fclk, Switch amplitude limit = 200, Grad = 1
-            r_data_outgoing <= 40'hF0000401C8;
-            r_enable_send <= 1'b1;
-          end
-
-          Wait5: r_enable_send <= 1'b0;
-
-          default: begin
-          end
-        endcase
-
-        if (state < End) begin
-          state <= state + 1;
+      case (r_state)
+        ChopConf: begin
+          // CHOPCONF: TOFF = 3, HSTRT = 4, HEND = 1, TBL = 2, CHM = 0 (SpreadCycle)
+          r_data_outgoing <= 40'hEC000100C3;
+          r_enable_send <= 1'b1;
         end
+
+        IHoldIRun: begin
+          // IHOLD_IRUN: IHOLD = 10, IRUN = 31 (max. current), IHOLDDELAY = 6
+          r_data_outgoing <= 40'h9000061F0A;
+          r_enable_send <= 1'b1;
+        end
+
+        TPowerDown: begin
+          // TPOWERDOWN = 10: Delay before power down in stand still
+          r_data_outgoing <= 40'h910000000A;
+          r_enable_send <= 1'b1;
+        end
+
+        EnPwmMode: begin
+          // EN_PWM_MODE = 1 enables StealthChop (with default PWMCONF)
+          r_data_outgoing <= 40'h8000000004;
+          r_enable_send <= 1'b1;
+        end
+
+        TPwmThrs: begin
+          // TPWM_THRS = 500 yields a switching velocity about 35000 = ca. 30RPM
+          r_data_outgoing <= 40'h93000001F4;
+          r_enable_send <= 1'b1;
+        end
+
+        PwmConf: begin
+          // PWMCONF: AUTO = 1, 2/1024 Fclk, Switch amplitude limit = 200, Grad = 1
+          r_data_outgoing <= 40'hF0000401C8;
+          r_enable_send <= 1'b1;
+        end
+
+        default: begin
+          r_data_outgoing <= 40'h0000000000;
+          r_enable_send <= 1'b0;
+        end
+      endcase
+
+      if (r_state < End && ready_spi) begin
+        r_enable_send <= 1'b0;
+        r_state <= r_state + 1;
       end
     end
   end
 
 
-  reg r_step_buff;
+  wire step_buff;
 
   // step pin clock divider
   clk_divider #(
@@ -123,12 +111,12 @@ module motor_driver (
   ) clk_divider2 (
       .clk_in (clk_in),
       .max_in (speed_in),
-      .clk_out(r_step_buff)
+      .clk_out(step_buff)
   );
 
   always @(posedge clk_in) begin
     if (step_enable_in) begin
-      step_out <= r_step_buff;
+      step_out <= step_buff;
     end else begin
       step_out <= 1'b0;
     end
