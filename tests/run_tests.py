@@ -70,6 +70,7 @@ def runtest(test):
             "iverilog_dump",
             "-I",
             src_dir,
+            "-v",
             "-f",
             "srclist.txt",
         ],
