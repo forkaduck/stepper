@@ -1,6 +1,10 @@
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import ClockCycles, RisingEdge
+from cocotb.triggers import ClockCycles
+
+# Tests missing:
+# r_ready_out
+# sipo
 
 
 @cocotb.test()

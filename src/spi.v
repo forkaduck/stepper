@@ -30,6 +30,8 @@ module spi #(
 
   assign clk_out = r_internal_clk_switched;
 
+  initial r_ready_out = 1'b0;
+
   // initialize clock divider
   clk_divider #(
       .SIZE(CLK_SIZE)
@@ -44,7 +46,7 @@ module spi #(
   // on the enable line)
   always @(posedge internal_clk, negedge reset_n_in) begin
     if (!reset_n_in) begin
-      r_counter <= SIZE + 1;
+      r_counter <= SIZE + 2;
     end else begin
       if (send_enable_in) begin
         if (r_counter < SIZE + 2) begin
@@ -53,8 +55,7 @@ module spi #(
           r_ready_out <= 1'b1;
         end
       end else begin
-        r_counter <= 0;
-        r_ready_out <= 1'b0;
+        r_counter <= SIZE + 2;
       end
 
       case (r_counter)
@@ -62,6 +63,7 @@ module spi #(
           // Idle state (wait for send_enable_in)
           r_curr_cs_n <= 1'b1;
           r_clk_enable <= 1'b0;
+          r_ready_out <= 1'b1;
         end
 
         0: begin
@@ -85,12 +87,19 @@ module spi #(
              r_counter, r_curr_cs_n, r_clk_enable);
   end
 
-  // handle clock enable signal
+  // fast io handle block
+  // handles clock enable signal and ready signal
   always @(posedge clk_in) begin
     if (r_clk_enable) begin
       r_internal_clk_switched <= internal_clk;
     end else begin
       r_internal_clk_switched <= 1'b0;
+    end
+
+    // pull down r_ready_out to show that the module is working
+    // (needs to be done a lot faster because internal_clk is slow)
+    if (send_enable_in) begin
+      r_ready_out <= 1'b0;
     end
   end
 
