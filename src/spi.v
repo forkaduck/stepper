@@ -16,10 +16,11 @@ module spi #(
     output [SIZE - 1:0] data_out,
     output clk_out,
     output serial_out,
-    output [CS_SIZE - 1 : 0] cs_out_n
+    output [CS_SIZE - 1 : 0] cs_out_n,
+    output reg r_ready_out
 );
 
-  reg [SIZE - 1 : 0] r_counter = 'b0;
+  reg [$clog2(SIZE) + 1 : 0] r_counter;
 
   reg r_curr_cs_n = 1'b1;
 
@@ -38,39 +39,42 @@ module spi #(
       .clk_out(internal_clk)
   );
 
-  parameter integer Idle = 'h0, Start = 'h1, EndClk = SIZE, EndCs = SIZE + 'h1;
-
   // decide if something should be sent (a sort of monoflop/delay mechanism
   // which sends out the length of the buffer and then waits for another pulse
   // on the enable line)
   always @(posedge internal_clk, negedge reset_n_in) begin
     if (!reset_n_in) begin
-      r_counter <= `FIT(SIZE, Idle);
+      r_counter <= SIZE + 1;
     end else begin
       if (send_enable_in) begin
-        if(r_counter < `FIT(SIZE, EndCs)) begin
+        if (r_counter < SIZE + 2) begin
           r_counter <= r_counter + 1;
+        end else begin
+          r_ready_out <= 1'b1;
         end
       end else begin
-        r_counter <= `FIT(SIZE, Idle);
+        r_counter <= 0;
+        r_ready_out <= 1'b0;
       end
 
       case (r_counter)
-        `FIT(SIZE, Idle): begin
+        SIZE + 2: begin
+          // Idle state (wait for send_enable_in)
           r_curr_cs_n <= 1'b1;
           r_clk_enable <= 1'b0;
         end
 
-        `FIT(SIZE, Start): begin
+        0: begin
+          // beginning of data transmission
           r_curr_cs_n <= 1'b0;
           r_clk_enable <= 1'b1;
         end
 
-        // disable clock to form a frame end
-        `FIT(SIZE, EndClk): r_clk_enable <= 1'b0;
+        // end of data transmission
+        SIZE: r_clk_enable <= 1'b0;
 
         // disable cs a bit later to avoid a malformed frame
-        `FIT(SIZE, EndCs): r_curr_cs_n <= 1'b1;
+        SIZE + 1: r_curr_cs_n <= 1'b1;
 
         default: begin
         end
