@@ -1,17 +1,16 @@
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import ClockCycles
+from cocotb.triggers import ClockCycles, RisingEdge
 
 # Tests missing:
-# r_ready_out
 # sipo
 
+clk_divider = 2
 
-@cocotb.test()
-async def test_spi(dut):
-    #  dut.data_in = 0xAAAAAAAAAA
-    dut.data_in = 0x123456789A
-    dut.clk_count_max = 2
+
+async def start(dut):
+    dut.data_in = 0
+    dut.clk_count_max = clk_divider
     dut.serial_in = 0
     dut.send_enable_in = 0
     dut.cs_select_in = 0
@@ -22,32 +21,48 @@ async def test_spi(dut):
 
     print("Triggering reset")
     dut.reset_n_in = 0
-    await ClockCycles(dut.clk_in, 4, rising=True)
+    await ClockCycles(dut.clk_in, 2 * clk_divider, rising=True)
 
     dut.reset_n_in = 1
-    await ClockCycles(dut.clk_in, 2, rising=True)
+    await ClockCycles(dut.clk_in, clk_divider, rising=True)
     print("Reset done")
 
-    # Frame start
-    assert dut.cs_out_n == 1
 
-    dut.send_enable_in = 1
-    await ClockCycles(dut.clk_in, 4, rising=True)
+@cocotb.test()
+async def standard_mosi(dut):
+    await start(dut)
 
-    assert dut.cs_out_n == 0
+    test_data = [0x123456789A, 0xBCDEF12345, 0x6789ABCDEF, 0xDEADBEEF69]
 
-    print("Data start")
-    # piso test
-    for i in range(40):
-        print(
-            str(i)
-            + ":"
-            + str(dut.data_in.value[i])
-            + " serial:"
-            + str(int(dut.serial_out))
-        )
+    await RisingEdge(dut.r_ready_out)
+    for i in range(4):
+        dut.data_in = test_data[i]
 
-        assert dut.clk_out == 1
-        assert dut.data_in.value[i] == int(dut.serial_out)
+        assert int(dut.cs_out_n) == 1
 
-        await ClockCycles(dut.clk_in, 2, rising=True)
+        dut.send_enable_in = 1
+        await ClockCycles(dut.clk_in, 2 * clk_divider, rising=True)
+
+        assert int(dut.r_ready_out) == 0
+        assert int(dut.cs_out_n.value) == 0
+
+        print("Data start")
+        # piso test
+        for k in range(40):
+            print(
+                str(k)
+                + ":"
+                + str(dut.data_in.value[k])
+                + " serial:"
+                + str(int(dut.serial_out))
+            )
+
+            assert int(dut.clk_out) == 1
+            assert int(dut.data_in.value[k]) == int(dut.serial_out)
+
+            await ClockCycles(dut.clk_in, clk_divider, rising=True)
+
+        await RisingEdge(dut.r_ready_out)
+        dut.send_enable_in = 0
+
+        await ClockCycles(dut.clk_in, clk_divider, rising=True)
