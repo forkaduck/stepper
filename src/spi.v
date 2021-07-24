@@ -51,11 +51,13 @@ module spi #(
       if (send_enable_in) begin
         if (r_counter < SIZE + 2) begin
           r_counter <= r_counter + 1;
+          $display("increment");
         end else begin
           r_ready_out <= 1'b1;
+          $display("end of transmission");
         end
       end else begin
-        r_counter <= SIZE + 2;
+        r_counter <= 0;
       end
 
       case (r_counter)
@@ -64,12 +66,14 @@ module spi #(
           r_curr_cs_n <= 1'b1;
           r_clk_enable <= 1'b0;
           r_ready_out <= 1'b1;
+          $display("waiting for enable");
         end
 
         0: begin
           // beginning of data transmission
           r_curr_cs_n <= 1'b0;
           r_clk_enable <= 1'b1;
+          $display("start of transmission");
         end
 
         // end of data transmission
