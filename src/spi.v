@@ -3,7 +3,7 @@
 
 module spi #(
     parameter integer SIZE = 40,
-    parameter integer CS_SIZE = 1,
+    parameter integer CS_SIZE = 4,
     parameter integer CLK_SIZE = 3
 ) (
     input [SIZE - 1:0] data_in,
@@ -25,10 +25,15 @@ module spi #(
   reg r_curr_cs_n = 1'b1;
 
   wire internal_clk;
-  reg r_clk_enable = 1'b0;
-  reg r_internal_clk_switched = 1'b0;
+  reg r_clk_enable_sipo = 1'b0;
+  reg r_clk_enable_piso = 1'b0;
 
-  assign clk_out = r_internal_clk_switched;
+  reg r_internal_clk_sipo = 1'b0;
+  reg r_internal_clk_piso = 1'b0;
+
+  reg r_piso_load = 1'b0;
+
+  assign clk_out = r_internal_clk_sipo;
 
   initial r_ready_out = 1'b0;
 
@@ -41,67 +46,85 @@ module spi #(
       .clk_out(internal_clk)
   );
 
-  // decide if something should be sent (a sort of monoflop/delay mechanism
-  // which sends out the length of the buffer and then waits for another constant 1
-  // on the enable line while pulling the ready line to 1)
+  parameter integer STATE_IDLE = SIZE + 3;
+
+
   always @(posedge internal_clk, negedge reset_n_in) begin
     if (!reset_n_in) begin
-      r_counter <= SIZE + 2;
+      r_counter <= STATE_IDLE;
     end else begin
       if (send_enable_in) begin
-        if (r_counter < SIZE + 2) begin
+        // reset counter if enabled and in idle state
+        if (r_counter == STATE_IDLE) begin
+          r_counter <= 0;
+        end else if (r_counter < STATE_IDLE) begin
           r_counter <= r_counter + 1;
-        end else begin
-          r_ready_out <= 1'b1;
         end
       end else begin
-        r_counter <= 0;
+        // end transmission prematurely
+        r_counter <= STATE_IDLE;
       end
 
       case (r_counter)
-        SIZE + 2: begin
+        STATE_IDLE: begin
           // Idle state (wait for send_enable_in)
           r_curr_cs_n <= 1'b1;
-          r_clk_enable <= 1'b0;
+          r_clk_enable_sipo <= 1'b0;
           r_ready_out <= 1'b1;
+
+          // load piso
+          r_piso_load <= 1'b1;
+          r_clk_enable_piso <= 1'b1;
         end
 
         0: begin
-          // beginning of data transmission
           r_curr_cs_n <= 1'b0;
-          r_clk_enable <= 1'b1;
+          r_ready_out <= 1'b0;
+        end
+
+        1: begin
+          // begin of load cycle
+          r_clk_enable_sipo <= 1'b1;
+
+          r_piso_load <= 1'b0;
         end
 
         // end of data transmission
-        SIZE: r_clk_enable <= 1'b0;
+        SIZE + 1: begin
+          r_clk_enable_sipo <= 1'b0;
+          r_clk_enable_piso <= 1'b0;
+        end
 
         // disable cs a bit later to avoid a malformed frame
-        SIZE + 1: r_curr_cs_n <= 1'b1;
+        SIZE + 2: r_curr_cs_n <= 1'b1;
 
         default: begin
         end
       endcase
     end
 
-    $display("%m>\t\tsend_enable_in:%x r_counter:%x r_curr_cs_n:%x r_clk_enable:%x", send_enable_in,
-             r_counter, r_curr_cs_n, r_clk_enable);
+    $display("%m>\t\tr_counter:%x r_curr_cs_n:%x r_clk_enable_sipo:%x r_clk_enable_piso:%x",
+             r_counter, r_curr_cs_n, r_clk_enable_sipo, r_clk_enable_piso);
   end
 
   // fast io handle block
   // handles clock enable signal and ready signal
   always @(posedge clk_in) begin
-    if (r_clk_enable) begin
-      r_internal_clk_switched <= internal_clk;
+    // separate the clock enable lines because
+    // piso needs one more clk cycle to load
+    if (r_clk_enable_sipo) begin
+      r_internal_clk_sipo <= internal_clk;
     end else begin
-      r_internal_clk_switched <= 1'b0;
+      r_internal_clk_sipo <= 1'b0;
     end
 
-    // pull down r_ready_out to show that the module is working
-    // (needs to be done a lot faster because internal_clk is slow)
-    if (send_enable_in && r_counter != SIZE + 2) begin
-      r_ready_out <= 1'b0;
+    if (r_clk_enable_piso) begin
+      r_internal_clk_piso <= internal_clk;
+    end else begin
+      r_internal_clk_piso <= 1'b0;
     end
   end
+
 
   mux #(
       .SIZE(CS_SIZE)
@@ -116,10 +139,10 @@ module spi #(
   piso #(
       .SIZE(SIZE)
   ) piso1 (
-      .data_in(data_in),
-      .clk_in(r_internal_clk_switched),
-      .reset_n_in(reset_n_in),
-      .r_data_out(serial_out)
+      .data_in (data_in),
+      .clk_in  (r_internal_clk_piso),
+      .load_in (r_piso_load),
+      .data_out(serial_out)
   );
 
   // serial in parallel out module spitting out received data
@@ -127,8 +150,7 @@ module spi #(
       .SIZE(SIZE)
   ) sipo1 (
       .data_in(serial_in),
-      .clk_in(r_internal_clk_switched),
-      .reset_n_in(reset_n_in),
+      .clk_in(r_internal_clk_sipo),
       .r_data_out(data_out)
   );
 endmodule
