@@ -10,6 +10,7 @@ src_dir = "../src/"
 output_dir = "sim_output/"
 
 failed = 0
+capture_output = True
 
 
 def delold():
@@ -81,6 +82,8 @@ def runtest(test):
     if rv.returncode != 0:
         exit(1)
 
+    global capture_output
+
     rv = subprocess.run(
         [
             "vvp",
@@ -97,20 +100,21 @@ def runtest(test):
             "COCOTB_HDL_TIMEUNIT": "1ns",
             "COCOTB_HDL_TIMEPRECISION": "1ns",
         },
-        capture_output=True,
+        capture_output=capture_output,
     )
-    output = str(rv.stdout, encoding="UTF-8")
-
-    print(output)
     print("[*] subprocess returned " + str(rv.returncode))
 
     if rv.returncode != 0:
         exit(1)
 
-    if " FAIL " in output:
-        global failed
+    if rv.stdout is bytes:
+        output = str(rv.stdout, encoding="UTF-8")
+        print(output)
 
-        failed += 1
+        if " FAIL " in output:
+            global failed
+
+            failed += 1
 
 
 def runalltests():
@@ -125,28 +129,50 @@ def printhelp():
         "Simulation runner help:\n\n" + sys.argv[0] + " [-hao]\n"
         "               -h          // print this help\n"
         "               -a          // Run all tests\n"
-        "               -o <name>   // Run one test"
+        "               -o <name>   // Run one test\n"
+        "               -d          // Get the output of the simulation unbuffered\n"
+        "                           // (The script can't check for a failed simulation inside an automated job but the output looks nicer)"
     )
 
 
 def handleargs():
+    run_one = False
+    run_all = False
+
     try:
-        args, vals = getopt.getopt(sys.argv[1:], "hao:", ["help", "rall", "rone"])
+        args, vals = getopt.getopt(
+            sys.argv[1:], "dhao:", ["help", "rall", "rone", "direct"]
+        )
 
         for currargs, currvals in args:
             if currargs in ("-h", "--help"):
                 printhelp()
+                exit(0)
 
             elif currargs in ("-a", "--rall"):
-                delold()
-                runalltests()
+                run_all = True
 
             elif currargs in ("-o", "--rone"):
-                delold()
-                runtest(currvals)
+                run_one = True
+                test_name = currvals
+
+            elif currargs in ("-d", "--direct"):
+                global capture_output
+
+                capture_output = False
 
     except getopt.error as err:
         print(str(err))
+
+    if run_one:
+        delold()
+        runtest(test_name)
+        exit(failed)
+
+    elif run_all:
+        delold()
+        runalltests()
+        exit(failed)
 
 
 try:
@@ -154,5 +180,3 @@ try:
 except FileExistsError:
     print("[*] Output directory exists")
 handleargs()
-
-exit(failed)
