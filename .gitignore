@@ -1,12 +1,12 @@
 test_output
 Session.vim
 tests/srclist.txt
-**/*.vcd
-**/*.vvp
+**/sim_output/*.vcd
+**/sim_output/*.vvp
 **/__pycache__
 **/.hypothesis
 **/results.xml
-**/sim_output
 *.json
 *.bit
 *.config
+**/sim_output/*.v
