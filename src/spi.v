@@ -125,9 +125,9 @@ module spi #(
     end
   end
 
-
   mux #(
-      .SIZE(CS_SIZE)
+      .SIZE(CS_SIZE),
+      .INITIAL(2 ** CS_SIZE - 1)
   ) mux1 (
       .select_in(cs_select_in),
       .sig_in(r_curr_cs_n),

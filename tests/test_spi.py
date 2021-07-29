@@ -46,11 +46,14 @@ async def piso_data(dut, data, current_cs):
         assert int(dut.r_ready_out) == 0
         assert ((int(dut.cs_out_n.value) & (0x1 << current_cs)) >> current_cs) == 0
 
-        print(
-            str((int(dut.data_in.value) & (0x1 << i)) >> i)
-            + " / "
-            + str(dut.serial_out)
-        )
+        # Check that every other cs bit is high
+        for k in range(0, current_cs):
+            assert ((int(dut.cs_out_n.value) & (0x1 << k)) >> k) == 1
+
+        for k in range(current_cs + 1, 4):
+            assert ((int(dut.cs_out_n.value) & (0x1 << k)) >> k) == 1
+
+        # Check if the piso module works
         assert (int(dut.data_in.value) & (0x1 << i)) >> i == int(dut.serial_out)
 
 
