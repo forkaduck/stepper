@@ -85,13 +85,12 @@ module motor_driver (
   );
 
   // All possible states of the setup state machine
-  parameter integer Start = 0, End = 7;
+  parameter integer Start = 0, End = 9;
 
   integer r_state = Start;
   reg r_prev_ready_spi = 1'b0;
 
   // Driver setup state machine
-  // Steps 1/16 interpolation 0 mode spreadcycle
   // This example configuration is directly copied from the datasheet
   always @(posedge clk_in, negedge reset_n_in) begin
     if (!reset_n_in) begin
@@ -99,6 +98,7 @@ module motor_driver (
       r_send_enable <= 1'b0;
       r_prev_ready_spi <= 1'b0;
     end else begin
+      // set off_time = 8 and blank_time = 1
       case (r_state)
         1: begin
           // Enable diag0_error
@@ -107,38 +107,48 @@ module motor_driver (
         end
 
         2: begin
-          // CHOPCONF: TOFF = 3, HSTRT = 4, HEND = 1, TBL = 2, CHM = 0 (SpreadCycle)
-          r_data_outgoing <= {`CHOPCONF + `WRITE_ADDR, 32'h0000d40c3};
+          // CHOPCONF
+          r_data_outgoing <= {`CHOPCONF + `WRITE_ADDR, 32'h000cc0c8};
           r_send_enable <= 1'b1;
         end
 
         3: begin
-          // IHOLD_IRUN: IHOLD = 10, IRUN = 31 (max. current), IHOLDDELAY = 6
-          r_data_outgoing <= {`IHOLD_IRUN + `WRITE_ADDR, 32'h00061f0a};
+          // IHOLD_IRUN IHOLDDELAY = 110 / IRUN = 0010 / IHOLD = 01001
+          r_data_outgoing <= {`IHOLD_IRUN + `WRITE_ADDR, 32'h00061209};
           r_send_enable <= 1'b1;
         end
 
         4: begin
-          // TPOWERDOWN = 10: Delay before power down in stand still
+          // TPOWERDOWN
           r_data_outgoing <= {`TPOWERDOWN + `WRITE_ADDR, 32'h0000000a};
           r_send_enable <= 1'b1;
         end
 
         5: begin
-          // TPWM_THRS = 500 yields a switching velocity about 35000 = ca. 30RPM
+          // TPWM_THRS
           r_data_outgoing <= {`TPWMTHRS + `WRITE_ADDR, 32'h000001f4};
           r_send_enable <= 1'b1;
         end
 
         6: begin
-          // PWMCONF: AUTO = 1, 2/1024 Fclk, Switch amplitude limit = 200, Grad = 1
+          // PWMCONF
           r_data_outgoing <= {`PWMCONF + `WRITE_ADDR, 32'h000401c8};
           r_send_enable <= 1'b1;
         end
 
+        7: begin
+          r_data_outgoing <= {`DRV_STATUS, 32'h00000000};
+          r_send_enable <= 1'b1;
+        end
+
+        8: begin
+          r_data_outgoing <= {`DRV_STATUS, 32'h00000000};
+          r_send_enable <= 1'b1;
+        end
+
         default: begin
-          // r_data_outgoing <= 40'h0000000000;
-          // r_send_enable <= 1jb0;
+          r_data_outgoing <= 40'h0000000000;
+          r_send_enable <= 1'b0;
         end
       endcase
 

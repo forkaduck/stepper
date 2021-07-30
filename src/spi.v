@@ -33,7 +33,7 @@ module spi #(
 
   reg r_piso_load = 1'b0;
 
-  assign clk_out = r_internal_clk_sipo;
+  assign clk_out = !r_internal_clk_sipo;
 
   initial r_ready_out = 1'b0;
 
