@@ -48,6 +48,17 @@ module spi #(
 
   parameter integer STATE_IDLE = SIZE + 3;
 
+  always @(posedge clk_in) begin
+    case (r_counter)
+      STATE_IDLE: begin
+        r_ready_out <= 1'b1;
+      end
+
+      0: begin
+        r_ready_out <= 1'b0;
+      end
+    endcase
+  end
 
   always @(posedge internal_clk, negedge reset_n_in) begin
     if (!reset_n_in) begin
@@ -70,7 +81,6 @@ module spi #(
           // Idle state (wait for send_enable_in)
           r_curr_cs_n <= 1'b1;
           r_clk_enable_sipo <= 1'b0;
-          r_ready_out <= 1'b1;
 
           // load piso
           r_piso_load <= 1'b1;
@@ -79,7 +89,6 @@ module spi #(
 
         0: begin
           r_curr_cs_n <= 1'b0;
-          r_ready_out <= 1'b0;
         end
 
         1: begin
