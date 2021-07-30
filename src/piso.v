@@ -11,7 +11,7 @@ module piso #(
 );
 
   reg [SIZE - 1:0] r_data;
-  assign data_out = r_data[0];
+  assign data_out = r_data[SIZE-1];
 
   initial r_data = 'b0;
 
@@ -19,7 +19,7 @@ module piso #(
     if (load_in) begin
       r_data <= data_in;
     end else begin
-      r_data <= r_data >> 1;
+      r_data <= r_data << 1;
     end
     $display("%m>\tr_data:%b load_in:%x", r_data, load_in);
   end
