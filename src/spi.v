@@ -57,6 +57,10 @@ module spi #(
       0: begin
         r_ready_out <= 1'b0;
       end
+
+      default: begin
+        r_ready_out <= 1'b0;
+      end
     endcase
   end
 
@@ -110,6 +114,12 @@ module spi #(
         STATE_END: r_curr_cs_n <= 1'b1;
 
         default: begin
+          r_curr_cs_n <= 1'b1;
+          r_clk_enable_sipo <= 1'b0;
+          r_clk_enable_piso <= 1'b0;
+          r_piso_load <= 1'b0;
+
+          r_counter <= STATE_IDLE;
         end
       endcase
     end
