@@ -68,29 +68,7 @@ module spi #(
     if (!reset_n_in) begin
       r_counter <= STATE_IDLE;
     end else begin
-      if (send_enable_in) begin
-        // reset counter if enabled and in idle state
-        if (r_counter == STATE_IDLE) begin
-          r_counter <= 0;
-        end else if (r_counter < STATE_IDLE) begin
-          r_counter <= r_counter + 1;
-        end
-      end else begin
-        // end transmission prematurely
-        r_counter <= STATE_IDLE;
-      end
-
       case (r_counter)
-        STATE_IDLE: begin
-          // Idle state (wait for send_enable_in)
-          r_curr_cs_n <= 1'b1;
-          r_clk_enable_sipo <= 1'b0;
-
-          // load piso
-          r_piso_load <= 1'b1;
-          r_clk_enable_piso <= 1'b1;
-        end
-
         0: begin
           r_curr_cs_n <= 1'b0;
         end
@@ -114,14 +92,29 @@ module spi #(
         STATE_END: r_curr_cs_n <= 1'b1;
 
         default: begin
-          r_curr_cs_n <= 1'b1;
-          r_clk_enable_sipo <= 1'b0;
-          r_clk_enable_piso <= 1'b0;
-          r_piso_load <= 1'b0;
+          if (r_counter >= STATE_IDLE) begin
+            // Idle state (wait for send_enable_in)
+            r_curr_cs_n <= 1'b1;
+            r_clk_enable_sipo <= 1'b0;
 
-          r_counter <= STATE_IDLE;
+            // load piso
+            r_piso_load <= 1'b1;
+            r_clk_enable_piso <= 1'b1;
+          end
         end
       endcase
+
+      if (send_enable_in) begin
+        // reset counter if enabled and in idle state
+        if (r_counter == STATE_IDLE) begin
+          r_counter <= 0;
+        end else if (r_counter < STATE_IDLE) begin
+          r_counter <= r_counter + 1;
+        end
+      end else begin
+        // end transmission prematurely
+        r_counter <= STATE_IDLE;
+      end
     end
 
     $display("%m>\t\tr_counter:%x r_curr_cs_n:%x r_clk_enable_sipo:%x r_clk_enable_piso:%x",

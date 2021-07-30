@@ -1,6 +1,50 @@
 
 `include "macros.v"
-`include "motor_driver_define.v"
+
+// General interfacing
+`define WRITE_ADDR 8'h80
+
+// General Configuration Registers
+`define GCONF 8'h00
+`define GSTAT 8'h01
+`define IOIN 8'h04
+
+// Velocity Dependent Driver Feature Control Register Set
+`define IHOLD_IRUN 8'h10
+`define TPOWERDOWN 8'h11
+`define TSTEP 8'h12
+`define TPWMTHRS 8'h13
+`define TCOOLTHRS 8'h14
+`define THIGH 8'h15
+
+// SPI Mode Register
+`define XDIRECT 8'h2d
+
+// DcStep Minimum Velocity Register
+`define VDCMIN 8'h33
+
+// Motor Driver Register
+`define MSLUT0 8'h60
+`define MSLUT1 8'h61
+`define MSLUT2 8'h62
+`define MSLUT3 8'h63
+`define MSLUT4 8'h64
+`define MSLUT5 8'h65
+`define MSLUT6 8'h66
+`define MSLUT7 8'h67
+`define MSLUTSEL 8'h68
+`define MSLUTSTART 8'h69
+`define MSCNT 8'h6a
+`define MSCURACT 8'h6b
+`define CHOPCONF 8'h6c
+`define COOLCONF 8'h6d
+`define DCCTRL 8'h6e
+`define DRV_STATUS 8'h6f
+`define PWMCONF 8'h70
+`define PWM_SCALE 8'h71
+`define ENCM_CTRL 8'h72
+`define LOST_STEPS 8'h73
+
 
 module motor_driver (
     input clk_in,
@@ -41,13 +85,13 @@ module motor_driver (
   );
 
   // All possible states of the setup state machine
-  parameter integer Start = 0, ChopConf = 1, IHoldIRun = 2, TPowerDown = 3, EnPwmMode = 4,
-      TPwmThrs = 5, PwmConf = 6, End = 7;
+  parameter integer Start = 0, End = 7;
 
   integer r_state = Start;
   reg r_prev_ready_spi = 1'b0;
 
   // Driver setup state machine
+  // Steps 1/16 interpolation 0 mode spreadcycle
   // This example configuration is directly copied from the datasheet
   always @(posedge clk_in, negedge reset_n_in) begin
     if (!reset_n_in) begin
@@ -56,45 +100,45 @@ module motor_driver (
       r_prev_ready_spi <= 1'b0;
     end else begin
       case (r_state)
-        ChopConf: begin
+        1: begin
+          // Enable diag0_error
+          r_data_outgoing <= {`GCONF + `WRITE_ADDR, 32'h00000020};
+          r_send_enable <= 1'b1;
+        end
+
+        2: begin
           // CHOPCONF: TOFF = 3, HSTRT = 4, HEND = 1, TBL = 2, CHM = 0 (SpreadCycle)
-          r_data_outgoing <= 40'hEC000100C3;
+          r_data_outgoing <= {`CHOPCONF + `WRITE_ADDR, 32'h0000d40c3};
           r_send_enable <= 1'b1;
         end
 
-        IHoldIRun: begin
+        3: begin
           // IHOLD_IRUN: IHOLD = 10, IRUN = 31 (max. current), IHOLDDELAY = 6
-          r_data_outgoing <= 40'h9000061F0A;
+          r_data_outgoing <= {`IHOLD_IRUN + `WRITE_ADDR, 32'h00061f0a};
           r_send_enable <= 1'b1;
         end
 
-        TPowerDown: begin
+        4: begin
           // TPOWERDOWN = 10: Delay before power down in stand still
-          r_data_outgoing <= 40'h910000000A;
+          r_data_outgoing <= {`TPOWERDOWN + `WRITE_ADDR, 32'h0000000a};
           r_send_enable <= 1'b1;
         end
 
-        EnPwmMode: begin
-          // EN_PWM_MODE = 1 enables StealthChop (with default PWMCONF)
-          r_data_outgoing <= 40'h8000000004;
-          r_send_enable <= 1'b1;
-        end
-
-        TPwmThrs: begin
+        5: begin
           // TPWM_THRS = 500 yields a switching velocity about 35000 = ca. 30RPM
-          r_data_outgoing <= 40'h93000001F4;
+          r_data_outgoing <= {`TPWMTHRS + `WRITE_ADDR, 32'h000001f4};
           r_send_enable <= 1'b1;
         end
 
-        PwmConf: begin
+        6: begin
           // PWMCONF: AUTO = 1, 2/1024 Fclk, Switch amplitude limit = 200, Grad = 1
-          r_data_outgoing <= 40'hF0000401C8;
+          r_data_outgoing <= {`PWMCONF + `WRITE_ADDR, 32'h000401c8};
           r_send_enable <= 1'b1;
         end
 
         default: begin
-          r_data_outgoing <= 40'h0000000000;
-          r_send_enable <= 1'b0;
+          // r_data_outgoing <= 40'h0000000000;
+          // r_send_enable <= 1jb0;
         end
       endcase
 
