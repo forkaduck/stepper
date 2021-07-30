@@ -10,3 +10,4 @@ tests/srclist.txt
 *.bit
 *.config
 **/sim_output/*.v
+/.gtm/
