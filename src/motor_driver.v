@@ -41,18 +41,19 @@ module motor_driver (
   );
 
   // All possible states of the setup state machine
-  parameter integer ChopConf = 0,
-      IHoldIRun = 1, TPowerDown = 2, EnPwmMode = 3, TPwmThrs = 4, PwmConf = 5, End = 6;
+  parameter integer Start = 0, ChopConf = 1, IHoldIRun = 2, TPowerDown = 3, EnPwmMode = 4,
+      TPwmThrs = 5, PwmConf = 6, End = 7;
 
-  integer r_state = ChopConf;
+  integer r_state = Start;
   reg r_prev_ready_spi = 1'b0;
 
   // Driver setup state machine
   // This example configuration is directly copied from the datasheet
   always @(posedge clk_in, negedge reset_n_in) begin
     if (!reset_n_in) begin
-      r_state <= ChopConf;
+      r_state <= Start;
       r_send_enable <= 1'b0;
+      r_prev_ready_spi <= 1'b0;
     end else begin
       case (r_state)
         ChopConf: begin

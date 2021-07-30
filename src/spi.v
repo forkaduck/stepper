@@ -46,7 +46,7 @@ module spi #(
       .clk_out(internal_clk)
   );
 
-  parameter integer STATE_IDLE = SIZE + 3;
+  parameter integer STATE_CLK_OFF = SIZE + 1, STATE_END = SIZE + 2, STATE_IDLE = SIZE + 3;
 
   always @(posedge clk_in) begin
     case (r_counter)
@@ -94,18 +94,20 @@ module spi #(
         1: begin
           // begin of load cycle
           r_clk_enable_sipo <= 1'b1;
+        end
 
+        2: begin
           r_piso_load <= 1'b0;
         end
 
         // end of data transmission
-        SIZE + 1: begin
+        STATE_CLK_OFF: begin
           r_clk_enable_sipo <= 1'b0;
           r_clk_enable_piso <= 1'b0;
         end
 
         // disable cs a bit later to avoid a malformed frame
-        SIZE + 2: r_curr_cs_n <= 1'b1;
+        STATE_END: r_curr_cs_n <= 1'b1;
 
         default: begin
         end

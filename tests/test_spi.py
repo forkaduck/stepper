@@ -32,7 +32,7 @@ async def sipo_data(dut, data):
         await RisingEdge(dut.clk_out)
 
     await RisingEdge(dut.r_ready_out)
-    assert int(dut.data_out.value) == int(data)
+    assert dut.data_out.value == data
 
 
 @cocotb.coroutine
@@ -40,21 +40,21 @@ async def piso_data(dut, data, current_cs):
     dut.data_in = data
 
     # test io bit by bit
-    for i in range(40):
+    for i in range(39, 0):
         await RisingEdge(dut.clk_out)
 
-        assert int(dut.r_ready_out) == 0
-        assert ((int(dut.cs_out_n.value) & (0x1 << current_cs)) >> current_cs) == 0
+        assert dut.r_ready_out == 0
+        assert dut.cs_out_n.value[i] == 0
 
         # Check that every other cs bit is high
         for k in range(0, current_cs):
-            assert ((int(dut.cs_out_n.value) & (0x1 << k)) >> k) == 1
+            assert dut.cs_out_n.value[i] == 1
 
         for k in range(current_cs + 1, 4):
-            assert ((int(dut.cs_out_n.value) & (0x1 << k)) >> k) == 1
+            assert dut.cs_out_n.value[i] == 1
 
         # Check if the piso module works
-        assert (int(dut.data_in.value) & (0x1 << i)) >> i == int(dut.serial_out)
+        assert dut.data_in.value[i] == dut.serial_out
 
 
 @cocotb.test()
@@ -70,14 +70,11 @@ async def standard_ms_io(dut):
 
         await ClockCycles(dut.clk_in, 1 * clk_divider, rising=True)
 
-        assert int(dut.r_ready_out) == 1
-
-        assert ((int(dut.cs_out_n.value) & (0x1 << i)) >> i) == 1
-
+        assert dut.r_ready_out == 1
+        assert dut.cs_out_n.value[i] == 1
         dut.send_enable_in = 1
-        await ClockCycles(dut.clk_in, 3 * clk_divider, rising=True)
-        assert ((int(dut.cs_out_n.value) & (0x1 << i)) >> i) == 0
 
+        # Wait for the spi module to finish
         await RisingEdge(dut.r_ready_out)
 
         dut.send_enable_in = 0
