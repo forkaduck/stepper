@@ -85,7 +85,7 @@ module motor_driver (
   );
 
   // All possible states of the setup state machine
-  parameter integer Start = 0, End = 9;
+  parameter integer Start = 0, End = 7;
 
   integer r_state = Start;
   reg r_prev_ready_spi = 1'b0;
@@ -107,14 +107,14 @@ module motor_driver (
         end
 
         2: begin
-          // CHOPCONF
+          // CHOPCONF // set intpol
           r_data_outgoing <= {`CHOPCONF + `WRITE_ADDR, 32'h000cc0c8};
           r_send_enable <= 1'b1;
         end
 
         3: begin
           // IHOLD_IRUN IHOLDDELAY = 110 / IRUN = 0010 / IHOLD = 01001
-          r_data_outgoing <= {`IHOLD_IRUN + `WRITE_ADDR, 32'h00061209};
+          r_data_outgoing <= {`IHOLD_IRUN + `WRITE_ADDR, 32'h00061909};
           r_send_enable <= 1'b1;
         end
 
@@ -133,16 +133,6 @@ module motor_driver (
         6: begin
           // PWMCONF
           r_data_outgoing <= {`PWMCONF + `WRITE_ADDR, 32'h000401c8};
-          r_send_enable <= 1'b1;
-        end
-
-        7: begin
-          r_data_outgoing <= {`DRV_STATUS, 32'h00000000};
-          r_send_enable <= 1'b1;
-        end
-
-        8: begin
-          r_data_outgoing <= {`DRV_STATUS, 32'h00000000};
           r_send_enable <= 1'b1;
         end
 
@@ -172,11 +162,11 @@ module motor_driver (
       .clk_out(step_buff)
   );
 
-  always @(posedge clk_in) begin
-    if (step_enable_in) begin
-      step_out <= step_buff;
-    end else begin
-      step_out <= 1'b0;
-    end
-  end
+  // divide frequency by 2 to get a nice 50% square wave
+  toggle_ff toggle_ff1 (
+      .clk_in(step_buff),
+      .toggle_in(step_enable_in),
+      .q_out(step_out)
+  );
+
 endmodule
