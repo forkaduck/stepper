@@ -101,14 +101,14 @@ module motor_driver (
       // set off_time = 8 and blank_time = 1
       case (r_state)
         1: begin
-          // Enable diag0_error
-          r_data_outgoing <= {`GCONF + `WRITE_ADDR, 32'h00000020};
+          // GCONF
+          r_data_outgoing <= {`GCONF + `WRITE_ADDR, 32'h00000000};
           r_send_enable <= 1'b1;
         end
 
         2: begin
-          // CHOPCONF // set intpol
-          r_data_outgoing <= {`CHOPCONF + `WRITE_ADDR, 32'h000cc0c8};
+          // CHOPCONF
+          r_data_outgoing <= {`CHOPCONF + `WRITE_ADDR, 32'h300c8188};
           r_send_enable <= 1'b1;
         end
 

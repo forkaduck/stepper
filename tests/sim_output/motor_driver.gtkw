@@ -1,21 +1,21 @@
 [*]
 [*] GTKWave Analyzer v3.3.109 (w)1999-2020 BSI
-[*] Fri Jul 30 16:12:09 2021
+[*] Fri Jul 30 21:22:17 2021
 [*]
 [dumpfile] "/home/fuckaduck/Desktop/projects/stepper/tests/sim_output/motor_driver.vcd"
-[dumpfile_mtime] "Fri Jul 30 16:07:53 2021"
-[dumpfile_size] 148743
+[dumpfile_mtime] "Fri Jul 30 18:42:39 2021"
+[dumpfile_size] 153253
 [savefile] "/home/fuckaduck/Desktop/projects/stepper/tests/sim_output/motor_driver.gtkw"
 [timestart] 0
-[size] 1436 821
-[pos] -1 -1
-*-23.000000 12240000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[size] 1436 2515
+[pos] -1 -1695
+*-25.000000 81500000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] motor_driver.
 [treeopen] motor_driver.spi1.
 [sst_width] 227
 [signals_width] 212
 [sst_expanded] 1
-[sst_vpaned_height] 114
+[sst_vpaned_height] 323
 @28
 motor_driver.clk_in
 motor_driver.clk_out
