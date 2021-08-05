@@ -29,11 +29,14 @@ module stepper (
     r_state2 <= r_state1;
   end
 
+  // assign direction pin to fixed 0
+  assign gp[1] = 1'b0;
+
   motor_driver driver1 (
       .clk_in(clk_25mhz),
       .reset_n_in(r_state2),
       .serial_in(gn[0]),
-      .speed_in('d25000000),
+      .speed_in('d25000),
       .step_enable_in(1'b1),
       .clk_out(gn[2]),
       .serial_out(gn[3]),
@@ -53,6 +56,4 @@ module stepper (
   // data_outgoing = 40'h4206900000;
   // enable_send = 1'b1;
   // end
-
-
 endmodule

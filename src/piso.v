@@ -1,31 +1,26 @@
+`include "macros.v"
+
 // converts parallel data into serial data
 module piso #(
     parameter integer SIZE = 8
 ) (
     input [SIZE - 1:0] data_in,
     input clk_in,
-    input reset_n_in,
-    output reg r_data_out
+    input load_in,
+    output data_out
 );
 
-  reg [SIZE - 1 : 0] r_count = SIZE[SIZE - 1: 0] - 1;
+  reg [SIZE - 1:0] r_data;
+  assign data_out = r_data[SIZE-1];
 
-  initial r_data_out = 1'b0;
+  initial r_data = 'b0;
 
-  always @(posedge clk_in, negedge reset_n_in) begin
-    if (!reset_n_in) begin
-      r_data_out <= 1'b0;
-      r_count <= SIZE[SIZE - 1: 0] - 1;
+  always @(posedge clk_in) begin
+    if (load_in) begin
+      r_data <= data_in;
     end else begin
-      if (r_count == 0) begin
-        r_count <= SIZE[SIZE - 1: 0] - 1;
-      end else begin
-        r_count <= r_count - 1;
-      end
-
-      r_data_out <= data_in[r_count];
+      r_data <= r_data << 1;
     end
-
-    $display("%m>\tr_data_out:%x r_count:%x", r_data_out, r_count);
+    $display("%m>\tr_data:%b load_in:%x", r_data, load_in);
   end
 endmodule

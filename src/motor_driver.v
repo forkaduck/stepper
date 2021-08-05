@@ -1,5 +1,50 @@
 
-`include "motor_driver_define.v"
+`include "macros.v"
+
+// General interfacing
+`define WRITE_ADDR 8'h80
+
+// General Configuration Registers
+`define GCONF 8'h00
+`define GSTAT 8'h01
+`define IOIN 8'h04
+
+// Velocity Dependent Driver Feature Control Register Set
+`define IHOLD_IRUN 8'h10
+`define TPOWERDOWN 8'h11
+`define TSTEP 8'h12
+`define TPWMTHRS 8'h13
+`define TCOOLTHRS 8'h14
+`define THIGH 8'h15
+
+// SPI Mode Register
+`define XDIRECT 8'h2d
+
+// DcStep Minimum Velocity Register
+`define VDCMIN 8'h33
+
+// Motor Driver Register
+`define MSLUT0 8'h60
+`define MSLUT1 8'h61
+`define MSLUT2 8'h62
+`define MSLUT3 8'h63
+`define MSLUT4 8'h64
+`define MSLUT5 8'h65
+`define MSLUT6 8'h66
+`define MSLUT7 8'h67
+`define MSLUTSEL 8'h68
+`define MSLUTSTART 8'h69
+`define MSCNT 8'h6a
+`define MSCURACT 8'h6b
+`define CHOPCONF 8'h6c
+`define COOLCONF 8'h6d
+`define DCCTRL 8'h6e
+`define DRV_STATUS 8'h6f
+`define PWMCONF 8'h70
+`define PWM_SCALE 8'h71
+`define ENCM_CTRL 8'h72
+`define LOST_STEPS 8'h73
+
 
 module motor_driver (
     input clk_in,
@@ -9,119 +54,119 @@ module motor_driver (
     input [63:0] speed_in,
     output clk_out,
     output serial_out,
-    output cs_n_out,
+    output [11:0] cs_n_out,
     output reg step_out
 );
 
-  reg r_curr_cs_n;
+  // Seen from the perspective of the motor_driver module
   reg [39:0] r_data_outgoing = 'b0;
   wire [39:0] data_ingoing;
-  reg r_enable_send = 1'b0;
+  reg r_send_enable = 1'b0;
+  wire ready_spi;
 
-  assign cs_n_out = r_curr_cs_n;
-
-  // spi motor driver communication instance
-  // spi clk is approximately 3.2 MHz
+  // Spi clk is approximately 3.2 MHz
   spi #(
       .SIZE(40),
-      .CS_SIZE(1),
+      .CS_SIZE(12),
       .CLK_SIZE(3)
   ) spi1 (
       .data_in(r_data_outgoing),
       .clk_in(clk_in),
       .clk_count_max(3'b111),
       .serial_in(serial_in),
-      .send_enable_in(r_enable_send),
-      .cs_select_in(1'b0),
+      .send_enable_in(r_send_enable),
+      .cs_select_in('b0),
       .reset_n_in(reset_n_in),
       .data_out(data_ingoing),
       .clk_out(clk_out),
       .serial_out(serial_out),
-      .cs_out_n(r_curr_cs_n)
+      .cs_out_n(cs_n_out),
+      .r_ready_out(ready_spi)
   );
 
-  // all possible states of the setup state machine
-  parameter reg [3 : 0] ChopConf = 4'h0, Wait0 = 4'h1, IHoldIRun = 4'h2, Wait1 = 4'h3,
-      TPowerDown = 4'd4, Wait2 = 4'h5, EnPwmMode = 4'h6, Wait3 = 4'h7, TPwmThrs = 4'h8,
-      Wait4 = 4'h9, PwmConf = 4'ha, Wait5 = 4'hb, End = 4'hc;
+  // All possible states of the setup state machine
+  parameter integer Start = 0, End = 7;
 
-  reg [3:0] state = ChopConf;
+  integer r_state = Start;
+  reg r_prev_ready_spi = 1'b0;
 
-  // driver setup state machine
+  // Driver setup state machine
+  // This example configuration is directly copied from the datasheet
   always @(posedge clk_in, negedge reset_n_in) begin
     if (!reset_n_in) begin
-      state <= ChopConf;
-      r_enable_send <= 1'b0;
+      r_state <= Start;
+      r_send_enable <= 1'b0;
+      r_prev_ready_spi <= 1'b0;
     end else begin
-      if (r_curr_cs_n) begin
-        case (state)
-          ChopConf: begin
-            // CHOPCONF: TOFF = 3, HSTRT = 4, HEND = 1, TBL = 2, CHM = 0 (SpreadCycle)
-            r_data_outgoing <= 40'hEC000100C3;
-            r_enable_send <= 1'b1;
-          end
-
-          Wait0: begin
-            r_enable_send <= 1'b0;
-          end
-
-          IHoldIRun: begin
-            // IHOLD_IRUN: IHOLD = 10, IRUN = 31 (max. current), IHOLDDELAY = 6
-            r_data_outgoing <= 40'h9000061F0A;
-            r_enable_send <= 1'b1;
-          end
-
-          Wait1: begin
-            r_enable_send <= 1'b0;
-          end
-
-          TPowerDown: begin
-            // TPOWERDOWN = 10: Delay before power down in stand still
-            r_data_outgoing <= 40'h910000000A;
-          end
-
-          EnPwmMode: begin
-            // EN_PWM_MODE = 1 enables StealthChop (with default PWMCONF)
-            r_data_outgoing <= 40'h8000000004;
-          end
-
-          TPwmThrs: begin
-            // TPWM_THRS = 500 yields a switching velocity about 35000 = ca. 30RPM
-            r_data_outgoing <= 40'h93000001F4;
-          end
-
-          PwmConf: begin
-            // PWMCONF: AUTO = 1, 2/1024 Fclk, Switch amplitude limit = 200, Grad = 1
-            r_data_outgoing <= 40'hF0000401C8;
-          end
-          default: begin
-          end
-        endcase
-
-        if (state < End) begin
-          state <= state + 1;
+      // set off_time = 8 and blank_time = 1
+      case (r_state)
+        1: begin
+          // GCONF
+          r_data_outgoing <= {`GCONF + `WRITE_ADDR, 32'h00000000};
+          r_send_enable <= 1'b1;
         end
+
+        2: begin
+          // CHOPCONF
+          r_data_outgoing <= {`CHOPCONF + `WRITE_ADDR, 32'h300c8188};
+          r_send_enable <= 1'b1;
+        end
+
+        3: begin
+          // IHOLD_IRUN IHOLDDELAY = 110 / IRUN = 0010 / IHOLD = 01001
+          r_data_outgoing <= {`IHOLD_IRUN + `WRITE_ADDR, 32'h00061909};
+          r_send_enable <= 1'b1;
+        end
+
+        4: begin
+          // TPOWERDOWN
+          r_data_outgoing <= {`TPOWERDOWN + `WRITE_ADDR, 32'h0000000a};
+          r_send_enable <= 1'b1;
+        end
+
+        5: begin
+          // TPWM_THRS
+          r_data_outgoing <= {`TPWMTHRS + `WRITE_ADDR, 32'h000001f4};
+          r_send_enable <= 1'b1;
+        end
+
+        6: begin
+          // PWMCONF
+          r_data_outgoing <= {`PWMCONF + `WRITE_ADDR, 32'h000401c8};
+          r_send_enable <= 1'b1;
+        end
+
+        default: begin
+          r_data_outgoing <= 40'h0000000000;
+          r_send_enable <= 1'b0;
+        end
+      endcase
+
+      if (r_state < End && ready_spi && !r_prev_ready_spi) begin
+        r_send_enable <= 1'b0;
+        r_state <= r_state + 1;
       end
+      r_prev_ready_spi <= ready_spi;
     end
   end
 
 
-  reg r_step_buff;
+  wire step_buff;
 
-  // step pin clock divider
+  // Step pin clock divider
   clk_divider #(
       .SIZE(64)
   ) clk_divider2 (
       .clk_in (clk_in),
       .max_in (speed_in),
-      .clk_out(r_step_buff)
+      .clk_out(step_buff)
   );
 
-  always @(posedge clk_in) begin
-    if (step_enable_in) begin
-      step_out <= r_step_buff;
-    end else begin
-      step_out <= 1'b0;
-    end
-  end
+  // divide frequency by 2 to get a nice 50% square wave
+  toggle_ff toggle_ff1 (
+      .clk_in(step_buff),
+      .toggle_in(step_enable_in),
+      .q_out(step_out)
+  );
+
 endmodule

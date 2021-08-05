@@ -1,3 +1,4 @@
+
 // clock divider
 module clk_divider #(
     parameter integer SIZE = 8
@@ -6,6 +7,7 @@ module clk_divider #(
     input [SIZE - 1:0] max_in,
     output reg clk_out
 );
+
 
   reg [SIZE - 1:0] r_count = 0;
 

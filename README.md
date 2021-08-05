@@ -1,22 +1,11 @@
-# Stepper
-A test design for use with a hexapedal or octapedal robot.
+# StepperCore
+A RISC-V core written in verilog which can be used in pretty much any kind of robot.
 
 [![Lint](https://github.com/0xDEADC0DEx/stepper/actions/workflows/lint.yml/badge.svg)](https://github.com/0xDEADC0DEx/stepper/actions/workflows/lint.yml)
 
 For most of the projects documentation have a look at the github wiki.
 
-## Current prototype pinout
-Pinout of the Radiona ulx3s:
-#### Stepper Driver 1
-* gp[0] = Step
-* gp[1] = Dir
-* gn[0] = SDO
-* gn[1] = CS
-* gn[2] = SCK
-* gn[3] = SDI
-
-
-## Programming
+## Used tools
 This project was written/created with the following utilities:
 * Yosys (For synthesis)
 * nextpnr (For routing and placing)
@@ -27,7 +16,6 @@ This project was written/created with the following utilities:
 
 ## Project structure
 #### Subfolders
-* docs -> Contains most of the documentation either written per hand or generated.
 * src -> Holds all the verilog src files that are synthesizeable.
 * tests -> Consists of all verilog testbenches (for each model one with the naming convention `test_<name>.v`).
 * designs -> Contains all of the 3d models of the project.
@@ -35,7 +23,7 @@ This project was written/created with the following utilities:
 #### Branches && Branching
 * master -> Is merged with develop if develop contains reasonably stable code.
 * develop -> Contains the latest pull requests.
-* dev -> Development branch used by 0xDEADC0DEx
+* <any other branch> -> Development branch of someone
 
 A change in code or whatever is **commited** to your **personal branch** (dev for instance).
 If you think that the feature you are working on is done then open a **pull-request** to **develop** on github.

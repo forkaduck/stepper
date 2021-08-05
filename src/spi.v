@@ -1,7 +1,9 @@
 
+`include "macros.v"
+
 module spi #(
     parameter integer SIZE = 40,
-    parameter integer CS_SIZE = 1,
+    parameter integer CS_SIZE = 4,
     parameter integer CLK_SIZE = 3
 ) (
     input [SIZE - 1:0] data_in,
@@ -9,23 +11,31 @@ module spi #(
     input [CLK_SIZE - 1:0] clk_count_max,
     input serial_in,
     input send_enable_in,
-    input [CS_SIZE - 1:0] cs_select_in,
+    input [$clog2(CS_SIZE) - 1:0] cs_select_in,
     input reset_n_in,
     output [SIZE - 1:0] data_out,
     output clk_out,
     output serial_out,
-    output [CS_SIZE - 1 : 0] cs_out_n
+    output [CS_SIZE - 1 : 0] cs_out_n,
+    output reg r_ready_out
 );
 
-  reg [SIZE - 1 : 0] r_counter = 'b0;
+  reg [$clog2(SIZE) + 1 : 0] r_counter;
 
   reg r_curr_cs_n = 1'b1;
 
   wire internal_clk;
-  reg r_clk_enable = 1'b0;
-  reg r_internal_clk_switched = 1'b0;
+  reg r_clk_enable_sipo = 1'b0;
+  reg r_clk_enable_piso = 1'b0;
 
-  assign clk_out = r_internal_clk_switched;
+  reg r_internal_clk_sipo = 1'b0;
+  reg r_internal_clk_piso = 1'b0;
+
+  reg r_piso_load = 1'b0;
+
+  assign clk_out = !r_internal_clk_sipo;
+
+  initial r_ready_out = 1'b0;
 
   // initialize clock divider
   clk_divider #(
@@ -36,56 +46,102 @@ module spi #(
       .clk_out(internal_clk)
   );
 
-  // decide if something should be sent (a sort of monoflop/delay mechanism
-  // which sends out the length of the buffer and then waits for another pulse
-  // on the enable line)
-  always @(posedge internal_clk, negedge reset_n_in) begin
-    if (!reset_n_in) begin
-      r_counter <= 'b0;
-      r_curr_cs_n <= 1'b1;
-      r_clk_enable <= 1'b0;
-    end else begin
-      if (send_enable_in && r_counter <= SIZE) begin
-        // enable clock and cs on first counter state
-        if (r_counter == 0) begin
-          r_curr_cs_n <= 1'b0;
-          r_clk_enable <= 1'b1;
-        end
-        r_counter <= r_counter + 1;
+  parameter integer STATE_CLK_OFF = SIZE + 1, STATE_END = SIZE + 2, STATE_IDLE = SIZE + 3;
+
+  always @(posedge clk_in) begin
+    case (r_counter)
+      STATE_IDLE: begin
+        r_ready_out <= 1'b1;
       end
 
+      0: begin
+        r_ready_out <= 1'b0;
+      end
+
+      default: begin
+        r_ready_out <= 1'b0;
+      end
+    endcase
+  end
+
+  always @(posedge internal_clk, negedge reset_n_in) begin
+    if (!reset_n_in) begin
+      r_counter <= STATE_IDLE;
+    end else begin
       case (r_counter)
-        // disable clock to form a frame end
-        SIZE: r_clk_enable <= 1'b0;
+        0: begin
+          r_curr_cs_n <= 1'b0;
+        end
+
+        1: begin
+          // begin of load cycle
+          r_clk_enable_sipo <= 1'b1;
+        end
+
+        2: begin
+          r_piso_load <= 1'b0;
+        end
+
+        // end of data transmission
+        STATE_CLK_OFF: begin
+          r_clk_enable_sipo <= 1'b0;
+          r_clk_enable_piso <= 1'b0;
+        end
 
         // disable cs a bit later to avoid a malformed frame
-        SIZE + 1: r_curr_cs_n <= 1'b1;
+        STATE_END: r_curr_cs_n <= 1'b1;
 
         default: begin
+          if (r_counter >= STATE_IDLE) begin
+            // Idle state (wait for send_enable_in)
+            r_curr_cs_n <= 1'b1;
+            r_clk_enable_sipo <= 1'b0;
+
+            // load piso
+            r_piso_load <= 1'b1;
+            r_clk_enable_piso <= 1'b1;
+          end
         end
       endcase
 
-      // reset counter
-      if (!send_enable_in) begin
-        r_counter <= 'b0;
+      if (send_enable_in) begin
+        // reset counter if enabled and in idle state
+        if (r_counter == STATE_IDLE) begin
+          r_counter <= 0;
+        end else if (r_counter < STATE_IDLE) begin
+          r_counter <= r_counter + 1;
+        end
+      end else begin
+        // end transmission prematurely
+        r_counter <= STATE_IDLE;
       end
     end
 
-    $display("%m>\t\tsend_enable_in:%x r_counter:%x r_curr_cs_n:%x r_clk_enable:%x", send_enable_in,
-             r_counter, r_curr_cs_n, r_clk_enable);
+    $display("%m>\t\tr_counter:%x r_curr_cs_n:%x r_clk_enable_sipo:%x r_clk_enable_piso:%x",
+             r_counter, r_curr_cs_n, r_clk_enable_sipo, r_clk_enable_piso);
   end
 
-  // handle clock enable signal
+  // fast io handle block
+  // handles clock enable signal and ready signal
   always @(posedge clk_in) begin
-    if (r_clk_enable) begin
-      r_internal_clk_switched <= internal_clk;
+    // separate the clock enable lines because
+    // piso needs one more clk cycle to load
+    if (r_clk_enable_sipo) begin
+      r_internal_clk_sipo <= internal_clk;
     end else begin
-      r_internal_clk_switched <= 1'b0;
+      r_internal_clk_sipo <= 1'b0;
+    end
+
+    if (r_clk_enable_piso) begin
+      r_internal_clk_piso <= internal_clk;
+    end else begin
+      r_internal_clk_piso <= 1'b0;
     end
   end
 
   mux #(
-      .SIZE(CS_SIZE)
+      .SIZE(CS_SIZE),
+      .INITIAL(2 ** CS_SIZE - 1)
   ) mux1 (
       .select_in(cs_select_in),
       .sig_in(r_curr_cs_n),
@@ -97,10 +153,10 @@ module spi #(
   piso #(
       .SIZE(SIZE)
   ) piso1 (
-      .data_in(data_in),
-      .clk_in(r_internal_clk_switched),
-      .reset_n_in(reset_n_in),
-      .r_data_out(serial_out)
+      .data_in (data_in),
+      .clk_in  (r_internal_clk_piso),
+      .load_in (r_piso_load),
+      .data_out(serial_out)
   );
 
   // serial in parallel out module spitting out received data
@@ -108,8 +164,7 @@ module spi #(
       .SIZE(SIZE)
   ) sipo1 (
       .data_in(serial_in),
-      .clk_in(r_internal_clk_switched),
-      .reset_n_in(reset_n_in),
+      .clk_in(r_internal_clk_sipo),
       .r_data_out(data_out)
   );
 endmodule
