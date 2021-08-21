@@ -1,5 +1,5 @@
-# StepperCore
-A RISC-V core written in verilog which can be used in pretty much any kind of robot.
+# Stepper
+A RISC-V based uC written in verilog and a hardware design that can be used with it.
 
 [![Lint](https://github.com/0xDEADC0DEx/stepper/actions/workflows/lint.yml/badge.svg)](https://github.com/0xDEADC0DEx/stepper/actions/workflows/lint.yml)
 
@@ -23,7 +23,8 @@ This project was written/created with the following utilities:
 #### Branches && Branching
 * master -> Is merged with develop if develop contains reasonably stable code.
 * develop -> Contains the latest pull requests.
-* <any other branch> -> Development branch of someone
+
+Any other branch is probably either a testbranch or a development branch of someone.
 
 A change in code or whatever is **commited** to your **personal branch** (dev for instance).
 If you think that the feature you are working on is done then open a **pull-request** to **develop** on github.
