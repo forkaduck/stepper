@@ -37,7 +37,7 @@ module stepper (
       .reset_n_in(r_state2),
       .serial_in(gn[0]),
       .speed_in('d25000),
-      .step_enable_in(1'b1),
+      .step_enable_in(1'b0),
       .clk_out(gn[2]),
       .serial_out(gn[3]),
       .cs_n_out(gn[1]),

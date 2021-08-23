@@ -55,7 +55,7 @@ module motor_driver (
     output clk_out,
     output serial_out,
     output [11:0] cs_n_out,
-    output reg step_out
+    output step_out
 );
 
   // Seen from the perspective of the motor_driver module
@@ -101,13 +101,13 @@ module motor_driver (
       // set off_time = 8 and blank_time = 1
       case (r_state)
         1: begin
-          // GCONF
-          r_data_outgoing <= {`GCONF + `WRITE_ADDR, 32'h00000000};
+          // Enable diag0_error
+          r_data_outgoing <= {`GCONF + `WRITE_ADDR, 32'h00000020};
           r_send_enable <= 1'b1;
         end
 
         2: begin
-          // CHOPCONF
+          // CHOPCONF // set intpol
           r_data_outgoing <= {`CHOPCONF + `WRITE_ADDR, 32'h300c8188};
           r_send_enable <= 1'b1;
         end
