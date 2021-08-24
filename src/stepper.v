@@ -36,7 +36,7 @@ module stepper (
       .clk_in(clk_25mhz),
       .reset_n_in(r_state2),
       .serial_in(gn[0]),
-      .speed_in('d80),
+      .speed_in('d75),
       .step_enable_in(1'b1),
       .clk_out(gn[2]),
       .serial_out(gn[3]),

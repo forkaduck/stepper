@@ -85,7 +85,7 @@ module motor_driver (
   );
 
   // All possible states of the setup state machine
-  parameter integer Start = 0, End = 9;
+  parameter integer Start = 0, End = 10;
 
   integer r_state = Start;
   reg r_prev_ready_spi = 1'b0;
@@ -111,14 +111,15 @@ module motor_driver (
         end
 
         3: begin
-          // Enable diag0_error
-          r_data_outgoing <= {`GCONF + `WRITE_ADDR, 32'h00000023};
+          // GCONF
+          r_data_outgoing <= {`GCONF + `WRITE_ADDR, 32'h00000022};
           r_send_enable <= 1'b1;
         end
 
         4: begin
           // CHOPCONF
-          r_data_outgoing <= {`CHOPCONF + `WRITE_ADDR, 32'h200c8188};
+          // r_data_outgoing <= {`CHOPCONF + `WRITE_ADDR, 32'h200c8188};
+          r_data_outgoing <= {`CHOPCONF + `WRITE_ADDR, 32'h30088188};
           r_send_enable <= 1'b1;
         end
 
@@ -146,8 +147,14 @@ module motor_driver (
           r_send_enable <= 1'b1;
         end
 
+        9: begin
+          // THIGH
+          r_data_outgoing <= {`THIGH + `WRITE_ADDR, 32'h00000032};
+          r_send_enable <= 1'b1;
+        end
+
         default: begin
-          r_data_outgoing <= {`GSTAT, 32'h00000000};
+          r_data_outgoing <= {`TSTEP, 32'h00000000};
           r_send_enable <= 1'b1;
 
           // r_data_outgoing <= 40'h0000000000;
