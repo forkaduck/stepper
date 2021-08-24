@@ -120,13 +120,14 @@ module motor_driver (
 
         4: begin
           // CHOPCONF
-          // r_data_outgoing <= {`CHOPCONF + `WRITE_ADDR, 32'h30088188};
           r_data_outgoing <= {`CHOPCONF + `WRITE_ADDR, 32'h300a8188};  // high sensitivity
           r_send_enable <= 1'b1;
         end
 
         5: begin
           // IHOLD_IRUN IHOLDDELAY / IRUN / IHOLD
+          // TODO short to GND protection triggers because of the 1n4007
+          // diodes which have leakage current that is to high
           r_data_outgoing <= {`IHOLD_IRUN + `WRITE_ADDR, 32'h00080f0f};
           r_send_enable <= 1'b1;
         end
