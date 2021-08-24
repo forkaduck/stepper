@@ -85,7 +85,7 @@ module motor_driver (
   );
 
   // All possible states of the setup state machine
-  parameter integer Start = 0, End = 7;
+  parameter integer Start = 0, End = 9;
 
   integer r_state = Start;
   reg r_prev_ready_spi = 1'b0;
@@ -101,44 +101,57 @@ module motor_driver (
       // set off_time = 8 and blank_time = 1
       case (r_state)
         1: begin
-          // Enable diag0_error
-          r_data_outgoing <= {`GCONF + `WRITE_ADDR, 32'h00000020};
+          r_data_outgoing <= {`GSTAT, 32'h00000000};
           r_send_enable <= 1'b1;
         end
 
         2: begin
-          // CHOPCONF // set intpol
-          r_data_outgoing <= {`CHOPCONF + `WRITE_ADDR, 32'h300c8188};
+          r_data_outgoing <= {`GSTAT, 32'h00000000};
           r_send_enable <= 1'b1;
         end
 
         3: begin
-          // IHOLD_IRUN IHOLDDELAY = 110 / IRUN = 0010 / IHOLD = 01001
-          r_data_outgoing <= {`IHOLD_IRUN + `WRITE_ADDR, 32'h00061909};
+          // Enable diag0_error
+          r_data_outgoing <= {`GCONF + `WRITE_ADDR, 32'h00000023};
           r_send_enable <= 1'b1;
         end
 
         4: begin
+          // CHOPCONF
+          r_data_outgoing <= {`CHOPCONF + `WRITE_ADDR, 32'h200c8188};
+          r_send_enable <= 1'b1;
+        end
+
+        5: begin
+          // IHOLD_IRUN IHOLDDELAY / IRUN / IHOLD
+          r_data_outgoing <= {`IHOLD_IRUN + `WRITE_ADDR, 32'h00081f1f};
+          r_send_enable <= 1'b1;
+        end
+
+        6: begin
           // TPOWERDOWN
           r_data_outgoing <= {`TPOWERDOWN + `WRITE_ADDR, 32'h0000000a};
           r_send_enable <= 1'b1;
         end
 
-        5: begin
+        7: begin
           // TPWM_THRS
           r_data_outgoing <= {`TPWMTHRS + `WRITE_ADDR, 32'h000001f4};
           r_send_enable <= 1'b1;
         end
 
-        6: begin
+        8: begin
           // PWMCONF
           r_data_outgoing <= {`PWMCONF + `WRITE_ADDR, 32'h000401c8};
           r_send_enable <= 1'b1;
         end
 
         default: begin
-          r_data_outgoing <= 40'h0000000000;
-          r_send_enable <= 1'b0;
+          r_data_outgoing <= {`GSTAT, 32'h00000000};
+          r_send_enable <= 1'b1;
+
+          // r_data_outgoing <= 40'h0000000000;
+          // r_send_enable <= 1'b0;
         end
       endcase
 
