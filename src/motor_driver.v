@@ -112,20 +112,22 @@ module motor_driver (
 
         3: begin
           // GCONF
-          r_data_outgoing <= {`GCONF + `WRITE_ADDR, 32'h00000022};
+          // I_scale_analog (external AIN reference)
+          // diag0_error (diag0 active if an error occurred)
+          r_data_outgoing <= {`GCONF + `WRITE_ADDR, 32'h00000021};
           r_send_enable <= 1'b1;
         end
 
         4: begin
           // CHOPCONF
-          // r_data_outgoing <= {`CHOPCONF + `WRITE_ADDR, 32'h200c8188};
-          r_data_outgoing <= {`CHOPCONF + `WRITE_ADDR, 32'h30088188};
+          // r_data_outgoing <= {`CHOPCONF + `WRITE_ADDR, 32'h30088188};
+          r_data_outgoing <= {`CHOPCONF + `WRITE_ADDR, 32'h300a8188};  // high sensitivity
           r_send_enable <= 1'b1;
         end
 
         5: begin
           // IHOLD_IRUN IHOLDDELAY / IRUN / IHOLD
-          r_data_outgoing <= {`IHOLD_IRUN + `WRITE_ADDR, 32'h00081f1f};
+          r_data_outgoing <= {`IHOLD_IRUN + `WRITE_ADDR, 32'h00080f0f};
           r_send_enable <= 1'b1;
         end
 
@@ -143,7 +145,7 @@ module motor_driver (
 
         8: begin
           // PWMCONF
-          r_data_outgoing <= {`PWMCONF + `WRITE_ADDR, 32'h000401c8};
+          r_data_outgoing <= {`PWMCONF + `WRITE_ADDR, 32'h000408c8};
           r_send_enable <= 1'b1;
         end
 
@@ -154,7 +156,7 @@ module motor_driver (
         end
 
         default: begin
-          r_data_outgoing <= {`TSTEP, 32'h00000000};
+          r_data_outgoing <= {`DRV_STATUS, 32'h00000000};
           r_send_enable <= 1'b1;
 
           // r_data_outgoing <= 40'h0000000000;
