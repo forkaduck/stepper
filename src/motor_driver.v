@@ -85,7 +85,7 @@ module motor_driver (
   );
 
   // All possible states of the setup state machine
-  parameter integer Start = 0, End = 10;
+  parameter integer Start = 0, End = 9;
 
   integer r_state = Start;
   reg r_prev_ready_spi = 1'b0;
@@ -120,15 +120,13 @@ module motor_driver (
 
         4: begin
           // CHOPCONF
-          r_data_outgoing <= {`CHOPCONF + `WRITE_ADDR, 32'h300a8188};  // high sensitivity
+          r_data_outgoing <= {`CHOPCONF + `WRITE_ADDR, 32'h30188113};
           r_send_enable <= 1'b1;
         end
 
         5: begin
           // IHOLD_IRUN IHOLDDELAY / IRUN / IHOLD
-          // TODO short to GND protection triggers because of the 1n4007
-          // diodes which have leakage current that is to high
-          r_data_outgoing <= {`IHOLD_IRUN + `WRITE_ADDR, 32'h00080f0f};
+          r_data_outgoing <= {`IHOLD_IRUN + `WRITE_ADDR, 32'h00080a0a};
           r_send_enable <= 1'b1;
         end
 
@@ -139,25 +137,19 @@ module motor_driver (
         end
 
         7: begin
-          // TPWM_THRS
-          r_data_outgoing <= {`TPWMTHRS + `WRITE_ADDR, 32'h000001f4};
+          // THIGH
+          r_data_outgoing <= {`THIGH + `WRITE_ADDR, 32'h00000020};
           r_send_enable <= 1'b1;
         end
 
         8: begin
           // PWMCONF
-          r_data_outgoing <= {`PWMCONF + `WRITE_ADDR, 32'h000408c8};
-          r_send_enable <= 1'b1;
-        end
-
-        9: begin
-          // THIGH
-          r_data_outgoing <= {`THIGH + `WRITE_ADDR, 32'h00000032};
+          r_data_outgoing <= {`PWMCONF + `WRITE_ADDR, 32'h00040a74};
           r_send_enable <= 1'b1;
         end
 
         default: begin
-          r_data_outgoing <= {`DRV_STATUS, 32'h00000000};
+          r_data_outgoing <= {`TSTEP, 32'h00000000};
           r_send_enable <= 1'b1;
 
           // r_data_outgoing <= 40'h0000000000;
