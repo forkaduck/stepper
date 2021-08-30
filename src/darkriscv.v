@@ -79,12 +79,7 @@
 `define __RESETPC__ 32'd0
 `define __RESETSP__ 32'd8192
 
-module darkriscv
-//#(
-//    parameter [31:0] RESET_PC = 0,
-//    parameter [31:0] RESET_SP = 4096
-//)
-(
+module darkriscv (
     input CLK,  // clock
     input RES,  // reset
     input HLT,  // halt
