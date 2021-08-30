@@ -3,20 +3,33 @@ import argparse
 import os
 import subprocess
 import sys
+import time
 from tqdm import tqdm
-import logging
 
-
+# Runs a subcommand with the appropriate pipes
+# (a wrapper for use with tqdm)
 def run_subcommand(command, env={}):
-    rv = subprocess.run(command, stdout=subprocess.PIPE, env=env)
+    rv = subprocess.Popen(
+        command,
+        stdout=subprocess.PIPE,
+        env=env,
+        universal_newlines=True,
+    )
 
-    tqdm.write(rv.stdout.decode("utf-8"))
-    tqdm.write("Subprocess returned " + str(rv.returncode))
+    for stdout_line in iter(rv.stdout.readline, ""):
+        if len(stdout_line) != 0:
+            tqdm.write(stdout_line, end="")
+        else:
+            time.sleep(0.05)
 
-    if rv.returncode != 0:
-        sys.exit(1)
+    rv.stdout.close()
+
+    retval = rv.wait()
+    if retval:
+        sys.exit(retval)
 
 
+# Removes generated files after build
 def clean():
     try:
         os.remove("stepper.json")
@@ -24,9 +37,10 @@ def clean():
         os.remove("ulx3s.bit")
 
     except FileNotFoundError:
-        tqdm.write("Some files where already deleted!")
+        tqdm.write("Some files where already deleted or are missing!")
 
 
+# Builds the bitstream which can be loaded onto the FPGA
 def build():
     with tqdm(total=3, file=sys.stdout) as pbar:
         pr = 0
@@ -34,7 +48,7 @@ def build():
         pbar.set_description("Running synthesis")
         run_subcommand(
             [
-                "yosys",
+                "/usr/local/bin/yosys",
                 "-p",
                 "read_verilog src/*.v; synth_ecp5 -noccu2 -nomux -nodram -json stepper.json",
             ],
@@ -45,7 +59,7 @@ def build():
         pbar.set_description("Routing")
         run_subcommand(
             [
-                "nextpnr-ecp5",
+                "/usr/local/bin/nextpnr-ecp5",
                 "-v",
                 "--25k",
                 "--json",
@@ -62,7 +76,7 @@ def build():
         pbar.set_description("Packing")
         run_subcommand(
             [
-                "ecppack",
+                "/usr/local/bin/ecppack",
                 "-v",
                 "ulx3s_out.config",
                 "ulx3s.bit",
@@ -76,9 +90,17 @@ def build():
         pbar.set_description("Done")
 
 
+# Runs one test with the name test_name which is in the tests
+# directory
 def test(test_name):
-    src_dir = "src/"
-    output_dir = "tests/sim_output/"
+    wd = os.getcwd()
+    os.chdir("tests")
+
+    tqdm.write("New working directory: " + os.getcwd())
+
+    # Test commands are run inside the tests folder!!!
+    src_dir = "../src/"
+    output_dir = "sim_output/"
 
     with tqdm(total=4, file=sys.stdout) as pbar:
         pr = 0
@@ -118,7 +140,7 @@ def test(test_name):
         pr += 1
 
         # Uses iverilog to compile all of the source files into an intermediate format
-        pbar.set_description("Compiling python test to vpp file")
+        pbar.set_description("Compiling python test")
         run_subcommand(
             [
                 "iverilog",
@@ -149,7 +171,8 @@ def test(test_name):
             [
                 "vvp",
                 "-M",
-                "/home/fuckaduck/.local/lib/python3.9/site-packages/cocotb/libs",
+                os.path.expanduser("~")
+                + "/.local/lib/python3.9/site-packages/cocotb/libs",
                 "-m",
                 "libcocotbvpi_icarus",
                 output_dir + test_name + ".vvp",
@@ -164,9 +187,14 @@ def test(test_name):
         )
         pbar.update(pr)
         pr += 1
+        pbar.set_description("Done")
+
+        # Switch back to original working directory
+        os.chdir(wd)
 
 
-def prog():
+# Load the FPGA temporarily with the generated bitstream
+def load():
     run_subcommand(
         [
             "openFPGALoader",
@@ -186,10 +214,8 @@ parser.add_argument(
 parser.add_argument(
     "--build", help="Build the hole project", dest="build", action="store_true"
 )
-parser.add_argument("--test", help="Build and run a test", dest="test", action="store")
-parser.add_argument(
-    "--prog", help="Build and program the FPGA", dest="prog", action="store_true"
-)
+parser.add_argument("--test", help="Run a test", dest="test", action="store")
+parser.add_argument("--load", help="Load the FPGA", dest="load", action="store_true")
 
 args = parser.parse_args()
 
@@ -202,5 +228,5 @@ if args.build:
 if args.test:
     test(args.test)
 
-if args.prog:
-    prog()
+if args.load:
+    load()
