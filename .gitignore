@@ -1,6 +1,6 @@
 test_output
 Session.vim
-tests/srclist.txt
+tests/sim_output/srclist.txt
 **/sim_output/*.vcd
 **/sim_output/*.vvp
 **/__pycache__
