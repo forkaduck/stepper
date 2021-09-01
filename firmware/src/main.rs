@@ -20,6 +20,6 @@ fn main() -> ! {
         unsafe {
             *(0x10000000 as *mut u32) = !*(0x10000000 as *mut u32);
         }
-        delay(300000);
+        delay(3125000);
     }
 }
