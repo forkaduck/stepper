@@ -15,17 +15,15 @@ module stepper (
   reg r_slowclock;
 
 
-  reg [31:0] rom[0:4096];
-  reg [31:0] ram[0:4096];
+  reg [31:0] r_rom[0:4096];
+  reg [31:0] r_ram[0:4096];
 
-  integer file;
   initial begin
     // Read the compiled rom into the 2D array
-    // $readmemb("firmware/target/riscv32imac-unknown-none-elf/release/blink.bin", rom);
-    $readmemh("firmware/target/riscv32imac-unknown-none-elf/release/blink.txt", rom);
+    $readmemh("firmware/target/riscv32imac-unknown-none-elf/release/blink.txt", r_rom);
 
     // Read 0's into ram
-    $readmemb("/dev/null", ram);
+    $readmemh("/dev/null", r_ram);
   end
 
 
@@ -43,30 +41,6 @@ module stepper (
     r_state1 <= ~btn[1];
     r_state2 <= r_state1;
   end
-
-
-  // module darkriscv (
-  //     input CLK,  // clock
-  //     input RES,  // reset
-  //     input HLT,  // halt
-  //
-  //     input  [31:0] IDATA,  // instruction data bus
-  //     output [31:0] IADDR,  // instruction addr bus
-  //
-  //     input  [31:0] DATAI,  // data bus (input)
-  //     output [31:0] DATAO,  // data bus (output)
-  //     output [31:0] DADDR,  // addr bus
-  //
-  //
-  //     output [3:0] BE,  // byte enable
-  //     output       WR,  // write enable
-  //     output       RD,  // read enable
-  //
-  //     output IDLE,  // idle output
-  //
-  //     output [3:0] DEBUG  // old-school osciloscope based debug! :)
-  // );
-
 
   // CPU Registers
   reg [31:0] r_inst_data;  // instruction data bus
@@ -115,12 +89,12 @@ module stepper (
   //
   // 0x10000000 IO
   always @(posedge clk_25mhz) begin
-    r_inst_data <= rom[r_inst_addr];
+    r_inst_data <= r_rom[r_inst_addr];
 
     if (r_read) begin
       // RAM 4KB
       if (r_addr < 32'h00001000) begin
-        r_data_in <= ram[r_addr];
+        r_data_in <= r_ram[r_addr];
       end
 
       if (r_addr == 32'h10000000) begin
@@ -130,7 +104,7 @@ module stepper (
 
     if (r_write) begin
       if (r_addr < 32'h00001000) begin
-        ram[r_addr] <= r_data_out;
+        r_ram[r_addr] <= r_data_out;
       end
 
       if (r_addr == 32'h10000000) begin

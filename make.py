@@ -50,7 +50,7 @@ def build():
             [
                 "/usr/local/bin/yosys",
                 "-p",
-                "read_verilog src/*.v; synth_ecp5 -noccu2 -nomux -nodram -json stepper.json",
+                "read_verilog src/*.v; opt; synth_ecp5 -json stepper.json",
             ],
         )
         pbar.update(pr)
