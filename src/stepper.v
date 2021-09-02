@@ -15,8 +15,8 @@ module stepper (
   reg r_slowclock;
 
 
-  reg [31:0] r_rom[0:4096];
-  reg [31:0] r_ram[0:4096];
+  reg [31:0] r_rom[0:1024];
+  reg [31:0] r_ram[0:1024];
 
   initial begin
     // Read the compiled rom into the 2D array

@@ -50,7 +50,7 @@ def build():
             [
                 "/usr/local/bin/yosys",
                 "-p",
-                "read_verilog src/*.v; opt; synth_ecp5 -json stepper.json",
+                "read_verilog -formal src/*.v; synth_ecp5 -json stepper.json",
             ],
         )
         pbar.update(pr)
@@ -207,6 +207,20 @@ def load():
     )
 
 
+def flash():
+    run_subcommand(
+        [
+            "openFPGALoader",
+            "-b",
+            "ulx3s",
+            "-f",
+            "-v",
+            "-m",
+            "ulx3s.bit",
+        ],
+    )
+
+
 parser = argparse.ArgumentParser(description="Main makefile for the stepper project")
 parser.add_argument(
     "--clean", help="Removes build output", dest="clean", action="store_true"
@@ -215,7 +229,12 @@ parser.add_argument(
     "--build", help="Build the hole project", dest="build", action="store_true"
 )
 parser.add_argument("--test", help="Run a test", dest="test", action="store")
-parser.add_argument("--load", help="Load the FPGA", dest="load", action="store_true")
+parser.add_argument(
+    "--load", help="Load the bitstream into SRAM", dest="load", action="store_true"
+)
+parser.add_argument(
+    "--flash", help="Flash the bitstream into EEPROM", dest="flash", action="store_true"
+)
 
 args = parser.parse_args()
 
@@ -230,3 +249,6 @@ if args.test:
 
 if args.load:
     load()
+
+if args.flash:
+    flash()
