@@ -1,5 +1,20 @@
 
 // top module
+// current pinout:
+// gp[0] = Step
+// gp[1] = Direction
+// gp[2] = Driver En
+//
+// gp[23] = CPU idle
+// gp[24] = Debug 0
+// gp[25] = Debug 1
+// gp[26] = Debug 2
+// gp[27] = Debug 3
+//
+// gn[0] = SDO
+// gn[1] = CS
+// gn[2] = SCK
+// gn[3] = SDI
 module stepper (
     input clk_25mhz,
     input [6:0] btn,
@@ -57,7 +72,7 @@ module stepper (
   // IO Registers
   reg [31:0] io;
 
-  assign led[1] = io[0];
+  assign led[7:0] = io[7:0];
 
   darkriscv core1 (
       .CLK(clk_25mhz),

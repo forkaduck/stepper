@@ -42,20 +42,83 @@ def clean():
 
 # Builds the bitstream which can be loaded onto the FPGA
 def build():
-    with tqdm(total=3, file=sys.stdout) as pbar:
+    with tqdm(total=7, file=sys.stdout) as pbar:
         pr = 0
 
-        pbar.set_description("Running synthesis")
+        wd = os.getcwd()
+        os.chdir("firmware")
+
+        # Build the firmware
+        pbar.set_description("Building firmware")
+        run_subcommand(
+            [os.path.expanduser("~") + "/.cargo/bin/cargo", "build", "--release"],
+        )
+        pbar.update(pr)
+        pr += 1
+
+        # Strip the firmware of debug symbols
+        pbar.set_description("Stripping binary")
         run_subcommand(
             [
-                "/usr/local/bin/yosys",
-                "-p",
-                "read_verilog -formal src/*.v; synth_ecp5 -json stepper.json",
+                "riscv64-linux-gnu-strip",
+                "target/riscv32imac-unknown-none-elf/release/blink",
             ],
         )
         pbar.update(pr)
         pr += 1
 
+        # Copy sections to bin for use with rom initialisation
+        pbar.set_description("Copying sections")
+        run_subcommand(
+            [
+                "riscv64-linux-gnu-objcopy",
+                "-O",
+                "binary",
+                "target/riscv32imac-unknown-none-elf/release/blink",
+                "target/riscv32imac-unknown-none-elf/release/blink.bin",
+            ],
+        )
+        pbar.update(pr)
+        pr += 1
+
+        os.chdir(wd)
+
+        # Format output to work with readmemh
+        counter = 1
+        pbar.set_description("Formating binary")
+        with open(
+            "firmware/target/riscv32imac-unknown-none-elf/release/blink.txt", "w"
+        ) as output:
+            with open(
+                "firmware/target/riscv32imac-unknown-none-elf/release/blink.bin", "rb"
+            ) as input:
+                for i in input.read():
+                    output.write("{:02x}".format(i))
+
+                    if counter % 4 == 0:
+                        output.write("\n")
+
+                    counter += 1
+
+                for i in range(5 - (counter % 4)):
+                    output.write("00")
+
+        pbar.update(pr)
+        pr += 1
+
+        # Generate the intermediate netlist as a .json
+        pbar.set_description("Running synthesis")
+        run_subcommand(
+            [
+                "/usr/local/bin/yosys",
+                "-p",
+                "read_verilog src/*.v; synth_ecp5 -json stepper.json",
+            ],
+        )
+        pbar.update(pr)
+        pr += 1
+
+        # Route the netlist in the specific FPGA
         pbar.set_description("Routing")
         run_subcommand(
             [
@@ -73,6 +136,7 @@ def build():
         pbar.update(pr)
         pr += 1
 
+        # Generates the bitstream using the packed netlist
         pbar.set_description("Packing")
         run_subcommand(
             [
