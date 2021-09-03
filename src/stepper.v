@@ -35,7 +35,7 @@ module stepper (
 
   initial begin
     // Read the compiled rom into the 2D array
-    $readmemh("firmware/target/riscv32imac-unknown-none-elf/release/blink.txt", r_rom);
+    $readmemh("firmware/target/riscv32imac-unknown-none-elf/release/stepper.txt", r_rom);
 
     // Read 0's into ram
     $readmemh("/dev/null", r_ram);
@@ -58,6 +58,8 @@ module stepper (
   end
 
   // CPU Registers
+  reg r_hlt = 'b0;  // halts the cpu
+
   reg [31:0] r_inst_data;  // instruction data bus
   reg [31:0] r_inst_addr;  // instruction addr bus
 
@@ -75,9 +77,9 @@ module stepper (
   assign led[7:0] = io[7:0];
 
   darkriscv core1 (
-      .CLK(clk_25mhz),
+      .CLK(!clk_25mhz),
       .RES(r_state2),
-      .HLT(1'b0),
+      .HLT(r_hlt),
 
       .IDATA(r_inst_data),
       .IADDR(r_inst_addr),
@@ -95,6 +97,9 @@ module stepper (
       .DEBUG(gp[27:24])
   );
 
+
+
+  reg [1:0] r_byte_index;
   // An extremly simplified memory controller
   // TODO byte enable not handled
   //
@@ -103,27 +108,38 @@ module stepper (
   // 0x00000000 4KB RAM
   //
   // 0x10000000 IO
+
+  tenbin converter1 (
+      .in (r_byte_e),
+      .out(r_byte_index)
+  );
+
   always @(posedge clk_25mhz) begin
+    // Instruction read
     r_inst_data <= r_rom[r_inst_addr];
 
-    if (r_read) begin
-      // RAM 4KB
-      if (r_addr < 32'h00001000) begin
-        r_data_in <= r_ram[r_addr];
+    if (!r_hlt) begin
+      // Read cycle
+      if (r_read) begin
+        // RAM 4KB
+        if (r_addr < 32'h00001000) begin
+          r_data_in[r_byte_index-:8] <= r_ram[r_addr][r_byte_index-:8];
+        end
+
+        if (r_addr == 32'h10000000) begin
+          r_data_in[r_byte_index-:8] <= io[r_byte_index-:8];
+        end
       end
 
-      if (r_addr == 32'h10000000) begin
-        r_data_in <= io;
-      end
-    end
+      // Write cycle
+      if (r_write) begin
+        if (r_addr < 32'h00001000) begin
+          r_ram[r_addr][r_byte_index-:8] <= r_data_out[r_byte_index-:8];
+        end
 
-    if (r_write) begin
-      if (r_addr < 32'h00001000) begin
-        r_ram[r_addr] <= r_data_out;
-      end
-
-      if (r_addr == 32'h10000000) begin
-        io <= r_data_out;
+        if (r_addr == 32'h10000000) begin
+          io[r_byte_index-:8] <= r_data_out[r_byte_index-:8];
+        end
       end
     end
   end
