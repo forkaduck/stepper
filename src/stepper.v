@@ -27,7 +27,7 @@ module stepper (
   wire reset;
 
   // Tie GPIO0, keep board from rebooting
-  assign wifi_gpio0 = 1'b1;
+  assign wifi_gpio0 = 1;
 
   debounce reset_debounce (
       .clk_in(clk_25mhz),
@@ -39,10 +39,10 @@ module stepper (
   // 0x00000000 4KB ROM
   // 0x00000000 4KB RAM
   //
-  // 0x10000000 IO
+  // 0x10000000 IO RAM
 
   // CPU Registers
-  reg r_hlt = 'b0;  // halts the cpu
+  reg r_hlt = 0;  // halts the cpu
 
   wire [31:0] inst_data;  // instruction data bus
   reg [31:0] r_inst_addr;  // instruction addr bus
@@ -55,12 +55,12 @@ module stepper (
   reg [3:0] r_byte_e;  // byte enable
   reg r_write;  // write enable
   reg r_read;  // read enable
+
   wire read_write = r_write & ~r_read;
+  wire
+      ram_enable = (r_data_addr & 32'h000003ff) > 0 ? 1 : 1'b0;  // enable ram in region below 0x3ff
 
-  // IO Registers
-  reg [31:0] io;
-
-  assign led[7:0] = io[7:0];
+  wire io_enable = (r_data_addr == 32'h10000000) ? 1 : 0;
 
   // Instruction ROM
   memory #(
@@ -69,7 +69,8 @@ module stepper (
       .PATH("firmware/target/riscv32imac-unknown-none-elf/release/stepper.txt")
   ) rom (
       .clk_in(clk_25mhz),
-      .read_write(1'b0),  // constant read
+      .enable(1),
+      .read_write(0),  // constant read
       .addr_in(r_inst_addr),
       .data_in('b0),
       .r_data_out(inst_data)
@@ -82,9 +83,24 @@ module stepper (
       .PATH("")
   ) ram (
       .clk_in(clk_25mhz),
+      .enable(ram_enable),
       .read_write(read_write),
       .addr_in(r_data_addr),
       .data_in(data_out),  // crossed over because of data_in is the cpu input for data
+      .r_data_out(r_data_in)
+  );
+
+  // IO RAM
+  memory #(
+      .DATA_WIDTH(32),
+      .DATA_SIZE(1),
+      .PATH("")
+  ) io (
+      .clk_in(clk_25mhz),
+      .enable(io_enable),
+      .read_write(read_write),
+      .addr_in(r_data_addr),
+      .data_in(data_out),
       .r_data_out(r_data_in)
   );
 
@@ -110,14 +126,14 @@ module stepper (
   );
 
   // assign direction pin to fixed 0
-  assign gp[1] = 1'b0;
+  assign gp[1] = 0;
 
   motor_driver driver (
       .clk_in(clk_25mhz),
       .reset_n_in(reset),
       .serial_in(gn[0]),
       .speed_in('d75),
-      .step_enable_in(1'b1),
+      .step_enable_in(1),
       .clk_out(gn[2]),
       .serial_out(gn[3]),
       .cs_n_out(gn[1]),
