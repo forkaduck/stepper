@@ -18,7 +18,7 @@ fn delay(cycles: u32) {
 fn main() -> ! {
     loop {
         unsafe {
-            *(0x10000000 as *mut u32) = !*(0x10000000 as *mut u32);
+            *(0x10000000 as *mut u32) = 0xffffffff;
         }
         delay(3125000);
     }
