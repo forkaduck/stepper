@@ -80,7 +80,7 @@ def build():
         [
             "yosys",
             "-p",
-            "read_verilog src/*.v; synth_ecp5 -json stepper.json",
+            "read_verilog src/*.v; synth_ecp5 -asyncprld -json stepper.json",
         ],
     )
 
