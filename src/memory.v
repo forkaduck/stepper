@@ -12,6 +12,7 @@ module memory #(
     input clk_in,
 
     // mem port
+    input enable,
     input read_write,
     input [DATA_WIDTH -1:0] addr_in,
     input [DATA_WIDTH - 1:0] data_in,
@@ -27,10 +28,12 @@ module memory #(
   end
 
   always @(posedge clk_in) begin
-    if (read_write) begin
-      r_mem[addr_in] <= data_in;
-    end else begin
-      r_data_out <= r_mem[addr_in];
+    if (enable) begin
+      if (read_write) begin
+        r_mem[addr_in] <= data_in;
+      end else begin
+        r_data_out <= r_mem[addr_in];
+      end
     end
   end
 endmodule
