@@ -4,7 +4,12 @@ module debounce (
     output reg out
 );
 
+  reg r_clk_buff;
   reg r_slowclock;
+
+  initial begin
+    out = 'b0;
+  end
 
   // btn debouncer
   clk_divider #(
@@ -15,9 +20,8 @@ module debounce (
       .clk_out(r_slowclock)
   );
 
-  reg r_state1;
   always @(posedge r_slowclock) begin
-    r_state1 <= ~in;
-    out <= r_state1;
+    r_clk_buff <= ~in;
+    out <= r_clk_buff;
   end
 endmodule
