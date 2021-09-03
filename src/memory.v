@@ -13,7 +13,7 @@ module memory #(
 
     // mem port
     input read_write,
-    input [$clog2(DATA_SIZE) -1:0] addr_in,
+    input [DATA_WIDTH -1:0] addr_in,
     input [DATA_WIDTH - 1:0] data_in,
     output reg [DATA_WIDTH - 1:0] r_data_out
 );
@@ -21,7 +21,9 @@ module memory #(
   reg [DATA_WIDTH - 1:0] r_mem[0:DATA_SIZE - 1];
 
   initial begin
-    $readmemh(PATH, r_mem);
+    if (PATH != "") begin
+      $readmemh(PATH, r_mem);
+    end
   end
 
   always @(posedge clk_in) begin
