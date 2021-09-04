@@ -16,7 +16,7 @@ module memory #(
     input write,
     input [$clog2(DATA_SIZE) -1:0] addr_in,
     input [DATA_WIDTH - 1:0] data_in,
-    output reg [DATA_WIDTH - 1:0] r_data_out
+    output [DATA_WIDTH - 1:0] r_data_out
 );
 
   reg [DATA_WIDTH - 1:0] r_temp;

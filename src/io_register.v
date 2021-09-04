@@ -7,7 +7,7 @@ module io_register #(
     input enable,
     input write,
     input [DATA_WIDTH - 1:0] data_in,
-    output reg [DATA_WIDTH - 1:0] r_data_out,
+    output [DATA_WIDTH - 1:0] r_data_out,
 
     output reg [DATA_WIDTH - 1:0] r_mem
 );
