@@ -101,7 +101,7 @@ module stepper (
       .read_write(read_write),
       .addr_in(r_data_addr),
       .data_in(data_out),
-      .r_data_out(r_data_in)
+      .r_data_out(r_data_in)  // TODO fix multiple driving flipflops
   );
 
   darkriscv core (

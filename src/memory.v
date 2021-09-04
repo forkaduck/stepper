@@ -22,9 +22,7 @@ module memory #(
   reg [DATA_WIDTH - 1:0] r_mem[0:DATA_SIZE - 1];
 
   initial begin
-    if (PATH != "") begin
-      $readmemh(PATH, r_mem);
-    end
+    if (PATH != "") $readmemh(PATH, r_mem);
   end
 
   always @(posedge clk_in) begin
