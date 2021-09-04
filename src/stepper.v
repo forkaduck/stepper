@@ -56,11 +56,9 @@ module stepper (
   reg r_write;  // write enable
   reg r_read;  // read enable
 
-  wire read_write = r_write & ~r_read;
-  wire
-      ram_enable = (r_data_addr & 32'h000003ff) > 0 ? 1 : 1'b0;  // enable ram in region below 0x3ff
-
-  wire io_enable = (r_data_addr == 32'h10000000) ? 1 : 0;
+  wire write = r_write & ~r_read;
+  wire ram_enable = r_data_addr[31];  // enable ram in region below 0x3ff
+  wire io_enable = ~ram_enable;
 
   // Instruction ROM
   memory #(
@@ -70,7 +68,7 @@ module stepper (
   ) rom (
       .clk_in(clk_25mhz),
       .enable(1),
-      .read_write(0),  // constant read
+      .write(0),  // constant read
       .addr_in(r_inst_addr),
       .data_in('b0),
       .r_data_out(inst_data)
@@ -84,8 +82,8 @@ module stepper (
   ) ram (
       .clk_in(clk_25mhz),
       .enable(ram_enable),
-      .read_write(read_write),
-      .addr_in(r_data_addr),
+      .write(write),
+      .addr_in(r_data_addr[9:0]),
       .data_in(data_out),  // crossed over because of data_in is the cpu input for data
       .r_data_out(r_data_in)
   );
@@ -98,7 +96,7 @@ module stepper (
   ) io (
       .clk_in(clk_25mhz),
       .enable(io_enable),
-      .read_write(read_write),
+      .write(write),
       .addr_in(r_data_addr),
       .data_in(data_out),
       .r_data_out(r_data_in)  // TODO fix multiple driving flipflops

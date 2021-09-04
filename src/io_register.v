@@ -1,26 +1,22 @@
-// A memory cell to wrap the inferred type.
-// (Makes creating memory a hole lot simpler because of these requirements)
-//
-// Apparently DP16KD only supports rams with no multiple write ports or asynchronous read ports.
-// DP16KD only supports one write and two read ports at the moment but this
-// will probably be improved in a few months.
-module memory #(
+module io_register #(
     parameter DATA_WIDTH = 32,
-    parameter DATA_SIZE = 1024,
+    parameter DATA_SIZE = 1,
     parameter PATH = ""
 ) (
     input clk_in,
 
-    // mem port
+    // port
     input enable,
     input write,
     input [$clog2(DATA_SIZE) -1:0] addr_in,
     input [DATA_WIDTH - 1:0] data_in,
-    output reg [DATA_WIDTH - 1:0] r_data_out
+    output reg [DATA_WIDTH - 1:0] r_data_out,
+
+    // register output
+    output reg [DATA_WIDTH - 1:0] r_mem[0:DATA_SIZE - 1]
 );
 
   reg [DATA_WIDTH - 1:0] r_temp;
-  reg [DATA_WIDTH - 1:0] r_mem  [0:DATA_SIZE - 1];
 
   initial begin
     if (PATH != "") $readmemh(PATH, r_mem);
