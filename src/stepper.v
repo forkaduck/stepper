@@ -57,8 +57,8 @@ module stepper (
   reg r_read;  // read enable
 
   wire write = r_write & ~r_read;
-  wire ram_enable = !r_data_addr[28];
-  wire io_enable = !ram_enable;
+  wire ram_enable = !io_enable;
+  wire io_enable = r_data_addr[28];
 
   // Instruction ROM
   memory #(
