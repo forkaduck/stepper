@@ -1,8 +1,8 @@
 
 module spi #(
-    parameter integer SIZE = 40,
-    parameter integer CS_SIZE = 4,
-    parameter integer CLK_SIZE = 3
+    parameter SIZE = 40,
+    parameter CS_SIZE = 4,
+    parameter CLK_SIZE = 3
 ) (
     input [SIZE - 1:0] data_in,
     input clk_in,

@@ -1,6 +1,6 @@
 // convert serial into parallel data
 module sipo #(
-    parameter integer SIZE = 8
+    parameter SIZE = 8
 ) (
     input data_in,
     input clk_in,

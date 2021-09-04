@@ -2,7 +2,7 @@
 
 // converts parallel data into serial data
 module piso #(
-    parameter integer SIZE = 8
+    parameter SIZE = 8
 ) (
     input [SIZE - 1:0] data_in,
     input clk_in,

@@ -4,8 +4,8 @@ module debounce (
     output reg out
 );
 
-  reg r_clk_buff;
-  reg r_slowclock;
+  reg  r_clk_buff;
+  wire r_slowclock;
 
   initial begin
     out = 'b0;
