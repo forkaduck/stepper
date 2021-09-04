@@ -76,8 +76,8 @@
 // RAM memory matches with the .data and other volatile data, in a way that
 // the stack can be positioned in the top of RAM and does not match with the
 // .data.
-`define __RESETPC__ 32'd0
-`define __RESETSP__ 32'd8192
+`define __RESETPC__ 32'h0
+`define __RESETSP__ 32'h400
 
 module darkriscv (
     input CLK,  // clock

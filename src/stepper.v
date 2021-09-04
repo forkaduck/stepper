@@ -57,8 +57,8 @@ module stepper (
   reg r_read;  // read enable
 
   wire write = r_write & ~r_read;
-  wire ram_enable = r_data_addr[31];  // enable ram in region below 0x3ff
-  wire io_enable = ~ram_enable;
+  wire ram_enable = !r_data_addr[28];
+  wire io_enable = !ram_enable;
 
   // Instruction ROM
   memory #(
@@ -69,7 +69,7 @@ module stepper (
       .clk_in(clk_25mhz),
       .enable(1),
       .write(0),  // constant read
-      .addr_in(r_inst_addr),
+      .addr_in(r_inst_addr[9:0]),
       .data_in('b0),
       .r_data_out(inst_data)
   );
@@ -89,17 +89,16 @@ module stepper (
   );
 
   // IO RAM
-  memory #(
-      .DATA_WIDTH(32),
-      .DATA_SIZE(1),
-      .PATH("")
+  io_register #(
+      .DATA_WIDTH(32)
   ) io (
       .clk_in(clk_25mhz),
       .enable(io_enable),
       .write(write),
-      .addr_in(r_data_addr),
       .data_in(data_out),
-      .r_data_out(r_data_in)  // TODO fix multiple driving flipflops
+      .r_data_out(r_data_in),  // TODO fix multiple driving flipflops
+
+      .r_mem(led[7:0])
   );
 
   darkriscv core (
