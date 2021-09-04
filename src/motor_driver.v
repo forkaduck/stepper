@@ -1,6 +1,4 @@
 
-`include "macros.v"
-
 // General interfacing
 `define WRITE_ADDR 8'h80
 

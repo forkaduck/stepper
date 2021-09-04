@@ -1,6 +1,4 @@
 
-`include "macros.v"
-
 module spi #(
     parameter integer SIZE = 40,
     parameter integer CS_SIZE = 4,
