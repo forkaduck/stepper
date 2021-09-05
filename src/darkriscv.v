@@ -117,14 +117,16 @@ module darkriscv (
   wire [31:0] ALL0 = 0;
   wire [31:0] ALL1 = -1;
 
+
+  // Instruction flags
+  reg XLUI, XAUIPC, XJAL, XJALR, XBCC, XLCC, XSCC, XMCC, XRCC, XMAC, XFCC, XCCC, XRES = 1;
+
   // pre-decode: IDATA is break apart as described in the RV32I specification
   reg [31:0] XIDATA;
 
 
   reg [31:0] XSIMM;
   reg [31:0] XUIMM;
-
-  reg XLUI, XAUIPC, XJAL, XJALR, XBCC, XLCC, XSCC, XMCC, XRCC, XMAC, XRES = 1;  //, XFCC, XCCC;
 
   always @(posedge CLK) begin
     // Decode opcode into binary signals
@@ -144,8 +146,8 @@ module darkriscv (
       XRCC <= XRES ? 0 : IDATA[6:0] == `RCC;
       XMAC <= XRES ? 0 : IDATA[6:0] == `MAC;
 
-      //XFCC   <= XRES ? 0 : IDATA[6:0]==`FCC;
-      //XCCC   <= XRES ? 0 : IDATA[6:0]==`CCC;
+      XFCC <= XRES ? 0 : IDATA[6:0] == `FCC;
+      XCCC <= XRES ? 0 : IDATA[6:0] == `CCC;
 
 
       // signal extended immediate, according to the instruction type:
@@ -174,6 +176,7 @@ module darkriscv (
       {
         IDATA[31] ? ALL1[31:12] : ALL0[31:12], IDATA[31:20]
       };  // i-type
+
 
       // non-signal extended immediate, according to the instruction type:
       XUIMM <= XRES ? 0 : IDATA[6:0] == `SCC ? {
@@ -212,28 +215,36 @@ module darkriscv (
   wire [31:0] UIMM = XUIMM;
 
   // main opcode decoder:
-  wire LUI = FLUSH ? 0 : XLUI;  // OPCODE==7'b0110111;
-  wire AUIPC = FLUSH ? 0 : XAUIPC;  // OPCODE==7'b0010111;
-  wire JAL = FLUSH ? 0 : XJAL;  // OPCODE==7'b1101111;
-  wire JALR = FLUSH ? 0 : XJALR;  // OPCODE==7'b1100111;
+  wire LUI = FLUSH ? 0 : XLUI;
+  wire AUIPC = FLUSH ? 0 : XAUIPC;
+  wire JAL = FLUSH ? 0 : XJAL;
+  wire JALR = FLUSH ? 0 : XJALR;
 
-  wire BCC = FLUSH ? 0 : XBCC;  // OPCODE==7'b1100011; //FCT3
-  wire LCC = FLUSH ? 0 : XLCC;  // OPCODE==7'b0000011; //FCT3
-  wire SCC = FLUSH ? 0 : XSCC;  // OPCODE==7'b0100011; //FCT3
-  wire MCC = FLUSH ? 0 : XMCC;  // OPCODE==7'b0010011; //FCT3
+  wire BCC = FLUSH ? 0 : XBCC;
+  wire LCC = FLUSH ? 0 : XLCC;
+  wire SCC = FLUSH ? 0 : XSCC;
+  wire MCC = FLUSH ? 0 : XMCC;
 
-  wire RCC = FLUSH ? 0 : XRCC;  // OPCODE==7'b0110011; //FCT3
-  wire MAC = FLUSH ? 0 : XMAC;  // OPCODE==7'b0110011; //FCT3
-  //wire    FCC = FLUSH ? 0 : XFCC; // OPCODE==7'b0001111; //FCT3
-  //wire    CCC = FLUSH ? 0 : XCCC; // OPCODE==7'b1110011; //FCT3
+  wire RCC = FLUSH ? 0 : XRCC;
+  wire MAC = FLUSH ? 0 : XMAC;
 
-  reg [31:0] NXPC2;  // 32-bit program counter t+2
+  wire FCC = FLUSH ? 0 : XFCC;
+  wire CCC = FLUSH ? 0 : XCCC;
 
-  reg [31:0] REG1[0:31];  // general-purpose 32x32-bit registers (s1)
-  reg [31:0] REG2[0:31];  // general-purpose 32x32-bit registers (s2)
+  // general-purpose 32x32-bit registers (s1)
+  reg [31:0] REG1[0:31];
 
-  reg [31:0] NXPC;  // 32-bit program counter t+1
-  reg [31:0] PC;  // 32-bit program counter t+0
+  // general-purpose 32x32-bit registers (s2)
+  reg [31:0] REG2[0:31];
+
+  // 32-bit program counter t+0
+  reg [31:0] PC;
+
+  // 32-bit program counter t+1
+  reg [31:0] NXPC;
+
+  // 32-bit program counter t+2
+  reg [31:0] NXPC2;
 
   // source-1 and source-1 register selection
   wire [31:0] U1REG = REG1[S1PTR];
@@ -328,23 +339,23 @@ module darkriscv (
     REG2[DPTR];
 
 
-    NXPC <=  /*XRES ? `__RESETPC__ :*/ HLT ? NXPC : NXPC2;
+    if (!HLT) begin
+      NXPC <= NXPC2;
+
+      PC <= NXPC;  // current program counter
+    end
 
     NXPC2 <= XRES ? `__RESETPC__ : HLT ? NXPC2 :  // reset and halt
     JREQ ? JVAL :  // jmp/bra
     NXPC2 + 4;  // normal flow
 
-    PC <=  /*XRES ? `__RESETPC__ :*/ HLT ? PC : NXPC;  // current program counter
   end
 
   // IO and memory interface
-
   assign DATAO = SDATA;  // SCC ? SDATA : 0;
   assign DADDR = U1REG + SIMM;  // (SCC||LCC) ? U1REG + SIMM : 0;
 
   // based in the Scc and Lcc
-
-
   assign RD = LCC;
   assign WR = SCC;
   assign BE = FCT3 == 0 || FCT3 == 4 ? (DADDR[1:0] == 3 ? 4'b1000 :  // sb/lb
