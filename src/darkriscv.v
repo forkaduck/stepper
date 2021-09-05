@@ -290,11 +290,9 @@ module darkriscv (
       FCT3 == 4 ? U1REG ^ S2REGX : FCT3 == 3 ? U1REG < U2REGX ? 1 : 0 :  // unsigned
   FCT3 == 2 ? S1REG < S2REGX ? 1 : 0 :  // signed
   FCT3 == 0 ? (XRCC && FCT7[5] ? U1REG - U2REGX : U1REG + S2REGX) :
-      FCT3 == 1 ? U1REG << U2REGX[4:0] :
-  //FCT3==5 ?
-  !FCT7[5] ? U1REG >> U2REGX[4:0] : $signed(
+      FCT3 == 1 ? U1REG << U2REGX[4:0] : !FCT7[5] ? U1REG >> U2REGX[4:0] : $signed(
       S1REG >>> U2REGX[4:0]
-  );  // (FCT7[5] ? U1REG>>>U2REG[4:0] :
+  );
 
   // J/B-group of instructions (OPCODE==7'b1100011)
   wire BMUX = BCC == 1 && (FCT3 == 4 ? S1REG < S2REGX :  // blt
@@ -302,13 +300,11 @@ module darkriscv (
   FCT3 == 6 ? U1REG < U2REGX :  // bltu
   FCT3 == 7 ? U1REG >= U2REG :  // bgeu
   FCT3 == 0 ? !(U1REG ^ S2REGX) :  //U1REG==U2REG : // beq
-  /*FCT3==1 ? */ U1REG ^ S2REGX);  //U1REG!=U2REG); // bne
-  //0);
+  U1REG ^ S2REGX);  // bne
 
   wire [31:0] PCSIMM = PC + SIMM;
   wire JREQ = (JAL || JALR || BMUX);
-  wire [31:0] JVAL = JALR ? DADDR : PCSIMM;  // SIMM + (JALR ? U1REG : PC);
-
+  wire [31:0] JVAL = JALR ? DADDR : PCSIMM;
 
 
   always @(posedge CLK) begin
@@ -335,7 +331,8 @@ module darkriscv (
     if (!HLT) begin
       NXPC <= NXPC2;
 
-      PC <= NXPC;  // current program counter
+      // current program counter
+      PC <= NXPC;
     end
 
     NXPC2 <= XRES ? `__RESETPC__ : HLT ? NXPC2 :  // reset and halt
@@ -343,10 +340,12 @@ module darkriscv (
     NXPC2 + 4;  // normal flow
 
   end
+  assign IADDR = NXPC2;
+
 
   // IO and memory interface
-  assign DATAO = SDATA;  // SCC ? SDATA : 0;
-  assign DADDR = U1REG + SIMM;  // (SCC||LCC) ? U1REG + SIMM : 0;
+  assign DATAO = SDATA;
+  assign DADDR = U1REG + SIMM;
 
   // based in the Scc and Lcc
   assign RD = LCC;
@@ -355,7 +354,6 @@ module darkriscv (
       DADDR[1:0] == 2 ? 4'b0100 : DADDR[1:0] == 1 ? 4'b0010 : 4'b0001) :
           FCT3 == 1 || FCT3 == 5 ? (DADDR[1] == 1 ? 4'b1100 :  // sh/lh
       4'b0011) : 4'b1111;  // sw/lw
-  assign IADDR = NXPC2;
 
   assign IDLE = |FLUSH;
 
