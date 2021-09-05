@@ -14,7 +14,7 @@ module memory #(
     // mem port
     input enable,
     input write,
-    input [$clog2(DATA_SIZE * (DATA_WIDTH/8)) -1:0] addr_in,
+    input [$clog2(DATA_SIZE) * (DATA_WIDTH/8) -1:0] addr_in,
     input [DATA_WIDTH - 1:0] data_in,
     output reg [DATA_WIDTH - 1:0] r_data_out
 );

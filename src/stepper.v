@@ -126,17 +126,17 @@ module stepper (
 
   // assign direction pin to fixed 0
   assign gp[1] = 0;
-
-  motor_driver driver (
-      .clk_in(clk_25mhz),
-      .reset_n_in(reset),
-      .serial_in(gn[0]),
-      .speed_in('d75),
-      .step_enable_in(1),
-      .clk_out(gn[2]),
-      .serial_out(gn[3]),
-      .cs_n_out(gn[1]),
-      .step_out(gp[0])
-  );
+  //
+  // motor_driver driver (
+  //     .clk_in(clk_25mhz),
+  //     .reset_n_in(reset),
+  //     .serial_in(gn[0]),
+  //     .speed_in('d75),
+  //     .step_enable_in(1),
+  //     .clk_out(gn[2]),
+  //     .serial_out(gn[3]),
+  //     .cs_n_out(gn[1]),
+  //     .step_out(gp[0])
+  // );
 
 endmodule
