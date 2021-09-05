@@ -119,7 +119,7 @@ module darkriscv (
 
 
   // Instruction flags
-  reg XLUI, XAUIPC, XJAL, XJALR, XBCC, XLCC, XSCC, XMCC, XRCC, XMAC, XFCC, XCCC, XRES = 1;
+  reg XLUI, XAUIPC, XJAL, XJALR, XBCC, XLCC, XSCC, XMCC, XRCC, XMAC, XRES = 1;
 
   // pre-decode: IDATA is break apart as described in the RV32I specification
   reg [31:0] XIDATA;
@@ -145,9 +145,6 @@ module darkriscv (
 
       XRCC <= XRES ? 0 : IDATA[6:0] == `RCC;
       XMAC <= XRES ? 0 : IDATA[6:0] == `MAC;
-
-      XFCC <= XRES ? 0 : IDATA[6:0] == `FCC;
-      XCCC <= XRES ? 0 : IDATA[6:0] == `CCC;
 
 
       // signal extended immediate, according to the instruction type:
@@ -228,8 +225,6 @@ module darkriscv (
   wire RCC = FLUSH ? 0 : XRCC;
   wire MAC = FLUSH ? 0 : XMAC;
 
-  wire FCC = FLUSH ? 0 : XFCC;
-  wire CCC = FLUSH ? 0 : XCCC;
 
   // general-purpose 32x32-bit registers (s1)
   reg [31:0] REG1[0:31];
@@ -327,18 +322,16 @@ module darkriscv (
     REG1[DPTR] <= XRES ? (RESMODE[4:0] == 2 ? `__RESETSP__ : 0) :  // reset sp
     HLT ? REG1[DPTR] :  // halt
     !DPTR ? 0 :  // x0 = 0, always!
-    AUIPC ? PCSIMM : JAL || JALR ? NXPC : LUI ? SIMM : LCC ? LDATA : MCC || RCC ? RMDATA :
-
-    //CCC ? CDATA :
-    REG1[DPTR];
+    AUIPC ? PCSIMM :
+        JAL || JALR ? NXPC : LUI ? SIMM : LCC ? LDATA : MCC || RCC ? RMDATA : REG1[DPTR];
     REG2[DPTR] <= XRES ? (RESMODE[4:0] == 2 ? `__RESETSP__ : 0) :  // reset sp
     HLT ? REG2[DPTR] :  // halt
     !DPTR ? 0 :  // x0 = 0, always!
-    AUIPC ? PCSIMM : JAL || JALR ? NXPC : LUI ? SIMM : LCC ? LDATA : MCC || RCC ? RMDATA :
-    //CCC ? CDATA :
-    REG2[DPTR];
+    AUIPC ? PCSIMM :
+        JAL || JALR ? NXPC : LUI ? SIMM : LCC ? LDATA : MCC || RCC ? RMDATA : REG2[DPTR];
 
 
+    // Propagate the program counter further
     if (!HLT) begin
       NXPC <= NXPC2;
 
