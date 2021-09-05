@@ -16,25 +16,30 @@ module memory #(
     input write,
     input [$clog2(DATA_SIZE) -1:0] addr_in,
     input [DATA_WIDTH - 1:0] data_in,
-    output [DATA_WIDTH - 1:0] r_data_out
+    output reg [DATA_WIDTH - 1:0] r_data_out
 );
 
-  reg [DATA_WIDTH - 1:0] r_temp;
-  reg [DATA_WIDTH - 1:0] r_mem  [0:DATA_SIZE - 1];
+  reg [DATA_WIDTH - 1:0] r_mem[0:DATA_SIZE - 1];
 
+  integer i;
   initial begin
-    if (PATH != "") $readmemh(PATH, r_mem);
-  end
+    if (PATH != "") begin
+      $readmemh(PATH, r_mem);
+    end else begin
+      for (i = 0; i < DATA_SIZE; i++) begin
+        r_mem[i] = 'b0;
+      end
+    end
 
-  // handle high impedance
-  assign r_data_out = enable ? r_temp : 'bz;
+    r_data_out = 'b0;
+  end
 
   always @(posedge clk_in) begin
     if (enable) begin
       if (write) begin
         r_mem[addr_in] <= data_in;
       end else begin
-        r_temp <= r_mem[addr_in];
+        r_data_out <= enable ? r_mem[addr_in] : 'bz;
       end
     end
   end

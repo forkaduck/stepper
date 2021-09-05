@@ -59,16 +59,16 @@ def build():
     # Format output to work with readmemh
     counter = 1
     with open(
-        "firmware/target/riscv32imac-unknown-none-elf/release/stepper.txt", "w"
+        "firmware/target/riscv32imac-unknown-none-elf/release/stepper.mem", "w"
     ) as firm_out:
         with open(
             "firmware/target/riscv32imac-unknown-none-elf/release/stepper.bin", "rb"
         ) as firm_in:
             for i in firm_in.read():
-                firm_out.write("{:02x}".format(i))
+                firm_out.write("{:02x}\n".format(i))
 
-                if counter % 4 == 0:
-                    firm_out.write("\n")
+                #  if counter % 4 == 0:
+                #      firm_out.write("\n")
 
                 counter += 1
 
@@ -132,9 +132,7 @@ def test(test_name):
             + output_dir
             + test_name
             + '.vcd");\n'
-            + "\t$dumpvars(0, "
-            + test_name
-            + ");\n"
+            + "\t$dumpvars();\n"
             + "end\n"
             + "endmodule\n"
         )

@@ -27,7 +27,7 @@ module stepper (
   wire reset;
 
   // Tie GPIO0, keep board from rebooting
-  assign wifi_gpio0 = 1;
+  assign wifi_gpio0 = 1'b1;
 
   debounce reset_debounce (
       .clk_in(clk_25mhz),
@@ -45,31 +45,35 @@ module stepper (
   reg r_hlt = 0;  // halts the cpu
 
   wire [31:0] inst_data;  // instruction data bus
-  reg [31:0] r_inst_addr;  // instruction addr bus
+  wire [31:0] inst_addr;  // instruction addr bus
 
-  reg [31:0] r_data_in;  // data bus
+  wire [31:0] data_in;  // data bus
   wire [31:0] data_out;  // data bus
-  reg [31:0] r_data_addr;  // addr bus
+  wire [31:0] data_addr;  // addr bus
 
   // Access control
-  reg [3:0] r_byte_e;  // byte enable
-  reg r_write;  // write enable
-  reg r_read;  // read enable
+  wire [3:0] byte_e;  // byte enable
+  wire write;  // write enable
+  wire read;  // read enable
 
-  wire write = r_write & ~r_read;
+  wire read_write = write & ~read;
   wire ram_enable = !io_enable;
-  wire io_enable = r_data_addr[28];
+  wire io_enable = data_addr[28];
 
   // Instruction ROM
   memory #(
       .DATA_WIDTH(32),
       .DATA_SIZE(1024),
-      .PATH("firmware/target/riscv32imac-unknown-none-elf/release/stepper.txt")
+`ifdef __ICARUS__
+      .PATH("../firmware/target/riscv32imac-unknown-none-elf/release/stepper.mem")
+`else
+      .PATH("firmware/target/riscv32imac-unknown-none-elf/release/stepper.mem")
+`endif
   ) rom (
       .clk_in(clk_25mhz),
-      .enable(1),
-      .write(0),  // constant read
-      .addr_in(r_inst_addr[9:0]),
+      .enable(1'b1),
+      .write(1'b0),  // constant read
+      .addr_in(inst_addr[9:0]),
       .data_in('b0),
       .r_data_out(inst_data)
   );
@@ -82,10 +86,10 @@ module stepper (
   ) ram (
       .clk_in(clk_25mhz),
       .enable(ram_enable),
-      .write(write),
-      .addr_in(r_data_addr[9:0]),
+      .write(read_write),
+      .addr_in(data_addr[9:0]),
       .data_in(data_out),  // crossed over because of data_in is the cpu input for data
-      .r_data_out(r_data_in)
+      .r_data_out(data_in)
   );
 
   // IO RAM
@@ -94,28 +98,28 @@ module stepper (
   ) io (
       .clk_in(clk_25mhz),
       .enable(io_enable),
-      .write(write),
+      .write(read_write),
       .data_in(data_out),
-      .r_data_out(r_data_in),  // TODO fix multiple driving flipflops
+      .r_data_out(data_in),  // TODO fix multiple driving flipflops
 
       .r_mem(led[7:0])
   );
 
   darkriscv core (
       .CLK(clk_25mhz),
-      .RES(reset),
+      .RES(!reset),
       .HLT(r_hlt),
 
       .IDATA(inst_data),
-      .IADDR(r_inst_addr),
+      .IADDR(inst_addr),
 
-      .DATAI(r_data_in),
+      .DATAI(data_in),
       .DATAO(data_out),
-      .DADDR(r_data_addr),
+      .DADDR(data_addr),
 
-      .BE(r_byte_e),
-      .WR(r_write),
-      .RD(r_read),
+      .BE(byte_e),
+      .WR(write),
+      .RD(read),
 
       .IDLE(gp[23]),
 
