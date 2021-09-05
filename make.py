@@ -26,8 +26,7 @@ def clean():
         print("Some files where already deleted or are missing!")
 
 
-# Builds the bitstream which can be loaded onto the FPGA
-def build():
+def compile_firmware():
     wd = os.getcwd()
     os.chdir("firmware")
 
@@ -54,26 +53,32 @@ def build():
             "target/riscv32imac-unknown-none-elf/release/stepper.bin",
         ],
     )
-    os.chdir(wd)
 
     # Format output to work with readmemh
     counter = 1
     with open(
-        "firmware/target/riscv32imac-unknown-none-elf/release/stepper.mem", "w"
+        "target/riscv32imac-unknown-none-elf/release/stepper.mem", "w"
     ) as firm_out:
         with open(
-            "firmware/target/riscv32imac-unknown-none-elf/release/stepper.bin", "rb"
+            "target/riscv32imac-unknown-none-elf/release/stepper.bin", "rb"
         ) as firm_in:
             for i in firm_in.read():
-                firm_out.write("{:02x}\n".format(i))
+                firm_out.write("{:02x}".format(i))
 
-                #  if counter % 4 == 0:
-                #      firm_out.write("\n")
+                if counter % 4 == 0:
+                    firm_out.write("\n")
 
                 counter += 1
 
             for i in range(5 - (counter % 4)):
                 firm_out.write("00")
+
+    os.chdir(wd)
+
+
+# Builds the bitstream which can be loaded onto the FPGA
+def build():
+    compile_firmware()
 
     # Generate the intermediate netlist as a .json
     run_subcommand(
@@ -115,6 +120,8 @@ def build():
 # Runs one test with the name test_name which is in the tests
 # directory
 def test(test_name):
+    compile_firmware()
+
     wd = os.getcwd()
     os.chdir("tests")
 
@@ -138,6 +145,7 @@ def test(test_name):
         )
 
     # Gets together a list of source files
+    print("Current source list:")
     with open(output_dir + "srclist.txt", "w", encoding="utf-8") as sources:
         sources.write(output_dir + "iverilog_dump.v\n")
 
