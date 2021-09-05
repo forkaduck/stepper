@@ -115,8 +115,8 @@ module spi #(
       end
     end
 
-    $display("%m>\t\tr_counter:%x r_curr_cs_n:%x r_clk_enable_sipo:%x r_clk_enable_piso:%x",
-             r_counter, r_curr_cs_n, r_clk_enable_sipo, r_clk_enable_piso);
+    // $display("%m>\t\tr_counter:%x r_curr_cs_n:%x r_clk_enable_sipo:%x r_clk_enable_piso:%x",
+    //          r_counter, r_curr_cs_n, r_clk_enable_sipo, r_clk_enable_piso);
   end
 
   // fast io handle block

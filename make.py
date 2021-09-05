@@ -12,7 +12,9 @@ def run_subcommand(args, env={}):
     for i, k in env.items():
         os.environ[i] = k
 
-    subprocess.run(args=args, check=True)
+    rv = subprocess.run(args=args, check=True)
+
+    print(rv.args)
 
 
 # Removes generated files after build

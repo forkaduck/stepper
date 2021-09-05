@@ -14,10 +14,12 @@ module memory #(
     // mem port
     input enable,
     input write,
-    input [$clog2(DATA_SIZE) -1:0] addr_in,
+    input [$clog2(DATA_SIZE * (DATA_WIDTH/8)) -1:0] addr_in,
     input [DATA_WIDTH - 1:0] data_in,
     output reg [DATA_WIDTH - 1:0] r_data_out
 );
+
+  parameter num_bytes = (DATA_WIDTH / 8);
 
   reg [DATA_WIDTH - 1:0] r_mem[0:DATA_SIZE - 1];
 
@@ -29,14 +31,20 @@ module memory #(
 
     if (PATH != "") $readmemh(PATH, r_mem);
 
+    for (i = 0; i < DATA_SIZE; i++) begin
+      if (r_mem[i] != 'b0) begin
+        $display("%x - %x", i, r_mem[i]);
+      end
+    end
+
     r_data_out = 'b0;
   end
 
   always @(posedge clk_in) begin
     if (write) begin
-      r_mem[addr_in/(DATA_WIDTH/8)] <= data_in;
+      r_mem[addr_in/num_bytes] <= data_in;
     end else begin
-      r_data_out <= enable ? r_mem[addr_in/(DATA_WIDTH/8)] : 'bz;
+      r_data_out <= enable ? r_mem[addr_in/num_bytes] : 'bz;
     end
   end
 endmodule

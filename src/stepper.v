@@ -57,8 +57,6 @@ module stepper (
   wire read;  // read enable
 
   wire read_write = write & ~read;
-  wire ram_enable = !io_enable;
-  wire io_enable = data_addr[28];
 
   // Instruction ROM
   memory #(
@@ -85,7 +83,7 @@ module stepper (
       .PATH("")
   ) ram (
       .clk_in(clk_25mhz),
-      .enable(ram_enable),
+      .enable(!data_addr[28]),
       .write(read_write),
       .addr_in(data_addr[9:0]),
       .data_in(data_out),  // crossed over because of data_in is the cpu input for data
@@ -97,7 +95,7 @@ module stepper (
       .DATA_WIDTH(32)
   ) io (
       .clk_in(clk_25mhz),
-      .enable(io_enable),
+      .enable(data_addr[28]),
       .write(read_write),
       .data_in(data_out),
       .r_data_out(data_in),  // TODO fix multiple driving flipflops

@@ -21,6 +21,6 @@ module piso #(
     end else begin
       r_data <= r_data << 1;
     end
-    $display("%m>\tr_data:%b load_in:%x", r_data, load_in);
+    // $display("%m>\tr_data:%b load_in:%x", r_data, load_in);
   end
 endmodule
