@@ -23,24 +23,20 @@ module memory #(
 
   integer i;
   initial begin
-    if (PATH != "") begin
-      $readmemh(PATH, r_mem);
-    end else begin
-      for (i = 0; i < DATA_SIZE; i++) begin
-        r_mem[i] = 'b0;
-      end
+    for (i = 0; i < DATA_SIZE; i++) begin
+      r_mem[i] = 'b0;
     end
+
+    if (PATH != "") $readmemh(PATH, r_mem);
 
     r_data_out = 'b0;
   end
 
   always @(posedge clk_in) begin
-    if (enable) begin
-      if (write) begin
-        r_mem[addr_in] <= data_in;
-      end else begin
-        r_data_out <= enable ? r_mem[addr_in] : 'bz;
-      end
+    if (write) begin
+      r_mem[addr_in/(DATA_WIDTH/8)] <= data_in;
+    end else begin
+      r_data_out <= enable ? r_mem[addr_in/(DATA_WIDTH/8)] : 'bz;
     end
   end
 endmodule

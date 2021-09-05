@@ -17,12 +17,10 @@ module io_register #(
   end
 
   always @(posedge clk_in) begin
-    if (enable) begin
-      if (write) begin
-        r_mem <= data_in;
-      end else begin
-        r_data_out <= enable ? r_mem : 'bz;
-      end
+    if (write) begin
+      r_mem <= data_in;
+    end else begin
+      r_data_out <= enable ? r_mem : 'bz;
     end
   end
 endmodule
