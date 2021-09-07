@@ -3,6 +3,7 @@ import argparse
 import os
 import subprocess
 import sys
+import binascii
 
 # Runs a subcommand with the appropriate pipes
 # (a wrapper for use with tqdm)
@@ -26,6 +27,28 @@ def clean():
 
     except FileNotFoundError:
         print("Some files where already deleted or are missing!")
+
+
+#
+#  def fill_0s(val):
+#      for _ in range(4 - (len(val) % 4)):
+#          val.append(0)
+#
+#
+#  def reverse_byte_order(non):
+#      output = bytearray()
+#
+#      fill_0s(non)
+#
+#      for i in range(0, len(non), 4):
+#          output.append(non[i + 3])
+#          output.append(non[i + 2])
+#          output.append(non[i + 1])
+#          output.append(non[i])
+#
+#      fill_0s(output)
+#
+#      return output
 
 
 def compile_firmware():
@@ -64,16 +87,15 @@ def compile_firmware():
         with open(
             "target/riscv32imac-unknown-none-elf/release/stepper.bin", "rb"
         ) as firm_in:
-            for i in firm_in.read():
+            bin_firm = bytearray(firm_in.read())
+            for i in bin_firm:
+                #  print("{:02x}".format(i), end=" ")
                 firm_out.write("{:02x}".format(i))
 
                 if counter % 4 == 0:
                     firm_out.write("\n")
 
                 counter += 1
-
-            for i in range(5 - (counter % 4)):
-                firm_out.write("00")
 
     os.chdir(wd)
 
