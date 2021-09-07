@@ -43,6 +43,7 @@ module memory #(
   always @(posedge clk_in) begin
     if (write) begin
       r_mem[addr_in/num_bytes] <= data_in;
+      r_data_out <= 'b0;
     end else begin
       r_data_out <= enable ? r_mem[addr_in/num_bytes] : 'bz;
     end
