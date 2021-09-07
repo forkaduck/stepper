@@ -47,6 +47,7 @@ module stepper (
   wire [31:0] inst_data;  // instruction data bus
   wire [31:0] inst_addr;  // instruction addr bus
 
+  wire [31:0] data_in_byte;
   wire [31:0] data_in;  // data bus
   wire [31:0] data_out;  // data bus
   wire [31:0] data_addr;  // addr bus
@@ -103,6 +104,13 @@ module stepper (
       .r_mem(led[7:0])
   );
 
+  assign data_in_byte = {
+    byte_e[3] ? data_in[31:24] : 8'b0,
+    byte_e[2] ? data_in[23:16] : 8'b0,
+    byte_e[1] ? data_in[15:8] : 8'b0,
+    byte_e[0] ? data_in[7:0] : 8'b0
+  };
+
   darkriscv core (
       .CLK(clk_25mhz),
       .RES(!reset),
@@ -111,7 +119,7 @@ module stepper (
       .IDATA(inst_data),
       .IADDR(inst_addr),
 
-      .DATAI(data_in),
+      .DATAI(data_in_byte),
       .DATAO(data_out),
       .DADDR(data_addr),
 
