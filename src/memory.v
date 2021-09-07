@@ -14,6 +14,9 @@ module memory #(
     // mem port
     input enable,
     input write,
+    output reg ready,
+
+    // bus
     input [$clog2(DATA_SIZE) * (DATA_WIDTH/8) -1:0] addr_in,
     input [DATA_WIDTH - 1:0] data_in,
     output reg [DATA_WIDTH - 1:0] r_data_out
@@ -41,11 +44,18 @@ module memory #(
   end
 
   always @(posedge clk_in) begin
-    if (write) begin
-      r_mem[addr_in/num_bytes] <= data_in;
-      r_data_out <= 'b0;
+    if (enable) begin
+      if (write) begin
+        r_mem[addr_in/num_bytes] <= data_in << ((addr_in % num_bytes) * 8);
+        r_data_out <= 'b0;
+        ready <= 1'b1;
+      end else begin
+        r_data_out <= r_mem[addr_in/num_bytes] << ((addr_in % num_bytes) * 8);
+        ready <= 1'b1;
+      end
     end else begin
-      r_data_out <= enable ? r_mem[addr_in/num_bytes] : 'bz;
+      r_data_out <= 'bz;
+      ready <= 1'bz;
     end
   end
 endmodule

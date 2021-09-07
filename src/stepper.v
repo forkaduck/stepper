@@ -42,22 +42,16 @@ module stepper (
   // 0x10000000 IO RAM
 
   // CPU Registers
-  reg r_hlt = 0;  // halts the cpu
 
-  wire [31:0] inst_data;  // instruction data bus
-  wire [31:0] inst_addr;  // instruction addr bus
+  wire [31:0] mem_addr;  // memory address
+  wire [31:0] mem_wdata;  // cpu write out
+  wire [3:0] mem_wstrb;  // byte level write enable
+  wire [31:0] mem_rdata;  // cpu read in
+  wire [31:0] irq;
 
-  wire [31:0] data_in_byte;
-  wire [31:0] data_in;  // data bus
-  wire [31:0] data_out;  // data bus
-  wire [31:0] data_addr;  // addr bus
-
-  // Access control
-  wire [3:0] byte_e;  // byte enable
-  wire write;  // write enable
-  wire read;  // read enable
-
-  wire read_write = write & ~read;
+  wire mem_valid;  // cpu is ready
+  wire mem_instr;  // fetch is instruction
+  wire mem_ready;  // memory is ready
 
   // Instruction ROM
   memory #(
@@ -70,11 +64,12 @@ module stepper (
 `endif
   ) rom (
       .clk_in(clk_25mhz),
-      .enable(1'b1),
-      .write(1'b0),  // constant read
-      .addr_in(inst_addr[9:0]),
+      .enable(mem_instr & mem_valid),
+      .write(1'b0),  // constant read (simulate a rom block)
+      .ready(mem_ready),
+      .addr_in(mem_addr),
       .data_in('b0),
-      .r_data_out(inst_data)
+      .r_data_out(mem_rdata)
   );
 
   // RAM
@@ -84,11 +79,12 @@ module stepper (
       .PATH("")
   ) ram (
       .clk_in(clk_25mhz),
-      .enable(!data_addr[28]),
-      .write(read_write),
-      .addr_in(data_addr[9:0]),
-      .data_in(data_out),  // crossed over because of data_in is the cpu input for data
-      .r_data_out(data_in)
+      .enable(!mem_instr & mem_valid & !mem_addr[28]),
+      .write(mem_wstrb > 0 ? 1'b1 : 1'b0),
+      .ready(mem_ready),
+      .addr_in(mem_addr),
+      .data_in(mem_wdata),  // crossed over because of data_in is the cpu input for data
+      .r_data_out(mem_rdata)
   );
 
   // IO RAM
@@ -96,40 +92,34 @@ module stepper (
       .DATA_WIDTH(32)
   ) io (
       .clk_in(clk_25mhz),
-      .enable(data_addr[28]),
-      .write(read_write),
-      .data_in(data_out),
-      .r_data_out(data_in),  // TODO fix multiple driving flipflops
+      .enable(!mem_instr & mem_valid & mem_addr[28]),
+      .write(mem_wstrb > 0 ? 1'b1 : 1'b0),
+      .ready(mem_ready),
+      .data_in(mem_wdata),
+      .r_data_out(mem_rdata),  // TODO fix multiple driving flipflops
 
       .r_mem(led[7:0])
   );
 
-  assign data_in_byte = {
-    byte_e[3] ? data_in[31:24] : 8'b0,
-    byte_e[2] ? data_in[23:16] : 8'b0,
-    byte_e[1] ? data_in[15:8] : 8'b0,
-    byte_e[0] ? data_in[7:0] : 8'b0
-  };
-
-  darkriscv core (
-      .CLK(clk_25mhz),
-      .RES(!reset),
-      .HLT(r_hlt),
-
-      .IDATA(inst_data),
-      .IADDR(inst_addr),
-
-      .DATAI(data_in_byte),
-      .DATAO(data_out),
-      .DADDR(data_addr),
-
-      .BE(byte_e),
-      .WR(write),
-      .RD(read),
-
-      .IDLE(gp[23]),
-
-      .DEBUG(gp[27:24])
+  picorv32 #(
+      .STACKADDR('d1024),
+      .PROGADDR_RESET('b0),
+      .PROGADDR_IRQ('b0),
+      .ENABLE_MUL('b1),
+      .ENABLE_DIV('b1),
+      .ENABLE_IRQ(1),
+      .ENABLE_IRQ_QREGS('b0)
+  ) cpu (
+      .clk      (clk_25mhz),
+      .resetn   (reset),
+      .mem_valid(mem_valid),
+      .mem_instr(mem_instr),
+      .mem_ready(mem_ready),
+      .mem_addr (mem_addr),
+      .mem_wdata(mem_wdata),
+      .mem_wstrb(mem_wstrb),
+      .mem_rdata(mem_rdata),
+      .irq      (irq)
   );
 
   // assign direction pin to fixed 0
