@@ -1,0 +1,47 @@
+[*]
+[*] GTKWave Analyzer v3.3.109 (w)1999-2020 BSI
+[*] Fri Sep 10 07:41:11 2021
+[*]
+[dumpfile] "/home/fuckaduck/Desktop/projects/stepper/tests/sim_output/stepper.vcd"
+[dumpfile_mtime] "Fri Sep 10 07:16:44 2021"
+[dumpfile_size] 194404
+[savefile] "/home/fuckaduck/Desktop/projects/stepper/tests/sim_output/stepper.gtkw"
+[timestart] 19739200
+[size] 1916 1035
+[pos] -1 -1
+*-17.000000 20202300 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] stepper.
+[sst_width] 227
+[signals_width] 225
+[sst_expanded] 1
+[sst_vpaned_height] 292
+@28
+stepper.clk_25mhz
+stepper.reset
+@200
+-
+@22
+stepper.mem_addr[31:0]
+stepper.mem_rdata[31:0]
+stepper.mem_wdata[31:0]
+stepper.mem_wstrb[3:0]
+@200
+-
+@28
+stepper.mem_instr
+stepper.mem_ready
+stepper.mem_valid
+@200
+-
+@28
+stepper.ram_enable
+stepper.rom_enable
+stepper.io_enable
+@200
+-
+@28
+stepper.trap
+@22
+stepper.led[7:0]
+[pattern_trace] 1
+[pattern_trace] 0
