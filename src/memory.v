@@ -34,25 +34,23 @@ module memory #(
 
     if (PATH != "") $readmemh(PATH, r_mem);
 
+`ifdef __ICARUS__
     for (i = 0; i < DATA_SIZE; i++) begin
       if (r_mem[i] != 'b0) begin
         $display("%x - %x", i, r_mem[i]);
       end
     end
-
-    r_data_out = 'b0;
+`endif
   end
 
   always @(posedge clk_in) begin
     if (enable) begin
       if (write) begin
         r_mem[addr_in/num_bytes] <= data_in << ((addr_in % num_bytes) * 8);
-        r_data_out <= 'b0;
-        ready <= 1'b1;
       end else begin
         r_data_out <= r_mem[addr_in/num_bytes] << ((addr_in % num_bytes) * 8);
-        ready <= 1'b1;
       end
+      ready <= 1'b1;
     end else begin
       r_data_out <= 'bz;
       ready <= 1'bz;

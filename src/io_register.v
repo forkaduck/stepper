@@ -16,18 +16,16 @@ module io_register #(
 );
   initial begin
     r_mem = 'b0;
-    r_data_out = 'b0;
   end
 
   always @(posedge clk_in) begin
     if (enable) begin
       if (write) begin
         r_mem <= data_in;
-        ready <= 1'b1;
       end else begin
         r_data_out <= r_mem;
-        ready <= 1'b1;
       end
+      ready <= 1'b1;
     end else begin
       r_data_out <= 'bz;
       ready <= 1'bz;

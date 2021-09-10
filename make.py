@@ -29,7 +29,6 @@ def clean():
         print("Some files where already deleted or are missing!")
 
 
-#
 #  def fill_0s(val):
 #      for _ in range(4 - (len(val) % 4)):
 #          val.append(0)
@@ -79,7 +78,7 @@ def compile_firmware():
         ],
     )
 
-    # Format output to work with readmemh
+    #  Format output to work with readmemh
     counter = 1
     with open(
         "target/riscv32imac-unknown-none-elf/release/stepper.mem", "w"
@@ -87,8 +86,8 @@ def compile_firmware():
         with open(
             "target/riscv32imac-unknown-none-elf/release/stepper.bin", "rb"
         ) as firm_in:
-            bin_firm = bytearray(firm_in.read())
-            for i in bin_firm:
+            firm = bytearray(firm_in.read())
+            for i in firm:
                 #  print("{:02x}".format(i), end=" ")
                 firm_out.write("{:02x}".format(i))
 
@@ -119,6 +118,8 @@ def build():
             "nextpnr-ecp5",
             "-v",
             "--25k",
+            "--package",
+            "CABGA381",
             "--json",
             "stepper.json",
             "--lpf",
