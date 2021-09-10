@@ -3,7 +3,6 @@ import argparse
 import os
 import subprocess
 import sys
-import binascii
 
 # Runs a subcommand with the appropriate pipes
 # (a wrapper for use with tqdm)
