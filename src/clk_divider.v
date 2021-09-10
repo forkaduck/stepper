@@ -1,5 +1,4 @@
-
-// clock divider
+// Dividies the clk_in with max_in
 module clk_divider #(
     parameter SIZE = 8
 ) (

@@ -43,7 +43,8 @@
 `define ENCM_CTRL 8'h72
 `define LOST_STEPS 8'h73
 
-
+// A temporary module for which initialises the motordriver
+// and provides a test signal.
 module motor_driver (
     input clk_in,
     input reset_n_in,

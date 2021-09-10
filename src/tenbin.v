@@ -1,3 +1,4 @@
+// A 1 to 4 code to binary converter module.
 module tenbin (
     input [3:0] in,
     output reg [1:0] out

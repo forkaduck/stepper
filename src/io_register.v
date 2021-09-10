@@ -1,3 +1,5 @@
+// Register to hold one 32bit value. Can be
+// configured to drive some external signals.
 module io_register #(
     parameter DATA_WIDTH = 32
 ) (

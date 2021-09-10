@@ -1,3 +1,5 @@
+// Button debouncer adds about 20us to
+// the signal in question.
 module debounce (
     input clk_in,
     input in,

@@ -1,4 +1,4 @@
-// convert serial into parallel data
+// Convert serial into parallel data.
 module sipo #(
     parameter SIZE = 8
 ) (

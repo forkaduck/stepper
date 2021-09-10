@@ -1,4 +1,4 @@
-
+// A basic spi unit implementing spi mode 3.
 module spi #(
     parameter SIZE = 40,
     parameter CS_SIZE = 4,
