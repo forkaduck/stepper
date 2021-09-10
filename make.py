@@ -12,13 +12,9 @@ def run_subcommand(args, env={}):
     for i, k in env.items():
         os.environ[i] = k
 
-    rv = subprocess.Popen(args=args)
+    rv = subprocess.run(args=args, check=True)
 
     print(rv.args)
-
-    rv = rv.wait()
-    if rv:
-        sys.exit(rv)
 
 
 # Removes generated files after build
