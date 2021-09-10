@@ -100,8 +100,6 @@ def compile_firmware():
 
 # Builds the bitstream which can be loaded onto the FPGA
 def build():
-    compile_firmware()
-
     # Generate the intermediate netlist as a .json
     run_subcommand(
         [
@@ -144,8 +142,6 @@ def build():
 # Runs one test with the name test_name which is in the tests
 # directory
 def test(test_name):
-    compile_firmware()
-
     wd = os.getcwd()
     os.chdir("tests")
 
@@ -265,6 +261,9 @@ parser.add_argument(
 parser.add_argument(
     "--flash", help="Flash the bitstream into EEPROM", dest="flash", action="store_true"
 )
+parser.add_argument(
+    "--compile", help="Compile the firmware", dest="compile", action="store_true"
+)
 
 prog_args = parser.parse_args()
 
@@ -282,3 +281,6 @@ if prog_args.load:
 
 if prog_args.flash:
     flash()
+
+if prog_args.compile:
+    compile_firmware()
