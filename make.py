@@ -105,7 +105,7 @@ def build():
         [
             "yosys",
             "-p",
-            "read_verilog src/*.v; synth_ecp5 -asyncprld -json stepper.json",
+            "read_verilog -formal src/*.v; synth_ecp5 -asyncprld -json stepper.json",
         ],
     )
 
