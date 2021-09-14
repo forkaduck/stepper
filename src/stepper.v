@@ -24,7 +24,7 @@ module stepper (
     output wifi_gpio0
 );
 
-  wire reset;
+  wire reset_n;
 
   // Tie GPIO0, keep board from rebooting
   assign wifi_gpio0 = 1'b1;
@@ -32,12 +32,12 @@ module stepper (
   debounce reset_debounce (
       .clk_in(clk_25mhz),
       .in(btn[1]),
-      .out(reset)
+      .out(reset_n)
   );
 
   // Memory Map (please update constantly):
   // 0x00000000 4KB ROM
-  // 0x00000000 4KB RAM
+  // 0x00001000 4KB RAM
   //
   // 0x10000000 IO RAM
 
@@ -46,14 +46,15 @@ module stepper (
   wire [31:0] mem_wdata;  // cpu write out
   wire [3:0] mem_wstrb;  // byte level write enable
   wire [31:0] mem_rdata;  // cpu read in
-  wire [31:0] irq;
+  wire [31:0] irq = 'b0;
 
   wire mem_valid;  // cpu is ready
   wire mem_instr;  // fetch is instruction
   wire mem_ready;  // memory is ready
 
-  wire rom_enable = mem_instr & mem_valid & !mem_addr[28] & !mem_addr[11];
-  wire ram_enable = !mem_instr & mem_valid & !mem_addr[28] & mem_addr[11];
+  wire read_write = mem_wstrb > 0 ? 1'b1 : 1'b0;
+  wire rom_enable = mem_instr & mem_valid & !mem_addr[28] & mem_addr < 'h1000 ? 1'b1 : 1'b0;
+  wire ram_enable = !mem_instr & mem_valid & !mem_addr[28] & mem_addr > 'h1000 ? 1'b1 : 1'b0;
   wire io_enable = !mem_instr & mem_valid & mem_addr[28];
 
   wire trap;
@@ -85,9 +86,9 @@ module stepper (
   ) ram (
       .clk_in(clk_25mhz),
       .enable(ram_enable),
-      .write(mem_wstrb > 0 ? 1'b1 : 1'b0),
+      .write(read_write),
       .ready(mem_ready),
-      .addr_in(mem_addr),
+      .addr_in(mem_addr + 32'h1000),
       .data_in(mem_wdata),  // crossed over because of data_in is the cpu input for data
       .r_data_out(mem_rdata)
   );
@@ -98,7 +99,7 @@ module stepper (
   ) io (
       .clk_in(clk_25mhz),
       .enable(io_enable),
-      .write(mem_wstrb > 0 ? 1'b1 : 1'b0),
+      .write(read_write),
       .ready(mem_ready),
       .data_in(mem_wdata),
       .r_data_out(mem_rdata),  // TODO fix multiple driving flipflops
@@ -106,15 +107,14 @@ module stepper (
       .r_mem(led[7:0])
   );
 
-
   picorv32 #(
       .ENABLE_COUNTERS(1'b1),
       .ENABLE_COUNTERS64(1'b1),
       .ENABLE_REGS_16_31(1'b1),
       .ENABLE_REGS_DUALPORT(1'b0),
-      .LATCHED_MEM_RDATA(1'b0),
+      .LATCHED_MEM_RDATA(1'b1),
       .TWO_STAGE_SHIFT(1'b1),
-      .BARREL_SHIFTER(1'b0),
+      .BARREL_SHIFTER(1'b1),
       .TWO_CYCLE_COMPARE(1'b0),
       .TWO_CYCLE_ALU(1'b0),
       .COMPRESSED_ISA(1'b0),
@@ -125,18 +125,18 @@ module stepper (
       .ENABLE_FAST_MUL(1'b1),
       .ENABLE_DIV(1'b1),
       .ENABLE_IRQ(1'b0),
-      .ENABLE_IRQ_QREGS(1'b1),
-      .ENABLE_IRQ_TIMER(1'b1),
+      .ENABLE_IRQ_QREGS(1'b0),
+      .ENABLE_IRQ_TIMER(1'b0),
       .ENABLE_TRACE(1'b0),
-      .REGS_INIT_ZERO(1'b0),
+      .REGS_INIT_ZERO(1'b1),
       .MASKED_IRQ(32'h0000_0000),
       .LATCHED_IRQ(32'hffff_ffff),
       .PROGADDR_RESET(32'h0000_0000),
       .PROGADDR_IRQ(32'h0000_0000),
-      .STACKADDR(32'h00002000)
+      .STACKADDR(32'h00001000)
   ) cpu (
       .clk         (clk_25mhz),
-      .resetn      (reset),
+      .resetn      (reset_n),
       .mem_valid   (mem_valid),
       .mem_instr   (mem_instr),
       .mem_ready   (mem_ready),
@@ -169,7 +169,7 @@ module stepper (
   //
   // motor_driver driver (
   //     .clk_in(clk_25mhz),
-  //     .reset_n_in(reset),
+  //     .reset_n_in(reset_n),
   //     .serial_in(gn[0]),
   //     .speed_in('d75),
   //     .step_enable_in(1),

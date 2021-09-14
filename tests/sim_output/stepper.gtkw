@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.109 (w)1999-2020 BSI
-[*] Sat Sep 11 16:45:57 2021
+[*] Sun Sep 12 07:20:12 2021
 [*]
 [dumpfile] "/home/fuckaduck/Desktop/projects/stepper/tests/sim_output/stepper.vcd"
-[dumpfile_mtime] "Sat Sep 11 16:44:16 2021"
+[dumpfile_mtime] "Sun Sep 12 06:59:23 2021"
 [dumpfile_size] 208636
 [savefile] "/home/fuckaduck/Desktop/projects/stepper/tests/sim_output/stepper.gtkw"
-[timestart] 19521900
+[timestart] 19518800
 [size] 3436 1395
 [pos] -1 -1
-*-17.000000 20344000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-17.000000 20320000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] stepper.
 [sst_width] 330
 [signals_width] 473
@@ -68,9 +68,7 @@ stepper.cpu.alu_wait_2
 stepper.cpu.cached_ascii_instr[63:0]
 stepper.cpu.cached_insn_imm[31:0]
 stepper.cpu.cached_insn_opcode[31:0]
-@23
 stepper.cpu.cached_insn_rd[4:0]
-@22
 stepper.cpu.cached_insn_rs1[4:0]
 stepper.cpu.cached_insn_rs2[4:0]
 @28
@@ -234,6 +232,7 @@ stepper.cpu.mem_do_rdata
 stepper.cpu.mem_do_rinst
 stepper.cpu.mem_do_wdata
 stepper.cpu.mem_done
+[color] 6
 stepper.cpu.mem_instr
 @22
 stepper.cpu.mem_la_addr[31:0]
@@ -257,7 +256,10 @@ stepper.cpu.mem_rdata_q[31:0]
 stepper.cpu.mem_rdata_word[31:0]
 @28
 stepper.cpu.mem_ready
+@29
+[color] 6
 stepper.cpu.mem_state[1:0]
+@28
 stepper.cpu.mem_valid
 @22
 stepper.cpu.mem_wdata[31:0]
