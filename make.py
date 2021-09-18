@@ -61,7 +61,7 @@ def compile_firmware():
     #  # Strip the firmware of debug symbols
     #  run_subcommand(
     #      [
-    #          "riscv32-elf-strip",
+    #          "riscv64-unknown-elf-strip",
     #          "target/riscv32imac-unknown-none-elf/release/stepper",
     #      ],
     #  )
@@ -69,7 +69,7 @@ def compile_firmware():
     #  # Copy sections to bin for use with rom initialisation
     #  run_subcommand(
     #      [
-    #          "riscv32-elf-objcopy",
+    #          "riscv64-unknown-elf-objcopy",
     #          "-O",
     #          "binary",
     #          "target/riscv32imac-unknown-none-elf/release/stepper",
@@ -105,7 +105,7 @@ def build():
         [
             "yosys",
             "-p",
-            "read_verilog -formal src/*.v; synth_ecp5 -asyncprld -json stepper.json",
+            "read_verilog -formal src/*.v; synth_ecp5 -json stepper.json",
         ],
     )
 

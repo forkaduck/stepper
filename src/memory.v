@@ -17,17 +17,18 @@ module memory #(
     output reg ready,
 
     // bus
-    input [$clog2(DATA_SIZE) * (DATA_WIDTH/8) -1:0] addr_in,
+    input [DATA_WIDTH - 1:0] addr_in,
     input [DATA_WIDTH - 1:0] data_in,
     output reg [DATA_WIDTH - 1:0] r_data_out
 );
-
-  parameter num_bytes = (DATA_WIDTH / 8);
 
   reg [DATA_WIDTH - 1:0] r_mem[0:DATA_SIZE - 1];
 
   integer i;
   initial begin
+    ready = 'b0;
+    r_data_out = 'bz;
+
     for (i = 0; i < DATA_SIZE; i++) begin
       r_mem[i] = 'b0;
     end
@@ -46,14 +47,15 @@ module memory #(
   always @(posedge clk_in) begin
     if (enable) begin
       if (write) begin
-        r_mem[addr_in/num_bytes] <= data_in << ((addr_in % num_bytes) * 8);
+        r_mem[addr_in] <= data_in;
+        r_data_out <= 'bz;
       end else begin
-        r_data_out <= r_mem[addr_in/num_bytes] << ((addr_in % num_bytes) * 8);
+        r_data_out <= r_mem[addr_in];
       end
       ready <= 1'b1;
     end else begin
       r_data_out <= 'bz;
-      ready <= 1'bz;
+      ready <= 'bz;
     end
   end
 endmodule
