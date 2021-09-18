@@ -1,8 +1,6 @@
 int _start()
 {
-	for (int i; i < 10; i++) {
-	}
-
+	*((int *)(0x10000000)) = 0xffffffff;
 	while (1) {
 	}
 }
