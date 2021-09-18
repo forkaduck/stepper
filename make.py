@@ -105,7 +105,7 @@ def build():
         [
             "yosys",
             "-p",
-            "read_verilog -formal src/*.v; synth_ecp5 -json stepper.json",
+            "read_verilog src/*.v; synth_ecp5 -json stepper.json",
         ],
     )
 
@@ -114,7 +114,8 @@ def build():
         [
             "nextpnr-ecp5",
             "-v",
-            "--25k",
+            "--debug",
+            "--12k",
             "--package",
             "CABGA381",
             "--json",

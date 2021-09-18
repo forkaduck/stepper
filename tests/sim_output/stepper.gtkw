@@ -1,22 +1,23 @@
 [*]
 [*] GTKWave Analyzer v3.3.109 (w)1999-2020 BSI
-[*] Sat Sep 18 08:28:25 2021
+[*] Sat Sep 18 15:50:37 2021
 [*]
 [dumpfile] "/home/fuckaduck/Desktop/projects/stepper/tests/sim_output/stepper.vcd"
-[dumpfile_mtime] "Sat Sep 18 08:27:12 2021"
-[dumpfile_size] 195932
+[dumpfile_mtime] "Sat Sep 18 15:13:48 2021"
+[dumpfile_size] 517323
 [savefile] "/home/fuckaduck/Desktop/projects/stepper/tests/sim_output/stepper.gtkw"
-[timestart] 18620000
+[timestart] 19554000
 [size] 3436 1395
 [pos] -1 -1
-*-18.000000 20240000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-18.000000 21267600 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] stepper.
 [sst_width] 227
-[signals_width] 408
+[signals_width] 476
 [sst_expanded] 1
 [sst_vpaned_height] 292
 @28
 stepper.clk_25mhz
+stepper.reset_n
 @200
 -
 @22
@@ -34,8 +35,8 @@ stepper.read_write
 @200
 -
 @28
-stepper.ram_enable
 stepper.rom_enable
+stepper.ram_enable
 stepper.io_enable
 @200
 -
@@ -44,7 +45,20 @@ stepper.led[7:0]
 @200
 -
 -
+@23
+stepper.mem_rom_rdata[31:0]
+@22
+stepper.mem_ram_rdata[31:0]
+stepper.mem_io_rdata[31:0]
+@200
 -
+@28
+stepper.cpu.trap
+[color] 6
+stepper.cpu.mem_instr
+[color] 6
+stepper.cpu.mem_state[1:0]
+@200
 -
 @28
 stepper.cpu.alu_eq
@@ -117,10 +131,6 @@ stepper.cpu.dbg_valid_insn
 @22
 stepper.cpu.decoded_imm[31:0]
 stepper.cpu.decoded_imm_j[31:0]
-stepper.cpu.decoded_rd[4:0]
-stepper.cpu.decoded_rs1[4:0]
-stepper.cpu.decoded_rs2[4:0]
-stepper.cpu.decoded_rs[4:0]
 @28
 stepper.cpu.decoder_pseudo_trigger
 stepper.cpu.decoder_pseudo_trigger_q
@@ -210,9 +220,6 @@ stepper.cpu.latched_compr
 stepper.cpu.latched_is_lb
 stepper.cpu.latched_is_lh
 stepper.cpu.latched_is_lu
-@22
-stepper.cpu.latched_rd[4:0]
-@28
 stepper.cpu.latched_stalu
 stepper.cpu.latched_store
 stepper.cpu.latched_trace
@@ -227,8 +234,6 @@ stepper.cpu.mem_do_rdata
 stepper.cpu.mem_do_rinst
 stepper.cpu.mem_do_wdata
 stepper.cpu.mem_done
-[color] 6
-stepper.cpu.mem_instr
 @22
 stepper.cpu.mem_la_addr[31:0]
 @28
@@ -251,8 +256,6 @@ stepper.cpu.mem_rdata_q[31:0]
 stepper.cpu.mem_rdata_word[31:0]
 @28
 stepper.cpu.mem_ready
-[color] 6
-stepper.cpu.mem_state[1:0]
 stepper.cpu.mem_valid
 @22
 stepper.cpu.mem_wdata[31:0]
@@ -321,6 +324,5 @@ stepper.cpu.timer[31:0]
 stepper.cpu.trace_data[35:0]
 @28
 stepper.cpu.trace_valid
-stepper.cpu.trap
 [pattern_trace] 1
 [pattern_trace] 0

@@ -24,16 +24,16 @@ module stepper (
     output wifi_gpio0
 );
 
-  wire reset_n = 1'b1;
+  wire reset_n;
 
   // Tie GPIO0, keep board from rebooting
   assign wifi_gpio0 = 1'b1;
   //
-  // debounce reset_debounce (
-  //     .clk_in(clk_25mhz),
-  //     .in(btn[1]),
-  //     .out(reset_n)
-  // );
+  debounce reset_debounce (
+      .clk_in(clk_25mhz),
+      .in(!btn[1]),
+      .r_out(reset_n)
+  );
   //
   // Memory Map (please update constantly):
   // 0x00000000 4KB ROM
@@ -58,15 +58,6 @@ module stepper (
       mem_addr >= 'h1000 & mem_addr < 'h2000);
   wire io_enable = (!rom_enable & !ram_enable) & !mem_instr & mem_valid & (mem_addr >= 'h10000000);
 
-  // Memory multiplexer
-  // I don't know why high impedance is not enough but hey it works.
-  wire [31:0] mem_rom_rdata;
-  wire [31:0] mem_ram_rdata;
-  wire [31:0] mem_io_rdata;
-
-  assign mem_rdata =
-      rom_enable ? mem_rom_rdata : (ram_enable ? mem_ram_rdata : (io_enable ? mem_io_rdata : 'b0));
-
   // Instruction RAM
   memory #(
       .DATA_WIDTH(32),
@@ -83,8 +74,7 @@ module stepper (
       .ready(mem_ready),
       .addr_in(mem_addr / 4),
       .data_in('b0),
-      .r_data_out(mem_rom_rdata)
-      // .r_data_out(mem_rdata)
+      .r_data_out(mem_rdata)
   );
 
   // RAM
@@ -99,8 +89,7 @@ module stepper (
       .ready(mem_ready),
       .addr_in(mem_addr / 4 - 32'h00001000),
       .data_in(mem_wdata),  // crossed over because of data_in is the cpu input for data
-      .r_data_out(mem_ram_rdata)
-      // .r_data_out(mem_rdata)
+      .r_data_out(mem_rdata)
   );
 
   // IO RAM
@@ -112,8 +101,7 @@ module stepper (
       .write(read_write),
       .ready(mem_ready),
       .data_in(mem_wdata),
-      .r_data_out(mem_io_rdata),  // TODO fix multiple driving flipflops
-      // .r_data_out(mem_rdata),
+      .r_data_out(mem_rdata),
 
       .r_mem(led[7:0])
   );
