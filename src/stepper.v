@@ -34,7 +34,7 @@ module stepper (
       .in(btn[1]),
       .out(reset_n)
   );
-
+  //
   // Memory Map (please update constantly):
   // 0x00000000 4KB ROM
   // 0x00001000 4KB RAM
@@ -53,11 +53,11 @@ module stepper (
   wire mem_ready;  // memory is ready
 
   wire read_write = mem_wstrb > 0 ? 1'b1 : 1'b0;
-  wire rom_enable = mem_instr & mem_valid & !mem_addr[28] & mem_addr < 'h1000 ? 1'b1 : 1'b0;
-  wire ram_enable = !mem_instr & mem_valid & !mem_addr[28] & mem_addr > 'h1000 ? 1'b1 : 1'b0;
-  wire io_enable = !mem_instr & mem_valid & mem_addr[28];
+  wire rom_enable = !ram_enable & !io_enable & (mem_addr < 'h1000);
+  wire ram_enable = !rom_enable & !io_enable & (mem_addr > 'h1000 && mem_addr < 'h2000);
+  wire io_enable = !rom_enable & !ram_enable & (mem_addr > 'h10000000);
 
-  // Instruction ROM
+  // Instruction RAM
   memory #(
       .DATA_WIDTH(32),
       .DATA_SIZE('h1000),
@@ -86,7 +86,7 @@ module stepper (
       .enable(ram_enable),
       .write(read_write),
       .ready(mem_ready),
-      .addr_in(mem_addr + 32'h1000),
+      .addr_in(mem_addr - 32'h00001000),
       .data_in(mem_wdata),  // crossed over because of data_in is the cpu input for data
       .r_data_out(mem_rdata)
   );
@@ -107,8 +107,8 @@ module stepper (
 
   picorv32 #(
       .ENABLE_COUNTERS(1'b1),
-      .ENABLE_COUNTERS64(1'b0),
-      .ENABLE_REGS_16_31(1'b0),
+      .ENABLE_COUNTERS64(1'b1),
+      .ENABLE_REGS_16_31(1'b1),
       .ENABLE_REGS_DUALPORT(1'b0),
       .LATCHED_MEM_RDATA(1'b0),
       .TWO_STAGE_SHIFT(1'b0),
@@ -126,7 +126,7 @@ module stepper (
       .ENABLE_IRQ_QREGS(1'b0),
       .ENABLE_IRQ_TIMER(1'b0),
       .ENABLE_TRACE(1'b0),
-      .REGS_INIT_ZERO(1'b0),
+      .REGS_INIT_ZERO(1'b1),
       .MASKED_IRQ(32'h0000_0000),
       .LATCHED_IRQ(32'hffff_ffff),
       .PROGADDR_RESET(32'h0000_0000),
