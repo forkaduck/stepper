@@ -106,7 +106,7 @@ module stepper (
   );
 
   picorv32 #(
-      .ENABLE_COUNTERS(1'b0),
+      .ENABLE_COUNTERS(1'b1),
       .ENABLE_COUNTERS64(1'b0),
       .ENABLE_REGS_16_31(1'b0),
       .ENABLE_REGS_DUALPORT(1'b0),
@@ -119,9 +119,9 @@ module stepper (
       .CATCH_MISALIGN(1'b1),
       .CATCH_ILLINSN(1'b1),
       .ENABLE_PCPI(1'b0),
-      .ENABLE_MUL(1'b0),
-      .ENABLE_FAST_MUL(1'b0),
-      .ENABLE_DIV(1'b0),
+      .ENABLE_MUL(1'b1),
+      .ENABLE_FAST_MUL(1'b1),
+      .ENABLE_DIV(1'b1),
       .ENABLE_IRQ(1'b0),
       .ENABLE_IRQ_QREGS(1'b0),
       .ENABLE_IRQ_TIMER(1'b0),
@@ -131,7 +131,7 @@ module stepper (
       .LATCHED_IRQ(32'hffff_ffff),
       .PROGADDR_RESET(32'h0000_0000),
       .PROGADDR_IRQ(32'h0000_0000),
-      .STACKADDR(32'h00001000)
+      .STACKADDR(32'h00002000)
   ) cpu (
       .clk   (clk_25mhz),
       .resetn(reset_n),
