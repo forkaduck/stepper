@@ -28,55 +28,55 @@ def clean():
         print("Some files where already deleted or are missing!")
 
 
-#  def fill_0s(val):
-#      for _ in range(4 - (len(val) % 4)):
-#          val.append(0)
-#
-#
-#  def reverse_byte_order(non):
-#      output = bytearray()
-#
-#      fill_0s(non)
-#
-#      for i in range(0, len(non), 4):
-#          output.append(non[i + 3])
-#          output.append(non[i + 2])
-#          output.append(non[i + 1])
-#          output.append(non[i])
-#
-#      fill_0s(output)
-#
-#      return output
+def fill_0s(val):
+    for _ in range(4 - (len(val) % 4)):
+        val.append(0)
+
+
+def reverse_byte_order(non):
+    output = bytearray()
+
+    fill_0s(non)
+
+    for i in range(0, len(non), 4):
+        output.append(non[i + 3])
+        output.append(non[i + 2])
+        output.append(non[i + 1])
+        output.append(non[i])
+
+    fill_0s(output)
+
+    return output
 
 
 def compile_firmware():
     wd = os.getcwd()
     os.chdir("firmware")
 
-    # Build the firmware
-    run_subcommand(
-        ["cargo", "build", "--release"],
-    )
-
-    # Strip the firmware of debug symbols
-    run_subcommand(
-        [
-            "riscv32-elf-strip",
-            "target/riscv32imac-unknown-none-elf/release/stepper",
-        ],
-    )
-
-    # Copy sections to bin for use with rom initialisation
-    run_subcommand(
-        [
-            "riscv32-elf-objcopy",
-            "-O",
-            "binary",
-            "target/riscv32imac-unknown-none-elf/release/stepper",
-            "target/riscv32imac-unknown-none-elf/release/stepper.bin",
-        ],
-    )
-
+    #  # Build the firmware
+    #  run_subcommand(
+    #      ["cargo", "build", "--release"],
+    #  )
+    #
+    #  # Strip the firmware of debug symbols
+    #  run_subcommand(
+    #      [
+    #          "riscv32-elf-strip",
+    #          "target/riscv32imac-unknown-none-elf/release/stepper",
+    #      ],
+    #  )
+    #
+    #  # Copy sections to bin for use with rom initialisation
+    #  run_subcommand(
+    #      [
+    #          "riscv32-elf-objcopy",
+    #          "-O",
+    #          "binary",
+    #          "target/riscv32imac-unknown-none-elf/release/stepper",
+    #          "target/riscv32imac-unknown-none-elf/release/stepper.bin",
+    #      ],
+    #  )
+    #
     #  Format output to work with readmemh
     counter = 1
     with open(
@@ -86,7 +86,7 @@ def compile_firmware():
             "target/riscv32imac-unknown-none-elf/release/stepper.bin", "rb"
         ) as firm_in:
             firm = bytearray(firm_in.read())
-            for i in firm:
+            for i in reverse_byte_order(firm):
                 #  print("{:02x}".format(i), end=" ")
                 firm_out.write("{:02x}".format(i))
 
