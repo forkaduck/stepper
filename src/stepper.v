@@ -1,3 +1,7 @@
+/*
+* TODO
+*
+*/
 
 // top module
 // current pinout:
@@ -87,7 +91,7 @@ module stepper (
       .enable(ram_enable),
       .write(read_write),
       .ready(mem_ready),
-      .addr_in(mem_addr / 4 - 32'h00001000),
+      .addr_in(mem_addr / 4),
       .data_in(mem_wdata),  // crossed over because of data_in is the cpu input for data
       .r_data_out(mem_rdata)
   );

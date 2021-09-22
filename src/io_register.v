@@ -27,9 +27,9 @@ module io_register #(
       if (write) begin
         r_mem <= data_in;
         r_data_out <= 'bz;
-      end else begin
-        r_data_out <= r_mem;
       end
+
+      r_data_out <= r_mem;
       ready <= 1'b1;
     end else begin
       r_data_out <= 'bz;

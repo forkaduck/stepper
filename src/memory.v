@@ -49,9 +49,8 @@ module memory #(
       if (write) begin
         r_mem[addr_in] <= data_in;
         r_data_out <= 'bz;
-      end else begin
-        r_data_out <= r_mem[addr_in];
       end
+      r_data_out <= r_mem[addr_in];
       ready <= 1'b1;
     end else begin
       r_data_out <= 'bz;
