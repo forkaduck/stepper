@@ -17,7 +17,7 @@ module io_register #(
     output reg [DATA_WIDTH - 1:0] r_mem
 );
   initial begin
-    ready = 'b0;
+    ready = 1'bz;
     r_data_out = 'bz;
     r_mem = 'b0;
   end
@@ -33,7 +33,7 @@ module io_register #(
       ready <= 1'b1;
     end else begin
       r_data_out <= 'bz;
-      ready <= 'bz;
+      ready <= 1'bz;
     end
   end
 endmodule

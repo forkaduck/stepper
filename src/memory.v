@@ -26,7 +26,7 @@ module memory #(
 
   integer i;
   initial begin
-    ready = 'b0;
+    ready = 1'bz;
     r_data_out = 'bz;
 
     for (i = 0; i < DATA_SIZE; i++) begin
@@ -54,7 +54,7 @@ module memory #(
       ready <= 1'b1;
     end else begin
       r_data_out <= 'bz;
-      ready <= 'bz;
+      ready <= 1'bz;
     end
   end
 endmodule
