@@ -12,13 +12,11 @@ module io_register #(
 
     // port
     input  [DATA_WIDTH - 1:0] data_in,
-    output [DATA_WIDTH - 1:0] r_data_out,
+    output [DATA_WIDTH - 1:0] data_out,
 
     output reg [DATA_WIDTH - 1:0] r_mem
 );
   initial begin
-    // ready = 1'bz;
-    // r_data_out = 'bz;
     r_mem = 'b0;
   end
 
@@ -29,5 +27,5 @@ module io_register #(
   end
 
   assign ready = enable ? 1'b1 : 1'bz;
-  assign r_data_out = enable ? r_mem : 'bz;
+  assign data_out = enable ? r_mem : 'bz;
 endmodule

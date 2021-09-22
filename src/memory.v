@@ -19,16 +19,13 @@ module memory #(
     // bus
     input  [DATA_WIDTH - 1:0] addr_in,
     input  [DATA_WIDTH - 1:0] data_in,
-    output [DATA_WIDTH - 1:0] r_data_out
+    output [DATA_WIDTH - 1:0] data_out
 );
 
   reg [DATA_WIDTH - 1:0] r_mem[0:DATA_SIZE - 1];
 
   integer i;
   initial begin
-    // ready = 1'bz;
-    // r_data_out = 'bz;
-
     for (i = 0; i < DATA_SIZE; i++) begin
       r_mem[i] = 'b0;
     end
@@ -51,5 +48,5 @@ module memory #(
   end
 
   assign ready = enable ? 1'b1 : 1'bz;
-  assign r_data_out = enable ? r_mem[addr_in] : 'bz;
+  assign data_out = enable ? r_mem[addr_in] : 'bz;
 endmodule
