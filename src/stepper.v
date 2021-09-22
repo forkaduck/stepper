@@ -1,6 +1,6 @@
 /*
 * TODO
-*
+* change clkname in clk_divider (missing r_)
 */
 
 // top module
@@ -93,7 +93,7 @@ module stepper (
       .ready(mem_ready),
       .addr_in(mem_addr / 4),
       .data_in('b0),
-      .r_data_out(mem_rdata)
+      .data_out(mem_rdata)
   );
 
   // RAM
@@ -108,7 +108,7 @@ module stepper (
       .ready(mem_ready),
       .addr_in(mem_addr / 4),
       .data_in(mem_wdata),  // crossed over because of data_in is the cpu input for data
-      .r_data_out(mem_rdata)
+      .data_out(mem_rdata)
   );
 
   // IO RAM
@@ -120,7 +120,7 @@ module stepper (
       .write(read_write),
       .ready(mem_ready),
       .data_in(mem_wdata),
-      .r_data_out(mem_rdata),
+      .data_out(mem_rdata),
 
       .r_mem(led[3:0])
   );
