@@ -1,6 +1,6 @@
-// convert serial into parallel data
+// Convert serial into parallel data.
 module sipo #(
-    parameter integer SIZE = 8
+    parameter SIZE = 8
 ) (
     input data_in,
     input clk_in,
@@ -11,6 +11,6 @@ module sipo #(
 
   always @(posedge clk_in) begin
     r_data_out <= {data_in, r_data_out[SIZE-1:1]};
-    $display("%m>\tdata_in:%x r_data_out:%b", data_in, r_data_out);
+    // $display("%m>\tdata_in:%x r_data_out:%b", data_in, r_data_out);
   end
 endmodule

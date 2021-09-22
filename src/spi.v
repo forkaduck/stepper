@@ -1,10 +1,8 @@
-
-`include "macros.v"
-
+// A basic spi unit implementing spi mode 3.
 module spi #(
-    parameter integer SIZE = 40,
-    parameter integer CS_SIZE = 4,
-    parameter integer CLK_SIZE = 3
+    parameter SIZE = 40,
+    parameter CS_SIZE = 4,
+    parameter CLK_SIZE = 3
 ) (
     input [SIZE - 1:0] data_in,
     input clk_in,
@@ -117,8 +115,8 @@ module spi #(
       end
     end
 
-    $display("%m>\t\tr_counter:%x r_curr_cs_n:%x r_clk_enable_sipo:%x r_clk_enable_piso:%x",
-             r_counter, r_curr_cs_n, r_clk_enable_sipo, r_clk_enable_piso);
+    // $display("%m>\t\tr_counter:%x r_curr_cs_n:%x r_clk_enable_sipo:%x r_clk_enable_piso:%x",
+    //          r_counter, r_curr_cs_n, r_clk_enable_sipo, r_clk_enable_piso);
   end
 
   // fast io handle block

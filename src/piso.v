@@ -1,8 +1,11 @@
 `include "macros.v"
 
-// converts parallel data into serial data
+// Converts parallel data into serial data
+// If load_in is high, the value of data_in is loaded
+// into the internal shift register.
+// In the load cycle no shift is performed.
 module piso #(
-    parameter integer SIZE = 8
+    parameter SIZE = 8
 ) (
     input [SIZE - 1:0] data_in,
     input clk_in,
@@ -21,6 +24,6 @@ module piso #(
     end else begin
       r_data <= r_data << 1;
     end
-    $display("%m>\tr_data:%b load_in:%x", r_data, load_in);
+    // $display("%m>\tr_data:%b load_in:%x", r_data, load_in);
   end
 endmodule

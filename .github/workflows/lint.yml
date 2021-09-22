@@ -1,3 +1,5 @@
+name: Verilog lint
+
 on: [push]
 
 jobs:
