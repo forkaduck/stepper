@@ -87,7 +87,6 @@ def compile_firmware():
         ) as firm_in:
             firm = bytearray(firm_in.read())
             for i in reverse_byte_order(firm):
-                #  print("{:02x}".format(i), end=" ")
                 firm_out.write("{:02x}".format(i))
 
                 if counter % 4 == 0:
@@ -114,7 +113,6 @@ def build():
         [
             "nextpnr-ecp5",
             "-v",
-            "--debug",
             "--12k",
             "--package",
             "CABGA381",
