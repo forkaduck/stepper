@@ -2,6 +2,7 @@
 A RISC-V based uC written in verilog and a hardware design that can be used with it.
 
 [![Lint](https://github.com/0xDEADC0DEx/stepper/actions/workflows/lint.yml/badge.svg)](https://github.com/0xDEADC0DEx/stepper/actions/workflows/lint.yml)
+[![Rust Build](https://github.com/0xDEADC0DEx/stepper/actions/workflows/rust.yml/badge.svg)](https://github.com/0xDEADC0DEx/stepper/actions/workflows/rust.yml)
 
 For most of the projects documentation have a look at the github wiki.
 
