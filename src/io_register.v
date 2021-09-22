@@ -6,34 +6,28 @@ module io_register #(
     input clk_in,
 
     // port
-    input enable,
-    input write,
-    output reg ready,
+    input  enable,
+    input  write,
+    output ready,
 
     // port
-    input [DATA_WIDTH - 1:0] data_in,
-    output reg [DATA_WIDTH - 1:0] r_data_out,
+    input  [DATA_WIDTH - 1:0] data_in,
+    output [DATA_WIDTH - 1:0] r_data_out,
 
     output reg [DATA_WIDTH - 1:0] r_mem
 );
   initial begin
-    ready = 1'bz;
-    r_data_out = 'bz;
+    // ready = 1'bz;
+    // r_data_out = 'bz;
     r_mem = 'b0;
   end
 
   always @(posedge clk_in) begin
-    if (enable) begin
-      if (write) begin
-        r_mem <= data_in;
-        r_data_out <= 'bz;
-      end
-
-      r_data_out <= r_mem;
-      ready <= 1'b1;
-    end else begin
-      r_data_out <= 'bz;
-      ready <= 1'bz;
+    if (write & enable) begin
+      r_mem <= data_in;
     end
   end
+
+  assign ready = enable ? 1'b1 : 1'bz;
+  assign r_data_out = enable ? r_mem : 'bz;
 endmodule

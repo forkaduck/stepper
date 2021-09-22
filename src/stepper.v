@@ -56,11 +56,26 @@ module stepper (
   wire mem_instr;  // fetch is instruction
   wire mem_ready;  // memory is ready
 
+  wire trap;
+
   wire read_write = mem_wstrb > 0 ? 1'b1 : 1'b0;
-  wire rom_enable = (!ram_enable & !io_enable) & mem_instr & mem_valid & (mem_addr < 'h1000);
-  wire ram_enable = (!rom_enable & !io_enable) & !mem_instr & mem_valid & (
-      mem_addr >= 'h1000 & mem_addr < 'h2000);
-  wire io_enable = (!rom_enable & !ram_enable) & !mem_instr & mem_valid & (mem_addr >= 'h10000000);
+  reg rom_enable = 1'b0;
+  reg ram_enable = 1'b0;
+  reg io_enable = 1'b0;
+
+  always @(posedge clk_25mhz) begin
+    if (mem_instr & mem_valid & (mem_addr < 'h1000)) begin
+      rom_enable <= 1'b1;
+    end else if (!mem_instr & mem_valid & (mem_addr >= 'h1000 & mem_addr < 'h2000)) begin
+      ram_enable <= 1'b1;
+    end else if (!mem_instr & mem_valid & (mem_addr >= 'h10000000)) begin
+      io_enable <= 1'b1;
+    end else begin
+      rom_enable <= 1'b0;
+      ram_enable <= 1'b0;
+      io_enable <= 1'b0;
+    end
+  end
 
   // Instruction RAM
   memory #(
@@ -107,13 +122,18 @@ module stepper (
       .data_in(mem_wdata),
       .r_data_out(mem_rdata),
 
-      .r_mem(led[7:0])
+      .r_mem(led[3:0])
   );
 
+  assign led[7] = trap;
+  assign led[6] = mem_valid;
+  assign led[5] = mem_instr;
+  assign led[4] = 'b0;
+
   picorv32 #(
-      .ENABLE_COUNTERS(1'b1),
-      .ENABLE_COUNTERS64(1'b1),
-      .ENABLE_REGS_16_31(1'b1),
+      .ENABLE_COUNTERS(1'b0),
+      .ENABLE_COUNTERS64(1'b0),
+      .ENABLE_REGS_16_31(1'b0),
       .ENABLE_REGS_DUALPORT(1'b0),
       .LATCHED_MEM_RDATA(1'b0),
       .TWO_STAGE_SHIFT(1'b0),
@@ -124,9 +144,9 @@ module stepper (
       .CATCH_MISALIGN(1'b1),
       .CATCH_ILLINSN(1'b1),
       .ENABLE_PCPI(1'b0),
-      .ENABLE_MUL(1'b1),
-      .ENABLE_FAST_MUL(1'b1),
-      .ENABLE_DIV(1'b1),
+      .ENABLE_MUL(1'b0),
+      .ENABLE_FAST_MUL(1'b0),
+      .ENABLE_DIV(1'b0),
       .ENABLE_IRQ(1'b0),
       .ENABLE_IRQ_QREGS(1'b0),
       .ENABLE_IRQ_TIMER(1'b0),
