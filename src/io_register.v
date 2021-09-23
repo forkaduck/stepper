@@ -14,11 +14,15 @@ module io_register #(
     input  [DATA_WIDTH - 1:0] data_in,
     output [DATA_WIDTH - 1:0] data_out,
 
-    output reg [DATA_WIDTH - 1:0] r_mem
+    inout [DATA_WIDTH - 1:0] mem
 );
   initial begin
     r_mem = 'b0;
   end
+
+  reg [DATA_WIDTH -1:0] r_mem;
+
+  assign mem = r_mem;
 
   always @(posedge clk_in) begin
     if (write & enable) begin

@@ -38,12 +38,6 @@ module stepper (
       .in(!btn[1]),
       .r_out(reset_n)
   );
-  //
-  // Memory Map (please update constantly):
-  // 0x00000000 4KB ROM
-  // 0x00001000 4KB RAM
-  //
-  // 0x10000000 IO RAM
 
   // CPU Registers
   wire [31:0] mem_addr;  // memory address
@@ -59,21 +53,34 @@ module stepper (
   wire trap;
 
   wire read_write = mem_wstrb > 0 ? 1'b1 : 1'b0;
-  reg rom_enable = 1'b0;
-  reg ram_enable = 1'b0;
-  reg io_enable = 1'b0;
 
+  reg [31:0] enable = 'b0;  // memory enable lines
+  // Memory Map (please update constantly):
+  // 0x00000000 rom
+  // 0x00001000 ram
+  //
+  // 0x10000000 spi_out_lower
+  // 0x10000004 spi_out_upper
+  // 0x10000008 spi_in_lower
+  // 0x1000000c spi_in_upper
+  // 0x10000010 spi_config
   always @(posedge clk_25mhz) begin
-    if (mem_instr & mem_valid & (mem_addr < 'h1000)) begin
-      rom_enable <= 1'b1;
-    end else if (!mem_instr & mem_valid & (mem_addr >= 'h1000 & mem_addr < 'h2000)) begin
-      ram_enable <= 1'b1;
-    end else if (!mem_instr & mem_valid & (mem_addr >= 'h10000000)) begin
-      io_enable <= 1'b1;
+    if (mem_instr & mem_valid & (mem_addr < 'h00001000)) begin
+      enable[0] <= 1'b1;
+    end else if (!mem_instr & mem_valid & (mem_addr >= 'h00001000 & mem_addr < 'h00002000)) begin
+      enable[1] <= 1'b1;
+    end else if (!mem_instr & mem_valid & (mem_addr >= 'h10000000 & mem_addr < 'h10000003)) begin
+      enable[2] <= 1'b1;
+    end else if (!mem_instr & mem_valid & (mem_addr >= 'h10000004 & mem_addr < 'h10000007)) begin
+      enable[3] <= 1'b1;
+    end else if (!mem_instr & mem_valid & (mem_addr >= 'h10000008 & mem_addr < 'h1000000b)) begin
+      enable[4] <= 1'b1;
+    end else if (!mem_instr & mem_valid & (mem_addr >= 'h1000000c & mem_addr < 'h1000000f)) begin
+      enable[5] <= 1'b1;
+    end else if (!mem_instr & mem_valid & (mem_addr >= 'h10000010 & mem_addr < 'h10000013)) begin
+      enable[6] <= 1'b1;
     end else begin
-      rom_enable <= 1'b0;
-      ram_enable <= 1'b0;
-      io_enable <= 1'b0;
+      enable <= 'b0;
     end
   end
 
@@ -88,7 +95,7 @@ module stepper (
 `endif
   ) rom (
       .clk_in(clk_25mhz),
-      .enable(rom_enable),
+      .enable(enable[0]),
       .write(1'b0),  // constant read (simulate a rom block)
       .ready(mem_ready),
       .addr_in(mem_addr / 4),
@@ -103,7 +110,7 @@ module stepper (
       .PATH("")
   ) ram (
       .clk_in(clk_25mhz),
-      .enable(ram_enable),
+      .enable(enable[1]),
       .write(read_write),
       .ready(mem_ready),
       .addr_in(mem_addr / 4),
@@ -112,17 +119,78 @@ module stepper (
   );
 
   // IO RAM
+  // SPI outgoing
+  wire [31:0] spi_outgoing_lower;
   io_register #(
       .DATA_WIDTH(32)
-  ) io (
+  ) spi_out_lower (
       .clk_in(clk_25mhz),
-      .enable(io_enable),
+      .enable(enable[2]),
       .write(read_write),
       .ready(mem_ready),
       .data_in(mem_wdata),
       .data_out(mem_rdata),
 
-      .r_mem(led[3:0])
+      .mem(spi_outgoing_lower)
+  );
+
+  wire [31:0] spi_outgoing_upper;
+  io_register #(
+      .DATA_WIDTH(32)
+  ) spi_out_upper (
+      .clk_in(clk_25mhz),
+      .enable(enable[3]),
+      .write(read_write),
+      .ready(mem_ready),
+      .data_in(mem_wdata),
+      .data_out(mem_rdata),
+
+      .mem(spi_outgoing_upper)
+  );
+
+  // SPI  ingoing
+  wire [31:0] spi_ingoing_lower;
+  io_register #(
+      .DATA_WIDTH(32)
+  ) spi_in_lower (
+      .clk_in(clk_25mhz),
+      .enable(enable[4]),
+      .write(read_write),
+      .ready(mem_ready),
+      .data_in(mem_wdata),
+      .data_out(mem_rdata),
+
+      .mem(spi_ingoing_lower)
+  );
+
+  wire [31:0] spi_ingoing_upper;
+  io_register #(
+      .DATA_WIDTH(32)
+  ) spi_in_upper (
+      .clk_in(clk_25mhz),
+      .enable(enable[5]),
+      .write(read_write),
+      .ready(mem_ready),
+      .data_in(mem_wdata),
+      .data_out(mem_rdata),
+
+      .mem(spi_ingoing_upper)
+  );
+
+  // SPI control register
+  wire spi_send_enable;
+  wire spi_ready;
+  io_register #(
+      .DATA_WIDTH(32)
+  ) spi_config (
+      .clk_in(clk_25mhz),
+      .enable(enable[6]),
+      .write(read_write),
+      .ready(mem_ready),
+      .data_in(mem_wdata),
+      .data_out(mem_rdata),
+
+      .mem({spi_send_enable, spi_ready})
   );
 
   assign led[7] = trap;
@@ -177,16 +245,22 @@ module stepper (
   // assign direction pin to fixed 0
   assign gp[1] = 0;
 
-  motor_driver driver (
+  spi #(
+      .SIZE(40),
+      .CS_SIZE(12),
+      .CLK_SIZE(3)
+  ) spi1 (
+      .data_in({spi_outgoing_upper, spi_outgoing_lower}),
       .clk_in(clk_25mhz),
-      .reset_n_in(reset_n),
+      .clk_count_max(3'b111),
       .serial_in(gn[0]),
-      .speed_in('d75),
-      .step_enable_in(1),
+      .send_enable_in(spi_send_enable),
+      .cs_select_in('b0),
+      .reset_n_in(reset_n),
+      .data_out({spi_outgoing_upper, spi_outgoing_lower}),
       .clk_out(gn[2]),
       .serial_out(gn[3]),
-      .cs_n_out(gn[1]),
-      .step_out(gp[0])
+      .cs_out_n(gn[1]),
+      .r_ready_out(spi_ready)
   );
-
 endmodule

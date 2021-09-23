@@ -54,29 +54,29 @@ def compile_firmware():
     os.chdir("firmware")
 
     #  # Build the firmware
-    #  run_subcommand(
-    #      ["cargo", "build", "--release"],
-    #  )
-    #
-    #  # Strip the firmware of debug symbols
-    #  run_subcommand(
-    #      [
-    #          "riscv64-unknown-elf-strip",
-    #          "target/riscv32imac-unknown-none-elf/release/stepper",
-    #      ],
-    #  )
-    #
-    #  # Copy sections to bin for use with rom initialisation
-    #  run_subcommand(
-    #      [
-    #          "riscv64-unknown-elf-objcopy",
-    #          "-O",
-    #          "binary",
-    #          "target/riscv32imac-unknown-none-elf/release/stepper",
-    #          "target/riscv32imac-unknown-none-elf/release/stepper.bin",
-    #      ],
-    #  )
-    #
+    run_subcommand(
+        ["cargo", "build", "--release"],
+    )
+
+    # Strip the firmware of debug symbols
+    run_subcommand(
+        [
+            "riscv64-unknown-elf-strip",
+            "target/riscv32imac-unknown-none-elf/release/stepper",
+        ],
+    )
+
+    # Copy sections to bin for use with rom initialisation
+    run_subcommand(
+        [
+            "riscv64-unknown-elf-objcopy",
+            "-O",
+            "binary",
+            "target/riscv32imac-unknown-none-elf/release/stepper",
+            "target/riscv32imac-unknown-none-elf/release/stepper.bin",
+        ],
+    )
+
     #  Format output to work with readmemh
     counter = 1
     with open(
