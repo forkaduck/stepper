@@ -101,7 +101,7 @@ module stepper (
       .enable(enable[1]),
       .write(read_write),
       .ready(mem_ready),
-      .addr_in(mem_addr / 4),
+      .addr_in((mem_addr - 'h1000) / 4),
       .data_in(mem_wdata),  // crossed over because of data_in is the cpu input for data
       .data_out(mem_rdata)
   );
