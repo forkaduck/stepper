@@ -59,11 +59,7 @@ module stepper (
   // 0x00000000 rom
   // 0x00001000 ram
   //
-  // 0x10000000 spi_out_lower
-  // 0x10000004 spi_out_upper
-  // 0x10000008 spi_in_lower
-  // 0x1000000c spi_in_upper
-  // 0x10000010 spi_config
+  // 0x10000000 leds
   always @(posedge clk_25mhz) begin
     if (mem_instr & mem_valid & (mem_addr < 'h00001000)) begin
       enable[0] <= 1'b1;

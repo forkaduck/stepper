@@ -31,7 +31,14 @@ module memory #(
     end
 
     if (PATH != "") begin
-      $readmemh(PATH, r_mem, 0);
+      r_mem[0] = 'hff010113;
+      r_mem[1] = 'h00812623;
+      r_mem[2] = 'h01010413;
+      r_mem[3] = 'h100007b7;
+      r_mem[4] = 'hfff00713;
+      r_mem[5] = 'h00e7a023;
+      r_mem[6] = 'hff5ff06f;
+      // $readmemh(PATH, r_mem, 0);
     end
 
 `ifdef __ICARUS__
