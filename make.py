@@ -112,7 +112,6 @@ def build():
     run_subcommand(
         [
             "nextpnr-ecp5",
-            "-v",
             "--12k",
             "--package",
             "CABGA381",
@@ -129,7 +128,6 @@ def build():
     run_subcommand(
         [
             "ecppack",
-            "-v",
             "ulx3s_out.config",
             "ulx3s.bit",
             "--idcode",

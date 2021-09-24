@@ -86,7 +86,7 @@ module stepper (
       .enable(enable[0]),
       .write(1'b0),  // constant read (simulate a rom block)
       .ready(mem_ready),
-      .addr_in(mem_addr / 4),
+      .addr_in(mem_addr[12:0] / 4),
       .data_in('b0),
       .data_out(mem_rdata)
   );
@@ -101,7 +101,7 @@ module stepper (
       .enable(enable[1]),
       .write(read_write),
       .ready(mem_ready),
-      .addr_in((mem_addr - 'h1000) / 4),
+      .addr_in(mem_addr[12:0] / 4),
       .data_in(mem_wdata),  // crossed over because of data_in is the cpu input for data
       .data_out(mem_rdata)
   );
@@ -128,9 +128,9 @@ module stepper (
   assign led[4] = read_write;
 
   picorv32 #(
-      .ENABLE_COUNTERS(1'b0),
-      .ENABLE_COUNTERS64(1'b0),
-      .ENABLE_REGS_16_31(1'b0),
+      .ENABLE_COUNTERS(1'b1),
+      .ENABLE_COUNTERS64(1'b1),
+      .ENABLE_REGS_16_31(1'b1),
       .ENABLE_REGS_DUALPORT(1'b0),
       .LATCHED_MEM_RDATA(1'b0),
       .TWO_STAGE_SHIFT(1'b0),
@@ -141,9 +141,9 @@ module stepper (
       .CATCH_MISALIGN(1'b1),
       .CATCH_ILLINSN(1'b1),
       .ENABLE_PCPI(1'b0),
-      .ENABLE_MUL(1'b0),
-      .ENABLE_FAST_MUL(1'b0),
-      .ENABLE_DIV(1'b0),
+      .ENABLE_MUL(1'b1),
+      .ENABLE_FAST_MUL(1'b1),
+      .ENABLE_DIV(1'b1),
       .ENABLE_IRQ(1'b0),
       .ENABLE_IRQ_QREGS(1'b0),
       .ENABLE_IRQ_TIMER(1'b0),
