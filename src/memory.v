@@ -27,10 +27,12 @@ module memory #(
   integer i;
   initial begin
     for (i = 0; i < DATA_SIZE; i++) begin
-      r_mem[i] = 'b0;
+      r_mem[i] = 'h00000000;
     end
 
-    if (PATH != "") $readmemh(PATH, r_mem);
+    if (PATH != "") begin
+      $readmemh(PATH, r_mem, 0);
+    end
 
 `ifdef __ICARUS__
     for (i = 0; i < DATA_SIZE; i++) begin

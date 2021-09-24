@@ -71,14 +71,6 @@ module stepper (
       enable[1] <= 1'b1;
     end else if (!mem_instr & mem_valid & (mem_addr >= 'h10000000 & mem_addr < 'h10000003)) begin
       enable[2] <= 1'b1;
-    end else if (!mem_instr & mem_valid & (mem_addr >= 'h10000004 & mem_addr < 'h10000007)) begin
-      enable[3] <= 1'b1;
-    end else if (!mem_instr & mem_valid & (mem_addr >= 'h10000008 & mem_addr < 'h1000000b)) begin
-      enable[4] <= 1'b1;
-    end else if (!mem_instr & mem_valid & (mem_addr >= 'h1000000c & mem_addr < 'h1000000f)) begin
-      enable[5] <= 1'b1;
-    end else if (!mem_instr & mem_valid & (mem_addr >= 'h10000010 & mem_addr < 'h10000013)) begin
-      enable[6] <= 1'b1;
     end else begin
       enable <= 'b0;
     end
@@ -131,72 +123,13 @@ module stepper (
       .data_in(mem_wdata),
       .data_out(mem_rdata),
 
-      .mem(spi_outgoing_lower)
-  );
-
-  wire [31:0] spi_outgoing_upper;
-  io_register #(
-      .DATA_WIDTH(32)
-  ) spi_out_upper (
-      .clk_in(clk_25mhz),
-      .enable(enable[3]),
-      .write(read_write),
-      .ready(mem_ready),
-      .data_in(mem_wdata),
-      .data_out(mem_rdata),
-
-      .mem(spi_outgoing_upper)
-  );
-
-  // SPI  ingoing
-  wire [31:0] spi_ingoing_lower;
-  io_register #(
-      .DATA_WIDTH(32)
-  ) spi_in_lower (
-      .clk_in(clk_25mhz),
-      .enable(enable[4]),
-      .write(read_write),
-      .ready(mem_ready),
-      .data_in(mem_wdata),
-      .data_out(mem_rdata),
-
-      .mem(spi_ingoing_lower)
-  );
-
-  wire [31:0] spi_ingoing_upper;
-  io_register #(
-      .DATA_WIDTH(32)
-  ) spi_in_upper (
-      .clk_in(clk_25mhz),
-      .enable(enable[5]),
-      .write(read_write),
-      .ready(mem_ready),
-      .data_in(mem_wdata),
-      .data_out(mem_rdata),
-
-      .mem(spi_ingoing_upper)
-  );
-
-  // SPI control register
-  wire spi_send_enable;
-  wire spi_ready;
-  io_register #(
-      .DATA_WIDTH(32)
-  ) spi_config (
-      .clk_in(clk_25mhz),
-      .enable(enable[6]),
-      .write(read_write),
-      .ready(mem_ready),
-      .data_in(mem_wdata),
-      .data_out(mem_rdata),
-
-      .mem({spi_send_enable, spi_ready})
+      .mem(led[3:0])
   );
 
   assign led[7] = trap;
   assign led[6] = mem_valid;
   assign led[5] = mem_instr;
-  assign led[4] = 'b0;
+  assign led[4] = read_write;
 
   picorv32 #(
       .ENABLE_COUNTERS(1'b0),
@@ -245,22 +178,22 @@ module stepper (
   // assign direction pin to fixed 0
   assign gp[1] = 0;
 
-  spi #(
-      .SIZE(40),
-      .CS_SIZE(12),
-      .CLK_SIZE(3)
-  ) spi1 (
-      .data_in({spi_outgoing_upper, spi_outgoing_lower}),
-      .clk_in(clk_25mhz),
-      .clk_count_max(3'b111),
-      .serial_in(gn[0]),
-      .send_enable_in(spi_send_enable),
-      .cs_select_in('b0),
-      .reset_n_in(reset_n),
-      .data_out({spi_outgoing_upper, spi_outgoing_lower}),
-      .clk_out(gn[2]),
-      .serial_out(gn[3]),
-      .cs_out_n(gn[1]),
-      .r_ready_out(spi_ready)
-  );
+  // spi #(
+  //     .SIZE(40),
+  //     .CS_SIZE(12),
+  //     .CLK_SIZE(3)
+  // ) spi1 (
+  //     .data_in({spi_outgoing_upper, spi_outgoing_lower}),
+  //     .clk_in(clk_25mhz),
+  //     .clk_count_max(3'b111),
+  //     .serial_in(gn[0]),
+  //     .send_enable_in(spi_send_enable),
+  //     .cs_select_in('b0),
+  //     .reset_n_in(reset_n),
+  //     .data_out({spi_outgoing_upper, spi_outgoing_lower}),
+  //     .clk_out(gn[2]),
+  //     .serial_out(gn[3]),
+  //     .cs_out_n(gn[1]),
+  //     .r_ready_out(spi_ready)
+  // );
 endmodule
