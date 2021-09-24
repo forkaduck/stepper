@@ -107,11 +107,9 @@ module stepper (
   );
 
   // IO RAM
-  // SPI outgoing
-  wire [31:0] spi_outgoing_lower;
   io_register #(
       .DATA_WIDTH(32)
-  ) spi_out_lower (
+  ) leds (
       .clk_in(clk_25mhz),
       .enable(enable[2]),
       .write(read_write),
