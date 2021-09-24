@@ -24,21 +24,9 @@ module memory #(
 
   reg [DATA_WIDTH - 1:0] r_mem[0:DATA_SIZE - 1];
 
-  integer i;
   initial begin
-    for (i = 0; i < DATA_SIZE; i++) begin
-      r_mem[i] = 'h00000000;
-    end
-
     if (PATH != "") begin
-      r_mem[0] = 'hff010113;
-      r_mem[1] = 'h00812623;
-      r_mem[2] = 'h01010413;
-      r_mem[3] = 'h100007b7;
-      r_mem[4] = 'hfff00713;
-      r_mem[5] = 'h00e7a023;
-      r_mem[6] = 'hff5ff06f;
-      // $readmemh(PATH, r_mem, 0);
+      $readmemh(PATH, r_mem, 0, DATA_SIZE - 1);
     end
 
 `ifdef __ICARUS__

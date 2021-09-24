@@ -66,5 +66,6 @@ check -noinit
 blackbox =A:whitebox
 
 opt_clean -purge
+stat
 
 write_json stepper.json
