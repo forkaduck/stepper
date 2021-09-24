@@ -22,4 +22,4 @@ async def test_stepper(dut):
     dut.btn[1] = 0
     print("Reset done")
 
-    await ClockCycles(dut.clk_25mhz, 3000, rising=True)
+    await ClockCycles(dut.clk_25mhz, 6000, rising=True)
