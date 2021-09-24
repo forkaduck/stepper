@@ -1,0 +1,70 @@
+read_verilog src/*.v
+
+read_verilog -lib -specify +/ecp5/cells_sim.v +/ecp5/cells_bb.v
+hierarchy -check -top stepper
+
+proc
+flatten
+tribuf -logic
+deminout
+opt_expr
+opt_clean
+check
+opt -nodffe -nosdff
+fsm
+opt
+wreduce
+peepopt
+opt_clean
+share
+techmap -map +/cmp2lut.v -D LUT_WIDTH=4
+opt_expr
+opt_clean
+techmap -map +/mul2dsp.v -map +/ecp5/dsp_map.v -D DSP_A_MAXWIDTH=18 -D DSP_B_MAXWIDTH=18  -D DSP_A_MINWIDTH=2 -D DSP_B_MINWIDTH=2  -D DSP_NAME=$__MUL18X18
+chtype -set $mul t:$__soft_mul
+alumacc
+opt
+memory -nomap
+opt_clean
+
+memory_bram -rules +/ecp5/brams.txt
+techmap -map +/ecp5/brams_map.v
+
+memory_bram -rules +/ecp5/lutrams.txt
+techmap -map +/ecp5/lutrams_map.v
+
+opt -fast -mux_undef -undriven -fine
+memory_map -iattr -attr !ram_block -attr !rom_block -attr logic_block -attr syn_ramstyle=auto -attr syn_ramstyle=registers -attr syn_romstyle=auto -attr syn_romstyle=logic
+opt -undriven -fine
+
+techmap -map +/techmap.v -map +/ecp5/arith_map.v
+opt -fast
+
+opt_clean
+dfflegalize -cell $_DFF_?_ 01 -cell $_DFF_?P?_ r -cell $_SDFF_?P?_ r -cell $_DFFE_??_ 01 -cell $_DFFE_?P??_ r -cell $_SDFFE_?P??_ r -cell $_DLATCH_?_ x
+
+zinit -all w:* t:$_DFF_?_ t:$_DFFE_??_ t:$_SDFF*
+techmap -D NO_LUT -map +/ecp5/cells_map.v
+opt_expr -undriven -mux_undef
+simplemap
+ecp5_gsr
+attrmvcp -copy -attr syn_useioff
+opt_clean
+
+techmap -map +/ecp5/latches_map.v
+abc -dress -lut 4:7
+clean
+
+techmap -map +/ecp5/cells_map.v
+opt_lut_ins -tech ecp5
+clean
+
+autoname
+hierarchy -check
+stat
+check -noinit
+blackbox =A:whitebox
+
+opt_clean -purge
+
+write_json stepper.json
