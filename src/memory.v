@@ -24,6 +24,7 @@ module memory #(
 
   reg [DATA_WIDTH - 1:0] r_mem[0:DATA_SIZE - 1];
 
+  integer i;
   initial begin
     if (PATH != "") begin
       $readmemh(PATH, r_mem, 0, DATA_SIZE - 1);
