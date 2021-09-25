@@ -2,8 +2,7 @@
 #![no_std]
 #![no_main]
 
-extern crate panic_halt;
-
+mod halt;
 use riscv_rt::entry;
 
 // fn delay(cycles: u32) {

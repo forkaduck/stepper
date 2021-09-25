@@ -77,9 +77,9 @@ module stepper (
       .DATA_WIDTH(32),
       .DATA_SIZE('h1000),
 `ifdef __ICARUS__
-      .PATH("../firmware/target/riscv32imac-unknown-none-elf/release/stepper.mem")
+      .PATH("../firmware/target/riscv32i-unknown-none-elf/release/stepper.mem")
 `else
-      .PATH("firmware/target/riscv32imac-unknown-none-elf/release/stepper.mem")
+      .PATH("firmware/target/riscv32i-unknown-none-elf/release/stepper.mem")
 `endif
   ) rom (
       .clk_in(clk_25mhz),
