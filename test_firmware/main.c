@@ -1,4 +1,4 @@
-#define LEDS (*(short *)0x10000000)
+#define LEDS (*(int *)0x10000000)
 
 int _start()
 {
