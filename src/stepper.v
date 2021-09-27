@@ -1,6 +1,13 @@
 /*
 * TODO
 * change clkname in clk_divider (missing r_)
+* instructions causing a trap:
+*   csrwi	mie,0
+*   csrwi	mip,0
+*   csrr	a2,mhartid
+*   csrr	a2,mhartid
+*   csrr	a0,mhartid
+*   csrw	mtvec,t0
 */
 
 // top module
@@ -129,7 +136,7 @@ module stepper (
       .ENABLE_COUNTERS(1'b1),
       .ENABLE_COUNTERS64(1'b1),
       .ENABLE_REGS_16_31(1'b1),
-      .ENABLE_REGS_DUALPORT(1'b0),
+      .ENABLE_REGS_DUALPORT(1'b1),
       .LATCHED_MEM_RDATA(1'b0),
       .TWO_STAGE_SHIFT(1'b0),
       .BARREL_SHIFTER(1'b0),
@@ -143,11 +150,11 @@ module stepper (
       .ENABLE_FAST_MUL(1'b1),
       .ENABLE_DIV(1'b1),
       .ENABLE_IRQ(1'b0),
-      .ENABLE_IRQ_QREGS(1'b0),
+      .ENABLE_IRQ_QREGS(1'b1),
       .ENABLE_IRQ_TIMER(1'b0),
       .ENABLE_TRACE(1'b0),
       .REGS_INIT_ZERO(1'b1),
-      .MASKED_IRQ(32'h0000_0000),
+      .MASKED_IRQ(32'hffff_ffff),
       .LATCHED_IRQ(32'hffff_ffff),
       .PROGADDR_RESET(32'h0000_0000),
       .PROGADDR_IRQ(32'h0000_0000),
