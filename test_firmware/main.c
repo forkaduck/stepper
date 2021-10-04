@@ -8,16 +8,18 @@ void wait(uint32_t);
 
 int _start()
 {
-	LEDS = 0x0000000a;
+  LEDS = 0x0000000a;
+  asm("csrr	a2,mhartid");
 	while (1) {
-		wait(6000000);
-		LEDS = ~(LEDS & 0xf);
+    wait(6000000);
+    LEDS = ~(LEDS & 0xf);
 	}
 }
 
 void wait(uint32_t cycles)
 {
-	for (uint32_t i = 0; i < cycles; i++) {
-		asm("nop");
-	}
+  for (uint32_t i = 0; i < cycles; i++) {
+    asm("nop");
+  }
 }
+
