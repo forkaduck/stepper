@@ -84,9 +84,9 @@ module stepper (
       .DATA_WIDTH(32),
       .DATA_SIZE('h1000),
 `ifdef __ICARUS__
-      .PATH("../firmware/target/riscv32i-unknown-none-elf/release/stepper.mem")
+      .PATH("../firmware/stepper.mem")
 `else
-      .PATH("firmware/target/riscv32i-unknown-none-elf/release/stepper.mem")
+      .PATH("firmware/stepper.mem")
 `endif
   ) rom (
       .clk_in(clk_25mhz),
@@ -156,8 +156,8 @@ module stepper (
       .REGS_INIT_ZERO(1'b1),
       .MASKED_IRQ(32'hffff_ffff),
       .LATCHED_IRQ(32'hffff_ffff),
-      .PROGADDR_RESET(32'h0000_0000),
-      .PROGADDR_IRQ(32'h0000_0000),
+      .PROGADDR_RESET(32'h00000000),
+      .PROGADDR_IRQ(32'h00000000),
       .STACKADDR(32'h00002000)
   ) cpu (
       .clk   (clk_25mhz),
