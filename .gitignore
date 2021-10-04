@@ -11,3 +11,5 @@ tests/sim_output/srclist.txt
 *.config
 **/sim_output/*.v
 /.gtm/
+.svlint.toml
+.vim
