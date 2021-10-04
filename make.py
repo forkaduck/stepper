@@ -58,31 +58,23 @@ def compile_firmware():
         ["cargo", "build", "--release"],
     )
 
-    # Strip the firmware of debug symbols
-    run_subcommand(
-        [
-            "riscv64-unknown-elf-strip",
-            "target/riscv32i-unknown-none-elf/release/stepper",
-        ],
-    )
-
     # Copy sections to bin for use with rom initialisation
     run_subcommand(
         [
-            "riscv64-unknown-elf-objcopy",
+            "cargo",
+            "objcopy",
+            "--release",
+            "--",
             "-O",
             "binary",
-            "target/riscv32i-unknown-none-elf/release/stepper",
-            "target/riscv32i-unknown-none-elf/release/stepper.bin",
+            "stepper.bin",
         ],
     )
 
     #  Format output to work with readmemh
     counter = 1
-    with open("target/riscv32i-unknown-none-elf/release/stepper.mem", "w") as firm_out:
-        with open(
-            "target/riscv32i-unknown-none-elf/release/stepper.bin", "rb"
-        ) as firm_in:
+    with open("stepper.mem", "w") as firm_out:
+        with open("stepper.bin", "rb") as firm_in:
             firm = bytearray(firm_in.read())
             for i in reverse_byte_order(firm):
                 firm_out.write("{:02x}".format(i))
