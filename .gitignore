@@ -13,3 +13,5 @@ tests/sim_output/srclist.txt
 /.gtm/
 .svlint.toml
 .vim
+firmware/stepper.bin
+firmware/stepper.mem
