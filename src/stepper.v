@@ -137,7 +137,7 @@ module stepper (
       .DATA_WIDTH(32)
   ) spi_reg_out_low (
       .clk_in(clk_25mhz),
-      .enable(enable[2]),
+      .enable(enable[3]),
       .write(read_write),
       .ready(mem_ready),
       .data_in(mem_wdata),
@@ -151,7 +151,7 @@ module stepper (
       .DATA_WIDTH(32)
   ) spi_reg_in_up (
       .clk_in(clk_25mhz),
-      .enable(enable[2]),
+      .enable(enable[4]),
       .write(read_write),
       .ready(mem_ready),
       .data_in(mem_wdata),
@@ -165,7 +165,7 @@ module stepper (
       .DATA_WIDTH(32)
   ) spi_reg_in_low (
       .clk_in(clk_25mhz),
-      .enable(enable[2]),
+      .enable(enable[5]),
       .write(read_write),
       .ready(mem_ready),
       .data_in(mem_wdata),
@@ -179,7 +179,7 @@ module stepper (
       .DATA_WIDTH(32)
   ) spi_reg_config (
       .clk_in(clk_25mhz),
-      .enable(enable[2]),
+      .enable(enable[6]),
       .write(read_write),
       .ready(mem_ready),
       .data_in(mem_wdata),
