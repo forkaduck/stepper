@@ -2,12 +2,6 @@
 * TODO
 * change clkname in clk_divider (missing r_)
 * instructions causing a trap:
-*   csrwi	mie,0
-*   csrwi	mip,0
-*   csrr	a2,mhartid
-*   csrr	a2,mhartid
-*   csrr	a0,mhartid
-*   csrw	mtvec,t0
 */
 
 // top module
@@ -15,12 +9,6 @@
 // gp[0] = Step
 // gp[1] = Direction
 // gp[2] = Driver En
-//
-// gp[23] = CPU idle
-// gp[24] = Debug 0
-// gp[25] = Debug 1
-// gp[26] = Debug 2
-// gp[27] = Debug 3
 //
 // gn[0] = SDO
 // gn[1] = CS
@@ -66,14 +54,30 @@ module stepper (
   // 0x00000000 rom
   // 0x00001000 ram
   //
-  // 0x10000000 leds
+  // 0x10000000 spi_outgoing_upper
+  // 0x10000004 spi_outgoing_lower
+  // 0x10000008 spi_ingoing_upper
+  // 0x1000000c spi_ingoing_lower
+  // 0x10000010 spi_config
   always @(posedge clk_25mhz) begin
-    if (mem_instr & mem_valid & (mem_addr < 'h00001000)) begin
-      enable[0] <= 1'b1;
-    end else if (!mem_instr & mem_valid & (mem_addr >= 'h00001000 & mem_addr < 'h00002000)) begin
-      enable[1] <= 1'b1;
-    end else if (!mem_instr & mem_valid & (mem_addr >= 'h10000000 & mem_addr < 'h10000003)) begin
-      enable[2] <= 1'b1;
+    if (mem_valid) begin
+      if (mem_instr) begin
+        enable[0] <= 1'b1;
+      end else begin
+        if (mem_addr >= 'h00001000 & mem_addr < 'h00002000) begin
+          enable[1] <= 1'b1;
+        end else if (mem_addr >= 'h10000000 & mem_addr < 'h10000003) begin
+          enable[2] <= 1'b1;
+        end else if (mem_addr >= 'h10000004 & mem_addr < 'h10000007) begin
+          enable[3] <= 1'b1;
+        end else if (mem_addr >= 'h10000008 & mem_addr < 'h1000000b) begin
+          enable[4] <= 1'b1;
+        end else if (mem_addr >= 'h1000000c & mem_addr < 'h1000000f) begin
+          enable[5] <= 1'b1;
+        end else if (mem_addr >= 'h10000010 & mem_addr < 'h10000013) begin
+          enable[6] <= 1'b1;
+        end
+      end
     end else begin
       enable <= 'b0;
     end
@@ -113,10 +117,11 @@ module stepper (
       .data_out(mem_rdata)
   );
 
-  // IO RAM
+  // --- IO RAM ---
+  wire [31:0] spi_outgoing_upper;
   io_register #(
       .DATA_WIDTH(32)
-  ) leds (
+  ) spi_reg_out_up (
       .clk_in(clk_25mhz),
       .enable(enable[2]),
       .write(read_write),
@@ -124,9 +129,64 @@ module stepper (
       .data_in(mem_wdata),
       .data_out(mem_rdata),
 
-      .mem(led[3:0])
+      .mem(spi_outgoing_upper)
   );
 
+  wire [31:0] spi_outgoing_lower;
+  io_register #(
+      .DATA_WIDTH(32)
+  ) spi_reg_out_low (
+      .clk_in(clk_25mhz),
+      .enable(enable[2]),
+      .write(read_write),
+      .ready(mem_ready),
+      .data_in(mem_wdata),
+      .data_out(mem_rdata),
+
+      .mem(spi_outgoing_lower)
+  );
+
+  wire [31:0] spi_ingoing_upper;
+  io_register #(
+      .DATA_WIDTH(32)
+  ) spi_reg_in_up (
+      .clk_in(clk_25mhz),
+      .enable(enable[2]),
+      .write(read_write),
+      .ready(mem_ready),
+      .data_in(mem_wdata),
+      .data_out(mem_rdata),
+
+      .mem(spi_ingoing_upper)
+  );
+
+  wire [31:0] spi_ingoing_lower;
+  io_register #(
+      .DATA_WIDTH(32)
+  ) spi_reg_in_low (
+      .clk_in(clk_25mhz),
+      .enable(enable[2]),
+      .write(read_write),
+      .ready(mem_ready),
+      .data_in(mem_wdata),
+      .data_out(mem_rdata),
+
+      .mem(spi_ingoing_lower)
+  );
+
+  wire [31:0] spi_config;
+  io_register #(
+      .DATA_WIDTH(32)
+  ) spi_reg_config (
+      .clk_in(clk_25mhz),
+      .enable(enable[2]),
+      .write(read_write),
+      .ready(mem_ready),
+      .data_in(mem_wdata),
+      .data_out(mem_rdata),
+
+      .mem(spi_config)
+  );
   assign led[7] = trap;
   assign led[6] = mem_valid;
   assign led[5] = mem_instr;
@@ -179,22 +239,22 @@ module stepper (
   // assign direction pin to fixed 0
   assign gp[1] = 0;
 
-  // spi #(
-  //     .SIZE(40),
-  //     .CS_SIZE(12),
-  //     .CLK_SIZE(3)
-  // ) spi1 (
-  //     .data_in({spi_outgoing_upper, spi_outgoing_lower}),
-  //     .clk_in(clk_25mhz),
-  //     .clk_count_max(3'b111),
-  //     .serial_in(gn[0]),
-  //     .send_enable_in(spi_send_enable),
-  //     .cs_select_in('b0),
-  //     .reset_n_in(reset_n),
-  //     .data_out({spi_outgoing_upper, spi_outgoing_lower}),
-  //     .clk_out(gn[2]),
-  //     .serial_out(gn[3]),
-  //     .cs_out_n(gn[1]),
-  //     .r_ready_out(spi_ready)
-  // );
+  spi #(
+      .SIZE(40),
+      .CS_SIZE(12),
+      .CLK_SIZE(3)
+  ) spi1 (
+      .data_in({spi_outgoing_upper, spi_outgoing_lower}),
+      .clk_in(clk_25mhz),
+      .clk_count_max(3'b111),
+      .serial_in(gn[0]),
+      .send_enable_in(spi_config[0]),
+      .cs_select_in('b0),
+      .reset_n_in(reset_n),
+      .data_out({spi_outgoing_upper, spi_outgoing_lower}),
+      .clk_out(gn[2]),
+      .serial_out(gn[3]),
+      .cs_out_n(gn[1]),
+      .r_ready_out(spi_config[1])
+  );
 endmodule
