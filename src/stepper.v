@@ -6,14 +6,10 @@
 
 // top module
 // current pinout:
-// gp[0] = Step
-// gp[1] = Direction
-// gp[2] = Driver En
-//
-// gn[0] = SDO
-// gn[1] = CS
-// gn[2] = SCK
-// gn[3] = SDI
+// gn[0] = MISO
+// gn[1] = SCK
+// gn[2] = MOSI
+// gn[14:3] = CS 0 - 11
 module stepper (
     input clk_25mhz,
     input [6:0] btn,
@@ -174,6 +170,7 @@ module stepper (
       .mem(spi_ingoing_lower)
   );
 
+  // 4:1 - SPI CS Lines / 0 - SPI Send enable
   wire [31:0] spi_config;
   io_register #(
       .DATA_WIDTH(32)
@@ -187,6 +184,22 @@ module stepper (
 
       .mem(spi_config)
   );
+
+  // 0 - SPI ready
+  wire [31:0] spi_status;
+  io_register #(
+    .DATA_WIDTH(32)
+  ) spi_reg_status (
+    .clk_in(clk_25mhz),
+    .enable(enable[7]),
+    .write(read_write),
+    .ready(mem_ready),
+    .data_in(mem_wdata),
+    .data_out(mem_rdata),
+
+    .mem(spi_status)
+  );
+
   assign led[7] = trap;
   assign led[6] = mem_valid;
   assign led[5] = mem_instr;
@@ -247,14 +260,17 @@ module stepper (
       .data_in({spi_outgoing_upper, spi_outgoing_lower}),
       .clk_in(clk_25mhz),
       .clk_count_max(3'b111),
+      // MISO
       .serial_in(gn[0]),
       .send_enable_in(spi_config[0]),
-      .cs_select_in('b0),
+      .cs_select_in(spi_config[4:1]),
       .reset_n_in(reset_n),
-      .data_out({spi_outgoing_upper, spi_outgoing_lower}),
-      .clk_out(gn[2]),
-      .serial_out(gn[3]),
-      .cs_out_n(gn[1]),
-      .r_ready_out(spi_config[1])
+      .data_out({spi_ingoing_upper, spi_ingoing_lower}),
+      // SCK
+      .clk_out(gn[1]),
+      // MOSI
+      .serial_out(gn[2]),
+      .cs_out_n(gn[14:3]),
+      .r_ready_out(spi_status[0])
   );
 endmodule
