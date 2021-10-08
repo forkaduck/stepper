@@ -2,7 +2,7 @@
 #![no_std]
 #![no_main]
 
-use volatile_register::RW;
+use volatile_register::{RW, RO};
 
 mod halt;
 
@@ -58,8 +58,8 @@ struct RegIO {
     pub spi_outgoing_lower: RW<u32>,
     pub spi_ingoing_upper: RW<u32>,
     pub spi_ingoing_lower: RW<u32>,
-    /// 1 ready_out / 0 send_enable
     pub spi_config: RW<u32>,
+    pub spi_status: RO<u32>,
 }
 
 impl RegIO {
@@ -69,12 +69,13 @@ impl RegIO {
 
     fn spi_wait_send(&mut self, data_upper: u32, data_lower: u32) {
         unsafe {
+            // wait while spi is busy
+            while !(self.spi_status.read() & 0x1 == 0x1) {
+            }
             self.spi_outgoing_upper.write(data_upper);
             self.spi_outgoing_lower.write(data_lower);
 
             self.spi_config.write(self.spi_config.read() | 0x1);
-            while !(self.spi_config.read() & 0x2 == 0x2) {
-            }
         }
     }
 
