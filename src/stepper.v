@@ -55,6 +55,7 @@ module stepper (
   // 0x10000008 spi_ingoing_upper
   // 0x1000000c spi_ingoing_lower
   // 0x10000010 spi_config
+  // 0x10000014 spi_status
   always @(posedge clk_25mhz) begin
     if (mem_valid) begin
       if (mem_instr) begin
@@ -62,16 +63,18 @@ module stepper (
       end else begin
         if (mem_addr >= 'h00001000 & mem_addr < 'h00002000) begin
           enable[1] <= 1'b1;
-        end else if (mem_addr >= 'h10000000 & mem_addr < 'h10000003) begin
+        end else if (mem_addr == 'h10000000) begin
           enable[2] <= 1'b1;
-        end else if (mem_addr >= 'h10000004 & mem_addr < 'h10000007) begin
+        end else if (mem_addr == 'h10000004) begin
           enable[3] <= 1'b1;
-        end else if (mem_addr >= 'h10000008 & mem_addr < 'h1000000b) begin
+        end else if (mem_addr == 'h10000008) begin
           enable[4] <= 1'b1;
-        end else if (mem_addr >= 'h1000000c & mem_addr < 'h1000000f) begin
+        end else if (mem_addr == 'h1000000c) begin
           enable[5] <= 1'b1;
-        end else if (mem_addr >= 'h10000010 & mem_addr < 'h10000013) begin
+        end else if (mem_addr == 'h10000010) begin
           enable[6] <= 1'b1;
+        end else if (mem_addr == 'h10000014) begin
+          enable[7] <= 1'b1;
         end
       end
     end else begin
@@ -115,7 +118,7 @@ module stepper (
 
   // --- IO RAM ---
   wire [31:0] spi_outgoing_upper;
-  io_register #(
+  io_register_output #(
       .DATA_WIDTH(32)
   ) spi_reg_out_up (
       .clk_in(clk_25mhz),
@@ -129,7 +132,7 @@ module stepper (
   );
 
   wire [31:0] spi_outgoing_lower;
-  io_register #(
+  io_register_output #(
       .DATA_WIDTH(32)
   ) spi_reg_out_low (
       .clk_in(clk_25mhz),
@@ -143,7 +146,7 @@ module stepper (
   );
 
   wire [31:0] spi_ingoing_upper;
-  io_register #(
+  io_register_output #(
       .DATA_WIDTH(32)
   ) spi_reg_in_up (
       .clk_in(clk_25mhz),
@@ -157,7 +160,7 @@ module stepper (
   );
 
   wire [31:0] spi_ingoing_lower;
-  io_register #(
+  io_register_output #(
       .DATA_WIDTH(32)
   ) spi_reg_in_low (
       .clk_in(clk_25mhz),
@@ -172,7 +175,7 @@ module stepper (
 
   // 4:1 - SPI CS Lines / 0 - SPI Send enable
   wire [31:0] spi_config;
-  io_register #(
+  io_register_output #(
       .DATA_WIDTH(32)
   ) spi_reg_config (
       .clk_in(clk_25mhz),
@@ -187,14 +190,11 @@ module stepper (
 
   // 0 - SPI ready
   wire [31:0] spi_status;
-  io_register #(
+  io_register_input #(
     .DATA_WIDTH(32)
   ) spi_reg_status (
-    .clk_in(clk_25mhz),
     .enable(enable[7]),
-    .write(read_write),
     .ready(mem_ready),
-    .data_in(mem_wdata),
     .data_out(mem_rdata),
 
     .mem(spi_status)
