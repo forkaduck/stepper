@@ -29,6 +29,8 @@ module spi #(
 
   reg [$clog2(SIZE) + 1 : 0] r_counter;
 
+  reg r_run = 1'b1;
+
   reg r_curr_cs_n = 1'b1;
 
   wire internal_clk;
@@ -50,7 +52,7 @@ module spi #(
   ) clk_divider1 (
       .clk_in (clk_in),
       .max_in (clk_count_max),
-      .clk_out(internal_clk)
+      .r_clk_out(internal_clk)
   );
 
   parameter integer STATE_CLK_OFF = SIZE + 1, STATE_END = SIZE + 2, STATE_IDLE = SIZE + 3;
@@ -71,6 +73,7 @@ module spi #(
   always @(posedge internal_clk, negedge reset_n_in) begin
     if (!reset_n_in) begin
       r_counter <= STATE_IDLE;
+      r_run <= 1'b1;
     end else begin
       case (r_counter)
         0: begin
@@ -110,14 +113,16 @@ module spi #(
 
       if (send_enable_in) begin
         // reset counter if enabled and in idle state
-        if (r_counter == STATE_IDLE) begin
+        if (r_counter == STATE_IDLE & r_run) begin
           r_counter <= 0;
         end else if (r_counter < STATE_IDLE) begin
           r_counter <= r_counter + 1;
+          r_run <= 1'b0;
         end
       end else begin
         // end transmission prematurely
         r_counter <= STATE_IDLE;
+        r_run <= 1'b1;
       end
     end
   end

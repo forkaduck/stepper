@@ -48,10 +48,10 @@ async def piso_data(dut, data, current_cs):
 
         # Check that every other cs bit is high
         for k in range(0, current_cs):
-            assert dut.cs_out_n.value[i] == 1
+            assert dut.cs_out_n.value[k] == 1
 
         for k in range(current_cs + 1, 4):
-            assert dut.cs_out_n.value[i] == 1
+            assert dut.cs_out_n.value[k] == 1
 
         # Check if the piso module works
         assert dut.data_in.value[i] == dut.serial_out
@@ -79,3 +79,7 @@ async def standard_ms_io(dut):
 
         dut.send_enable_in = 0
         await ClockCycles(dut.clk_in, 3 * clk_divider, rising=True)
+
+    dut.send_enable_in = 1
+    await ClockCycles(dut.clk_in, 100 * clk_divider, rising=True)
+    assert dut.r_ready_out == 1

@@ -69,9 +69,12 @@ impl RegIO {
 
     fn spi_wait_send(&mut self, data_upper: u32, data_lower: u32) {
         unsafe {
-            // wait while spi is busy
+            // wait until ready is 1
             while !(self.spi_status.read() & 0x1 == 0x1) {
             }
+            // unset spi enable pin
+            self.spi_config.write(self.spi_config.read() & 0x1);
+
             self.spi_outgoing_upper.write(data_upper);
             self.spi_outgoing_lower.write(data_lower);
 
