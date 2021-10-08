@@ -1,7 +1,6 @@
 /*
 * TODO
 * change clkname in clk_divider (missing r_)
-* instructions causing a trap:
 */
 
 // top module
@@ -10,6 +9,9 @@
 // gn[1] = SCK
 // gn[2] = MOSI
 // gn[14:3] = CS 0 - 11
+// led[7:0] = Debug leds
+// gp[11:0] = step
+// gp[23:12] = dir
 module stepper (
     input clk_25mhz,
     input [6:0] btn,
@@ -166,6 +168,7 @@ module stepper (
 
       .mem(spi_ingoing_lower)
   );
+  assign spi_ingoing_lower[31:8] = 'b0;
 
   // 4:1 - SPI CS Lines / 0 - SPI Send enable
   wire [31:0] spi_config;
@@ -193,6 +196,7 @@ module stepper (
 
     .mem(spi_status)
   );
+  assign spi_status[31:1] = 'b0;
 
   assign led[7] = trap;
   assign led[6] = mem_valid;

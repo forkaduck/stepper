@@ -4,17 +4,26 @@ module spi #(
     parameter CS_SIZE = 4,
     parameter CLK_SIZE = 3
 ) (
-    input [SIZE - 1:0] data_in,
-    input clk_in,
-    input [CLK_SIZE - 1:0] clk_count_max,
-    input serial_in,
-    input send_enable_in,
-    input [$clog2(CS_SIZE) - 1:0] cs_select_in,
+    // clk and reset
     input reset_n_in,
-    output [SIZE - 1:0] data_out,
+    input clk_in,
     output clk_out,
-    output serial_out,
+    input [CLK_SIZE - 1:0] clk_count_max,
+
+    // parallel i/o
+    input [SIZE - 1:0] data_in,
+    output [SIZE - 1:0] data_out,
+
+    // cs selection
+    input [$clog2(CS_SIZE) - 1:0] cs_select_in,
     output [CS_SIZE - 1 : 0] cs_out_n,
+   
+    // serial i/o
+    input serial_in,
+    output serial_out,
+
+    // output control
+    input send_enable_in,
     output reg r_ready_out
 );
 
@@ -46,14 +55,11 @@ module spi #(
 
   parameter integer STATE_CLK_OFF = SIZE + 1, STATE_END = SIZE + 2, STATE_IDLE = SIZE + 3;
 
+  // ready out handling process
   always @(posedge clk_in) begin
     case (r_counter)
       STATE_IDLE: begin
         r_ready_out <= 1'b1;
-      end
-
-      0: begin
-        r_ready_out <= 1'b0;
       end
 
       default: begin
@@ -114,9 +120,6 @@ module spi #(
         r_counter <= STATE_IDLE;
       end
     end
-
-    // $display("%m>\t\tr_counter:%x r_curr_cs_n:%x r_clk_enable_sipo:%x r_clk_enable_piso:%x",
-    //          r_counter, r_curr_cs_n, r_clk_enable_sipo, r_clk_enable_piso);
   end
 
   // fast io handle block
