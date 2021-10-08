@@ -146,28 +146,22 @@ module stepper (
   );
 
   wire [31:0] spi_ingoing_upper;
-  io_register_output #(
+  io_register_input #(
       .DATA_WIDTH(32)
   ) spi_reg_in_up (
-      .clk_in(clk_25mhz),
       .enable(enable[4]),
-      .write(read_write),
       .ready(mem_ready),
-      .data_in(mem_wdata),
       .data_out(mem_rdata),
 
       .mem(spi_ingoing_upper)
   );
 
   wire [31:0] spi_ingoing_lower;
-  io_register_output #(
+  io_register_input #(
       .DATA_WIDTH(32)
   ) spi_reg_in_low (
-      .clk_in(clk_25mhz),
       .enable(enable[5]),
-      .write(read_write),
       .ready(mem_ready),
-      .data_in(mem_wdata),
       .data_out(mem_rdata),
 
       .mem(spi_ingoing_lower)
