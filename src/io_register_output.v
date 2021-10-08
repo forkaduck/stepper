@@ -1,6 +1,6 @@
 // Register to hold one 32bit value. Can be
 // configured to drive some external signals.
-module io_register #(
+module io_register_output #(
     parameter DATA_WIDTH = 32
 ) (
     input clk_in,
@@ -20,9 +20,9 @@ module io_register #(
     r_mem = 'b0;
   end
 
-  reg [DATA_WIDTH -1:0] r_mem;
-
   assign mem = r_mem;
+
+  reg [DATA_WIDTH - 1: 0] r_mem;
 
   always @(posedge clk_in) begin
     if (write & enable) begin
