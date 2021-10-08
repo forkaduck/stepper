@@ -1,18 +1,18 @@
 [*]
 [*] GTKWave Analyzer v3.3.109 (w)1999-2020 BSI
-[*] Fri Sep 24 07:48:39 2021
+[*] Fri Oct  8 07:03:59 2021
 [*]
 [dumpfile] "/home/fuckaduck/Desktop/projects/stepper/tests/sim_output/stepper.vcd"
-[dumpfile_mtime] "Fri Sep 24 07:48:19 2021"
-[dumpfile_size] 204777
+[dumpfile_mtime] "Fri Oct  8 06:52:12 2021"
+[dumpfile_size] 2847726
 [savefile] "/home/fuckaduck/Desktop/projects/stepper/tests/sim_output/stepper.gtkw"
-[timestart] 5263000
+[timestart] 24076000
 [size] 1916 1035
 [pos] -1 -1
-*-18.000000 21267600 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-19.000000 22273000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] stepper.
 [sst_width] 227
-[signals_width] 476
+[signals_width] 338
 [sst_expanded] 1
 [sst_vpaned_height] 292
 @28
@@ -27,6 +27,8 @@ stepper.mem_wdata[31:0]
 stepper.mem_wstrb[3:0]
 @200
 -
+@23
+stepper.enable[31:0]
 @28
 stepper.mem_instr
 stepper.mem_ready
@@ -35,8 +37,11 @@ stepper.read_write
 @200
 -
 -
-@22
-stepper.led[7:0]
+@28
+stepper.spi1.serial_in
+stepper.spi1.serial_out
+stepper.spi1.r_ready_out
+stepper.spi1.send_enable_in
 @200
 -
 -
@@ -87,9 +92,7 @@ stepper.cpu.cpuregs_wrdata[31:0]
 stepper.cpu.cpuregs_write
 @22
 stepper.cpu.current_pc[31:0]
-@23
 stepper.cpu.dbg_ascii_instr[63:0]
-@22
 stepper.cpu.dbg_ascii_state[127:0]
 stepper.cpu.dbg_insn_addr[31:0]
 stepper.cpu.dbg_insn_imm[31:0]
