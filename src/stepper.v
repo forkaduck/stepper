@@ -8,7 +8,7 @@
 // gn[0] = MISO
 // gn[1] = SCK
 // gn[2] = MOSI
-// gn[14:3] = CS 0 - 11
+// gn[14:3] = CS 11 - 0
 // led[7:0] = Debug leds
 // gp[11:0] = step
 // gp[23:12] = dir
