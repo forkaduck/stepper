@@ -1,6 +1,5 @@
 /*
 * TODO
-* change clkname in clk_divider (missing r_)
 */
 
 // top module
@@ -255,7 +254,7 @@ module stepper (
       .CS_SIZE(12),
       .CLK_SIZE(3)
   ) spi1 (
-      .data_in({spi_outgoing_upper, spi_outgoing_lower}),
+      .data_in({spi_outgoing_upper[7:0], spi_outgoing_lower}),
       .clk_in(clk_25mhz),
       .clk_count_max(3'b111),
       // MISO
@@ -263,7 +262,7 @@ module stepper (
       .send_enable_in(spi_config[0]),
       .cs_select_in(spi_config[4:1]),
       .reset_n_in(reset_n),
-      .data_out({spi_ingoing_upper, spi_ingoing_lower}),
+      .data_out({spi_ingoing_upper[7:0], spi_ingoing_lower}),
       // SCK
       .clk_out(gn[1]),
       // MOSI
