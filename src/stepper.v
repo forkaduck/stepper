@@ -246,9 +246,6 @@ module stepper (
       .trap(trap)
   );
 
-  // assign direction pin to fixed 0
-  assign gp[1] = 0;
-
   spi #(
       .SIZE(40),
       .CS_SIZE(12),
