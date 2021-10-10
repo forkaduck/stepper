@@ -156,6 +156,7 @@ module stepper (
 
       .mem(spi_ingoing_upper)
   );
+  assign spi_ingoing_upper[31:8] = 'b0;
 
   wire [31:0] spi_ingoing_lower;
   io_register_input #(
@@ -167,7 +168,6 @@ module stepper (
 
       .mem(spi_ingoing_lower)
   );
-  assign spi_ingoing_lower[31:8] = 'b0;
 
   // 4:1 - SPI CS Lines / 0 - SPI Send enable
   wire [31:0] spi_config;
