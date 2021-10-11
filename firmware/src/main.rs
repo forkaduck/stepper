@@ -84,6 +84,9 @@ impl RegIO {
     }
 
     fn init_driver(&mut self) {
+        unsafe {
+            self.spi_config.write(0x4);
+        }
         // GCONF
         // I_scale_analog (external AIN reference)
         // diag0_error (diag0 active if an error occurred)
