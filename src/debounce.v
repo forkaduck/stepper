@@ -1,27 +1,32 @@
+// Button debouncer adds about 20us to
+// the signal in question.
 module debounce (
     input clk_in,
     input in,
-    output reg out
+    output reg r_out
 );
-
-  reg  r_clk_buff = 1'b0;
-  wire r_slowclock;
+  parameter MAX_VAL = 20;
+  reg [$clog2(MAX_VAL):0] r_counter;
+  reg r_prev_in;
 
   initial begin
-    out = 'b0;
+    r_counter = 'b0;
+    r_out = 'b0;
+    r_prev_in = 'b0;
   end
 
-  // btn debouncer
-  clk_divider #(
-      .SIZE(8)
-  ) clk_divider1 (
-      .clk_in (clk_in),
-      .max_in (8'd250),
-      .clk_out(r_slowclock)
-  );
+  always @(posedge clk_in) begin
+    if (r_counter >= MAX_VAL) begin
+      r_counter <= 'b0;
+      r_out <= in;
+    end else begin
+      r_counter <= r_counter + 1;
+    end
 
-  always @(posedge r_slowclock) begin
-    r_clk_buff <= ~in;
-    out <= r_clk_buff;
+    if (in != r_prev_in) begin
+      r_counter <= 'b0;
+    end
+
+    r_prev_in <= in;
   end
 endmodule

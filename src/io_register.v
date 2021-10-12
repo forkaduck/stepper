@@ -1,3 +1,5 @@
+// Register to hold one 32bit value. Can be
+// configured to drive some external signals.
 module io_register #(
     parameter DATA_WIDTH = 32
 ) (
@@ -15,6 +17,8 @@ module io_register #(
     output reg [DATA_WIDTH - 1:0] r_mem
 );
   initial begin
+    ready = 'b0;
+    r_data_out = 'bz;
     r_mem = 'b0;
   end
 
@@ -22,13 +26,14 @@ module io_register #(
     if (enable) begin
       if (write) begin
         r_mem <= data_in;
-      end else begin
-        r_data_out <= r_mem;
+        r_data_out <= 'bz;
       end
+
+      r_data_out <= r_mem;
       ready <= 1'b1;
     end else begin
       r_data_out <= 'bz;
-      ready <= 1'bz;
+      ready <= 'bz;
     end
   end
 endmodule

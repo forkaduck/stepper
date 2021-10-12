@@ -1,6 +1,9 @@
 `include "macros.v"
 
-// converts parallel data into serial data
+// Converts parallel data into serial data
+// If load_in is high, the value of data_in is loaded
+// into the internal shift register.
+// In the load cycle no shift is performed.
 module piso #(
     parameter SIZE = 8
 ) (

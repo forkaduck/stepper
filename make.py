@@ -3,7 +3,6 @@ import argparse
 import os
 import subprocess
 import sys
-import binascii
 
 # Runs a subcommand with the appropriate pipes
 # (a wrapper for use with tqdm)
@@ -29,55 +28,55 @@ def clean():
         print("Some files where already deleted or are missing!")
 
 
-#  def fill_0s(val):
-#      for _ in range(4 - (len(val) % 4)):
-#          val.append(0)
-#
-#
-#  def reverse_byte_order(non):
-#      output = bytearray()
-#
-#      fill_0s(non)
-#
-#      for i in range(0, len(non), 4):
-#          output.append(non[i + 3])
-#          output.append(non[i + 2])
-#          output.append(non[i + 1])
-#          output.append(non[i])
-#
-#      fill_0s(output)
-#
-#      return output
+def fill_0s(val):
+    for _ in range(4 - (len(val) % 4)):
+        val.append(0)
+
+
+def reverse_byte_order(non):
+    output = bytearray()
+
+    fill_0s(non)
+
+    for i in range(0, len(non), 4):
+        output.append(non[i + 3])
+        output.append(non[i + 2])
+        output.append(non[i + 1])
+        output.append(non[i])
+
+    fill_0s(output)
+
+    return output
 
 
 def compile_firmware():
     wd = os.getcwd()
     os.chdir("firmware")
 
-    # Build the firmware
-    run_subcommand(
-        ["cargo", "build", "--release"],
-    )
-
-    # Strip the firmware of debug symbols
-    run_subcommand(
-        [
-            "riscv32-elf-strip",
-            "target/riscv32imac-unknown-none-elf/release/stepper",
-        ],
-    )
-
-    # Copy sections to bin for use with rom initialisation
-    run_subcommand(
-        [
-            "riscv32-elf-objcopy",
-            "-O",
-            "binary",
-            "target/riscv32imac-unknown-none-elf/release/stepper",
-            "target/riscv32imac-unknown-none-elf/release/stepper.bin",
-        ],
-    )
-
+    #  # Build the firmware
+    #  run_subcommand(
+    #      ["cargo", "build", "--release"],
+    #  )
+    #
+    #  # Strip the firmware of debug symbols
+    #  run_subcommand(
+    #      [
+    #          "riscv64-unknown-elf-strip",
+    #          "target/riscv32imac-unknown-none-elf/release/stepper",
+    #      ],
+    #  )
+    #
+    #  # Copy sections to bin for use with rom initialisation
+    #  run_subcommand(
+    #      [
+    #          "riscv64-unknown-elf-objcopy",
+    #          "-O",
+    #          "binary",
+    #          "target/riscv32imac-unknown-none-elf/release/stepper",
+    #          "target/riscv32imac-unknown-none-elf/release/stepper.bin",
+    #      ],
+    #  )
+    #
     #  Format output to work with readmemh
     counter = 1
     with open(
@@ -87,7 +86,7 @@ def compile_firmware():
             "target/riscv32imac-unknown-none-elf/release/stepper.bin", "rb"
         ) as firm_in:
             firm = bytearray(firm_in.read())
-            for i in firm:
+            for i in reverse_byte_order(firm):
                 #  print("{:02x}".format(i), end=" ")
                 firm_out.write("{:02x}".format(i))
 
@@ -101,14 +100,12 @@ def compile_firmware():
 
 # Builds the bitstream which can be loaded onto the FPGA
 def build():
-    compile_firmware()
-
     # Generate the intermediate netlist as a .json
     run_subcommand(
         [
             "yosys",
             "-p",
-            "read_verilog src/*.v; synth_ecp5 -asyncprld -json stepper.json",
+            "read_verilog src/*.v; synth_ecp5 -json stepper.json",
         ],
     )
 
@@ -117,7 +114,8 @@ def build():
         [
             "nextpnr-ecp5",
             "-v",
-            "--25k",
+            "--debug",
+            "--12k",
             "--package",
             "CABGA381",
             "--json",
@@ -145,8 +143,6 @@ def build():
 # Runs one test with the name test_name which is in the tests
 # directory
 def test(test_name):
-    compile_firmware()
-
     wd = os.getcwd()
     os.chdir("tests")
 
@@ -266,6 +262,9 @@ parser.add_argument(
 parser.add_argument(
     "--flash", help="Flash the bitstream into EEPROM", dest="flash", action="store_true"
 )
+parser.add_argument(
+    "--compile", help="Compile the firmware", dest="compile", action="store_true"
+)
 
 prog_args = parser.parse_args()
 
@@ -283,3 +282,6 @@ if prog_args.load:
 
 if prog_args.flash:
     flash()
+
+if prog_args.compile:
+    compile_firmware()
