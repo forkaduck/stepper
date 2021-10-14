@@ -85,7 +85,7 @@ impl RegIO {
 
     fn init_driver(&mut self) {
         unsafe {
-            self.spi_config.write(0x4);
+            self.spi_config.write(0x0);
         }
         // GCONF
         // I_scale_analog (external AIN reference)
