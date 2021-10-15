@@ -4,13 +4,15 @@
 
 // top module
 // current pinout:
-// gn[0] = MISO
-// gn[1] = SCK
-// gn[2] = MOSI
-// gn[14:3] = CS 11 - 0
-// led[7:0] = Debug leds
-// gp[11:0] = step
-// gp[23:12] = dir
+// gn[0]      miso
+// gn[1]      sck
+// gn[2]      mosi
+// gn[14:3]   chip select
+// gn[26:15]  driver enable lines
+// led[7:0]   Debug leds
+// gp[11:0]   step lines
+// gp[23:12]  dir lines
+// gp[27:24]  rc channels
 module stepper (
     input clk_25mhz,
     input [6:0] btn,
