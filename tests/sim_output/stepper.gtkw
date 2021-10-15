@@ -1,18 +1,18 @@
 [*]
 [*] GTKWave Analyzer v3.3.109 (w)1999-2020 BSI
-[*] Fri Oct  8 07:03:59 2021
+[*] Fri Oct 15 05:55:22 2021
 [*]
 [dumpfile] "/home/fuckaduck/Desktop/projects/stepper/tests/sim_output/stepper.vcd"
-[dumpfile_mtime] "Fri Oct  8 06:52:12 2021"
-[dumpfile_size] 2847726
+[dumpfile_mtime] "Fri Oct 15 05:51:16 2021"
+[dumpfile_size] 1800441
 [savefile] "/home/fuckaduck/Desktop/projects/stepper/tests/sim_output/stepper.gtkw"
-[timestart] 24076000
-[size] 1916 1035
+[timestart] 0
+[size] 1916 1025
 [pos] -1 -1
-*-19.000000 22273000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-24.000000 52340000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] stepper.
 [sst_width] 227
-[signals_width] 338
+[signals_width] 366
 [sst_expanded] 1
 [sst_vpaned_height] 292
 @28
@@ -27,7 +27,7 @@ stepper.mem_wdata[31:0]
 stepper.mem_wstrb[3:0]
 @200
 -
-@23
+@22
 stepper.enable[31:0]
 @28
 stepper.mem_instr
@@ -37,6 +37,8 @@ stepper.read_write
 @200
 -
 -
+@29
+stepper.spi1.cs_out_n[11:0]
 @28
 stepper.spi1.serial_in
 stepper.spi1.serial_out
