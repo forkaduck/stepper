@@ -54,6 +54,7 @@ const LOST_STEPS: u32 = 0x73;
 /// IO registers
 #[repr(C)]
 struct RegIO {
+    pub leds: RW<u32>,
     pub spi_outgoing_upper: RW<u32>,
     pub spi_outgoing_lower: RW<u32>,
     pub spi_ingoing_upper: RW<u32>,
@@ -67,11 +68,14 @@ impl RegIO {
         unsafe { &mut *(0x10000000 as *mut RegIO)}
     }
 
-    fn spi_wait_send(&mut self, data_upper: u32, data_lower: u32) {
+    fn spi_wait_send(&mut self, data_upper: u32, data_lower: u32, cs: u32) {
         unsafe {
             // wait until ready is 1
             while !(self.spi_status.read() & 0x1 == 0x1) {
             }
+          
+            // set cs
+            self.spi_config.write((cs << 1) & 0xfffffffe);
 
             // unset spi enable pin
             self.spi_config.write(self.spi_config.read() & !0x1);
@@ -84,28 +88,27 @@ impl RegIO {
     }
 
     fn init_driver(&mut self) {
-        unsafe {
-            self.spi_config.write(0x0);
+        for i in 0..12 {
+            // GCONF
+            // I_scale_analog (external AIN reference)
+            // diag0_error (diag0 active if an error occurred)
+            self.spi_wait_send(GCONF + WRITE_ADDR, 0x00000021, i);
+
+            // CHOPCONF
+            self.spi_wait_send(CHOPCONF + WRITE_ADDR, 0x30188113, i);
+
+            // IHOLD_IRUN IHOLDDELAY / IRUN / IHOLD
+            self.spi_wait_send(IHOLD_IRUN + WRITE_ADDR, 0x00080a0a, i);
+
+            // TPOWERDOWN
+            self.spi_wait_send(TPOWERDOWN + WRITE_ADDR, 0x0000000a, i);
+
+            // THIGH
+            self.spi_wait_send(THIGH + WRITE_ADDR, 0x00000020, i);
+
+            // PWMCONF
+            self.spi_wait_send(PWMCONF + WRITE_ADDR, 0x00040a74, i);
         }
-        // GCONF
-        // I_scale_analog (external AIN reference)
-        // diag0_error (diag0 active if an error occurred)
-        self.spi_wait_send(GCONF + WRITE_ADDR, 0x00000021);
-
-        // CHOPCONF
-        self.spi_wait_send(CHOPCONF + WRITE_ADDR, 0x30188113);
-
-        // IHOLD_IRUN IHOLDDELAY / IRUN / IHOLD
-        self.spi_wait_send(IHOLD_IRUN + WRITE_ADDR, 0x00080a0a);
-
-        // TPOWERDOWN
-        self.spi_wait_send(TPOWERDOWN + WRITE_ADDR, 0x0000000a);
-
-        // THIGH
-        self.spi_wait_send(THIGH + WRITE_ADDR, 0x00000020);
-
-        // PWMCONF
-        self.spi_wait_send(PWMCONF + WRITE_ADDR, 0x00040a74);
     }
 }
 
@@ -136,5 +139,10 @@ fn main() -> ! {
 
     io.init_driver();
     loop {
+        unsafe {
+            // heartbeat
+            io.leds.write(!io.leds.read());
+            wait(1000000);
+        }
     }
 }
