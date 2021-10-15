@@ -1,5 +1,3 @@
-`include "macros.v"
-
 // Converts parallel data into serial data
 // If load_in is high, the value of data_in is loaded
 // into the internal shift register.
