@@ -53,12 +53,13 @@ module stepper (
   // 0x00000000 rom
   // 0x00001000 ram
   //
-  // 0x10000000 spi_outgoing_upper
-  // 0x10000004 spi_outgoing_lower
-  // 0x10000008 spi_ingoing_upper
-  // 0x1000000c spi_ingoing_lower
-  // 0x10000010 spi_config
-  // 0x10000014 spi_status
+  // 0x10000000 leds
+  // 0x10000004 spi_outgoing_upper
+  // 0x10000008 spi_outgoing_lower
+  // 0x1000000c spi_ingoing_upper
+  // 0x10000010 spi_ingoing_lower
+  // 0x10000014 spi_config
+  // 0x10000018 spi_status
   always @(posedge clk_25mhz) begin
     if (mem_valid) begin
       if (mem_instr) begin
@@ -78,6 +79,8 @@ module stepper (
           enable[6] <= 1'b1;
         end else if (mem_addr == 'h10000014) begin
           enable[7] <= 1'b1;
+        end else if (mem_addr == 'h10000018) begin
+          enable[8] <= 1'b1;
         end
       end
     end else begin
@@ -120,12 +123,30 @@ module stepper (
   );
 
   // --- IO RAM ---
+  io_register_output #(
+      .DATA_WIDTH(32)
+  ) leds_out (
+    .clk_in(clk_25mhz),
+    .enable(enable[2]),
+    .write(read_write),
+    .ready(mem_ready),
+    .data_in(mem_wdata),
+    .data_out(mem_rdata),
+
+    .mem(led[3:0])
+  );
+
+  assign led[7] = trap;
+  assign led[6] = mem_valid;
+  assign led[5] = mem_instr;
+  assign led[4] = read_write;
+
   wire [31:0] spi_outgoing_upper;
   io_register_output #(
       .DATA_WIDTH(32)
   ) spi_reg_out_up (
       .clk_in(clk_25mhz),
-      .enable(enable[2]),
+      .enable(enable[3]),
       .write(read_write),
       .ready(mem_ready),
       .data_in(mem_wdata),
@@ -139,7 +160,7 @@ module stepper (
       .DATA_WIDTH(32)
   ) spi_reg_out_low (
       .clk_in(clk_25mhz),
-      .enable(enable[3]),
+      .enable(enable[4]),
       .write(read_write),
       .ready(mem_ready),
       .data_in(mem_wdata),
@@ -152,7 +173,7 @@ module stepper (
   io_register_input #(
       .DATA_WIDTH(32)
   ) spi_reg_in_up (
-      .enable(enable[4]),
+      .enable(enable[5]),
       .ready(mem_ready),
       .data_out(mem_rdata),
 
@@ -164,7 +185,7 @@ module stepper (
   io_register_input #(
       .DATA_WIDTH(32)
   ) spi_reg_in_low (
-      .enable(enable[5]),
+      .enable(enable[6]),
       .ready(mem_ready),
       .data_out(mem_rdata),
 
@@ -177,7 +198,7 @@ module stepper (
       .DATA_WIDTH(32)
   ) spi_reg_config (
       .clk_in(clk_25mhz),
-      .enable(enable[6]),
+      .enable(enable[7]),
       .write(read_write),
       .ready(mem_ready),
       .data_in(mem_wdata),
@@ -191,7 +212,7 @@ module stepper (
   io_register_input #(
       .DATA_WIDTH(32)
   ) spi_reg_status (
-      .enable(enable[7]),
+      .enable(enable[8]),
       .ready(mem_ready),
       .data_out(mem_rdata),
 
@@ -199,10 +220,6 @@ module stepper (
   );
   assign spi_status[31:1] = 'b0;
 
-  assign led[7] = trap;
-  assign led[6] = mem_valid;
-  assign led[5] = mem_instr;
-  assign led[4] = read_write;
 
   picorv32 #(
       .ENABLE_COUNTERS(1'b1),
