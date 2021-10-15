@@ -187,13 +187,13 @@ module stepper (
   // 0 - SPI ready
   wire [31:0] spi_status;
   io_register_input #(
-    .DATA_WIDTH(32)
+      .DATA_WIDTH(32)
   ) spi_reg_status (
-    .enable(enable[7]),
-    .ready(mem_ready),
-    .data_out(mem_rdata),
+      .enable(enable[7]),
+      .ready(mem_ready),
+      .data_out(mem_rdata),
 
-    .mem(spi_status)
+      .mem(spi_status)
   );
   assign spi_status[31:1] = 'b0;
 
