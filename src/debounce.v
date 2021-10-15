@@ -5,7 +5,7 @@ module debounce (
     input in,
     output reg r_out
 );
-  parameter MAX_VAL = 200000;
+  parameter MAX_VAL = 2000;
   reg [$clog2(MAX_VAL):0] r_counter;
   reg r_prev_in;
 
