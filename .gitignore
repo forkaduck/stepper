@@ -10,7 +10,6 @@ tests/sim_output/srclist.txt
 *.bit
 *.config
 **/sim_output/*.v
-/.gtm/
 .svlint.toml
 .vim
 firmware/stepper.bin
