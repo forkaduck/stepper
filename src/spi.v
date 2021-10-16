@@ -52,7 +52,7 @@ module spi #(
   ) clk_divider1 (
       .clk_in (clk_in),
       .max_in (clk_count_max),
-      .r_clk_out(internal_clk)
+      .clk_out(internal_clk)
   );
 
   parameter integer STATE_CLK_OFF = SIZE + 1, STATE_END = SIZE + 2, STATE_IDLE = SIZE + 3;
