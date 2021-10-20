@@ -126,14 +126,14 @@ module stepper (
   io_register_output #(
       .DATA_WIDTH(32)
   ) leds_out (
-    .clk_in(clk_25mhz),
-    .enable(enable[2]),
-    .write(read_write),
-    .ready(mem_ready),
-    .data_in(mem_wdata),
-    .data_out(mem_rdata),
+      .clk_in(clk_25mhz),
+      .enable(enable[2]),
+      .write(read_write),
+      .ready(mem_ready),
+      .data_in(mem_wdata),
+      .data_out(mem_rdata),
 
-    .mem(led[3:0])
+      .mem(led[3:0])
   );
 
   assign led[7] = trap;
@@ -272,7 +272,7 @@ module stepper (
   ) spi1 (
       .data_in({spi_outgoing_upper[7:0], spi_outgoing_lower}),
       .clk_in(clk_25mhz),
-      .clk_count_max(3'b111),
+      .clk_count_max('hff),
       // MISO
       .serial_in(gn[0]),
       .send_enable_in(spi_config[0]),
