@@ -137,12 +137,14 @@ fn wait(instr: u32) {
 fn main() -> ! {
     let io = RegIO::get_reg_io();
 
-    io.init_driver();
     loop {
         unsafe {
             // heartbeat
-            io.leds.write(!io.leds.read());
-            wait(1000000);
+            io.leds.write(0xffffffff);
+            io.init_driver();
+            wait(3125000 / 2);
+            io.leds.write(0x00000000);
+            wait(3125000 / 2);
         }
     }
 }
