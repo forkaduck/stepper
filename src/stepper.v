@@ -272,7 +272,7 @@ module stepper (
   ) spi1 (
       .data_in({spi_outgoing_upper[7:0], spi_outgoing_lower}),
       .clk_in(clk_25mhz),
-      .clk_count_max('hff),
+      .clk_count_max('h7),
       // MISO
       .serial_in(gn[0]),
       .send_enable_in(spi_config[0]),
