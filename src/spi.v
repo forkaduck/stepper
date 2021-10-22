@@ -54,10 +54,6 @@ module spi #(
       .r_clk_out(int_clk)
   );
 
-  // rewrite spi with a clk counter instead of this big always block
-  // (count the number of pulses on the slower clock line to advance
-  // a state machine)
-
   parameter STATE_IDLE = 0, STATE_CLK_OFF = SIZE + 2, STATE_END = SIZE + 3;
 
   always @(posedge clk_in, negedge reset_n_in) begin
