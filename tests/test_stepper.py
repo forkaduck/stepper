@@ -13,13 +13,13 @@ async def test_stepper(dut):
     cocotb.fork(clock.start())
 
     print("Triggering reset")
-    dut.btn[1] = 0
+    dut.btn[1].value = 0
     await ClockCycles(dut.clk_25mhz, 10, rising=True)
 
-    dut.btn[1] = 1
+    dut.btn[1].value = 1
     await ClockCycles(dut.clk_25mhz, 100, rising=True)
 
-    dut.btn[1] = 0
+    dut.btn[1].value = 0
     print("Reset done")
 
     await ClockCycles(dut.clk_25mhz, 30000, rising=True)
