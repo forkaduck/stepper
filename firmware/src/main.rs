@@ -75,7 +75,7 @@ impl RegIO {
             }
           
             // set cs
-            self.spi_config.write((cs << 1) & 0xfffffffe);
+            self.spi_config.write((self.spi_config.read() & !0x0000001e) | ((cs << 1) & 0x0000001e));
 
             // unset spi enable pin
             self.spi_config.write(self.spi_config.read() & !0x1);

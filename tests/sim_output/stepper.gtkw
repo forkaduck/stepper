@@ -1,13 +1,13 @@
 [*]
 [*] GTKWave Analyzer v3.3.109 (w)1999-2020 BSI
-[*] Fri Oct 15 05:55:22 2021
+[*] Fri Oct 22 07:17:23 2021
 [*]
 [dumpfile] "/home/fuckaduck/Desktop/projects/stepper/tests/sim_output/stepper.vcd"
-[dumpfile_mtime] "Fri Oct 15 05:51:16 2021"
-[dumpfile_size] 1800441
+[dumpfile_mtime] "Fri Oct 22 07:16:23 2021"
+[dumpfile_size] 13707496
 [savefile] "/home/fuckaduck/Desktop/projects/stepper/tests/sim_output/stepper.gtkw"
-[timestart] 0
-[size] 1916 1025
+[timestart] 46360000
+[size] 1916 1027
 [pos] -1 -1
 *-24.000000 52340000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] stepper.
