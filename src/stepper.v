@@ -22,16 +22,37 @@ module stepper (
     output wifi_gpio0
 );
 
-  wire reset_n;
-
   // Tie GPIO0, keep board from rebooting
   assign wifi_gpio0 = 1'b1;
-  //
-  debounce reset_debounce (
-      .clk_in(clk_25mhz),
-      .in(!btn[1]),
-      .r_out(reset_n)
-  );
+
+  // Debounce all buttons
+  wire [6:0] btn_debounced;
+  genvar i;
+  generate
+    for (i = 0; i < 7; i = i + 1) begin
+      debounce reset_debounce (
+          .clk_in(clk_25mhz),
+          .in(!btn[i]),
+          .r_out(btn_debounced[i])
+      );
+    end
+  endgenerate
+
+  // Map the button outputs to some functions
+  wire reset_n;
+  assign reset_n = btn_debounced[1];
+  assign gn[17:15] = btn_debounced[2] ? 3'b111 : 3'b000;
+
+  // driver enable
+  assign gn[26:18] = 0;
+
+  // step lines
+  assign gp[11:0] = 0;
+
+  // dir lines
+  assign gp[23:12] = 0;
+
+
 
   // CPU Registers
   wire [31:0] mem_addr;  // memory address
@@ -286,4 +307,5 @@ module stepper (
       .cs_out_n(gn[14:3]),
       .r_ready_out(spi_status[0])
   );
+
 endmodule
