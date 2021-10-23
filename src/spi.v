@@ -59,7 +59,6 @@ module spi #(
   always @(posedge clk_in, negedge reset_n_in) begin
     if (!reset_n_in) begin
       r_counter <= STATE_IDLE;
-      r_ready_out <= 1'b1;
     end else begin
       // state machine output case
       case (r_counter)
@@ -125,7 +124,7 @@ module spi #(
 
   mux #(
       .SIZE(CS_SIZE),
-      .INITIAL(2 ** CS_SIZE - 1)
+      .INITIAL(~'b0)
   ) mux1 (
       .select_in(cs_select_in),
       .sig_in(r_curr_cs_n),
