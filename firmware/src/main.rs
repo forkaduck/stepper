@@ -68,7 +68,7 @@ impl RegIO {
         unsafe { &mut *(0x10000000 as *mut RegIO)}
     }
 
-    fn spi_wait_send(&mut self, data_upper: u32, data_lower: u32, cs: u32) {
+    fn spi_blocking_send(&mut self, data_upper: u32, data_lower: u32, cs: u32) {
         unsafe {
             // wait until ready is 1
             while !(self.spi_status.read() & 0x1 == 0x1) {
@@ -84,30 +84,33 @@ impl RegIO {
             self.spi_outgoing_lower.write(data_lower);
 
             self.spi_config.write(self.spi_config.read() | 0x1);
+
+            while !(self.spi_status.read() & 0x1 == 0x0) {
+            }
         }
     }
 
     fn init_driver(&mut self) {
-        for i in 0..12 {
+        for i in 0..3 {
             // GCONF
             // I_scale_analog (external AIN reference)
             // diag0_error (diag0 active if an error occurred)
-            self.spi_wait_send(GCONF + WRITE_ADDR, 0x00000021, i);
+            self.spi_blocking_send(GCONF + WRITE_ADDR, 0x00000021, i);
 
             // CHOPCONF
-            self.spi_wait_send(CHOPCONF + WRITE_ADDR, 0x30188113, i);
+            self.spi_blocking_send(CHOPCONF + WRITE_ADDR, 0x30188113, i);
 
             // IHOLD_IRUN IHOLDDELAY / IRUN / IHOLD
-            self.spi_wait_send(IHOLD_IRUN + WRITE_ADDR, 0x00080a0a, i);
+            self.spi_blocking_send(IHOLD_IRUN + WRITE_ADDR, 0x00080a0a, i);
 
             // TPOWERDOWN
-            self.spi_wait_send(TPOWERDOWN + WRITE_ADDR, 0x0000000a, i);
+            self.spi_blocking_send(TPOWERDOWN + WRITE_ADDR, 0x0000000a, i);
 
             // THIGH
-            self.spi_wait_send(THIGH + WRITE_ADDR, 0x00000020, i);
+            self.spi_blocking_send(THIGH + WRITE_ADDR, 0x00000020, i);
 
             // PWMCONF
-            self.spi_wait_send(PWMCONF + WRITE_ADDR, 0x00040a74, i);
+            self.spi_blocking_send(PWMCONF + WRITE_ADDR, 0x00040a74, i);
         }
     }
 }
@@ -137,11 +140,11 @@ fn wait(instr: u32) {
 fn main() -> ! {
     let io = RegIO::get_reg_io();
 
+    io.init_driver();
     loop {
         unsafe {
             // heartbeat
             io.leds.write(0xffffffff);
-            io.init_driver();
             wait(3125000 / 2);
             io.leds.write(0x00000000);
             wait(3125000 / 2);
