@@ -17,6 +17,8 @@
  *
  */
 
+`include "macros.v"
+
 /* verilator lint_off WIDTH */
 /* verilator lint_off PINMISSING */
 /* verilator lint_off CASEOVERLAP */
@@ -35,8 +37,8 @@
 `define debug(debug_command)
 `endif
 
-`ifdef FORMAL
-`define assert(assert_expr) assert(assert_expr)
+`ifdef __ICARUS__
+`define assert(assert_expr) `assert_end(assert_expr)
 `else
 `define assert(assert_expr) empty_statement
 `endif
