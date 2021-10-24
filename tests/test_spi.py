@@ -44,14 +44,14 @@ async def piso_data(dut, data, current_cs):
         await RisingEdge(dut.clk_out)
 
         assert dut.r_ready_out.value == 0
-        assert dut.cs_out_n[i].value == 0
+        assert dut.r_cs_out_n[i].value == 0
 
         # Check that every other cs bit is high
         for k in range(0, current_cs):
-            assert dut.cs_out_n[k].value == 1
+            assert dut.r_cs_out_n[k].value == 1
 
         for k in range(current_cs + 1, 4):
-            assert dut.cs_out_n[k].value == 1
+            assert dut.r_cs_out_n[k].value == 1
 
         # Check if the piso module works
         assert dut.data_in[i].value == dut.serial_out.value
@@ -71,7 +71,7 @@ async def standard_ms_io(dut):
         await ClockCycles(dut.clk_in, 1 * clk_divider, rising=True)
 
         assert dut.r_ready_out.value == 1
-        assert dut.cs_out_n[i].value == 1
+        assert dut.r_cs_out_n[i].value == 1
         dut.send_enable_in.value = 1
 
         # Wait for the spi module to finish

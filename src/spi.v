@@ -16,7 +16,7 @@ module spi #(
 
     // cs selection
     input [$clog2(CS_SIZE) - 1:0] cs_select_in,
-    output [CS_SIZE - 1 : 0] cs_out_n,
+    output reg [CS_SIZE - 1 : 0] r_cs_out_n,
    
     // serial i/o
     input serial_in,
@@ -29,21 +29,29 @@ module spi #(
 
   reg [$clog2(SIZE) + 1 : 0] r_counter;
 
-  reg r_curr_cs_n = 1'b1;
-
+  // Internal divided clk
   wire int_clk;
 
+  // send_enable of the previous clk cycle
+  reg r_prev_send_enable = 1'b0;
+
+  // Internal clks for sipo and piso
   reg r_int_clk_sipo = 1'b0;
   reg r_int_clk_piso = 1'b0;
 
+  // Intenal enable lines for clk on the above lines
   reg r_int_clk_enable_sipo = 1'b0;
   reg r_int_clk_enable_piso = 1'b0;
 
+  // Load line of the sipo module
   reg r_piso_load = 1'b0;
 
   assign clk_out = !r_int_clk_sipo;
 
-  initial r_ready_out = 1'b0;
+  initial begin
+    r_ready_out = 1'b0;
+    r_cs_out_n = ~'b0;
+  end
 
   // initialize clock divider
   clk_divider #(
@@ -54,66 +62,70 @@ module spi #(
       .r_clk_out(int_clk)
   );
 
-  parameter STATE_IDLE = 0, STATE_CLK_OFF = SIZE + 2, STATE_END = SIZE + 3;
+  parameter STATE_CLK_OFF = SIZE + 1, STATE_IDLE = SIZE + 2;
+
+  // Output always statement
+  always @(posedge clk_in) begin
+    // state machine output case
+    case (r_counter)
+      0: begin
+        // Pull the current cs down
+        r_cs_out_n[cs_select_in] <= 1'b0;
+        r_ready_out <= 1'b0;
+      end
+
+        // Begin of receiver
+      1: r_int_clk_enable_sipo <= 1'b1;
+
+      // Stop loading which happened in the STATE_IDLE state
+      2: r_piso_load <= 1'b0;
+
+      // End of data transmission
+      STATE_CLK_OFF: begin
+        r_int_clk_enable_sipo <= 1'b0;
+        r_int_clk_enable_piso <= 1'b0;
+      end
+
+      default: begin
+        if (r_counter >= STATE_IDLE) begin
+          // Idle state (wait for send_enable_in)
+          r_cs_out_n[cs_select_in] <= 1'b1;
+          r_int_clk_enable_sipo <= 1'b0;
+
+          // Load piso
+          r_piso_load <= 1'b1;
+          r_int_clk_enable_piso <= 1'b1;
+        
+          r_ready_out <= 1'b1;
+        end
+      end
+    endcase
+  end
+
+  // Next state always statement
+  reg r_prev_int_clk;
 
   always @(posedge clk_in, negedge reset_n_in) begin
     if (!reset_n_in) begin
       r_counter <= STATE_IDLE;
+
     end else begin
-      // state machine output case
-      case (r_counter)
-        1: begin
-          // Pull the current cs down
-          r_curr_cs_n <= 1'b0;
-        end
-
-        2: begin
-          // Begin of receiver
-          r_int_clk_enable_sipo <= 1'b1;
-        end
-
-        3: begin
-          // Stop loading which happened in the STATE_IDLE state
-          r_piso_load <= 1'b0;
-        end
-
-        // End of data transmission
-        STATE_CLK_OFF: begin
-          r_int_clk_enable_sipo <= 1'b0;
-          r_int_clk_enable_piso <= 1'b0;
-        end
-
-        // Disable cs a bit later to avoid a malformed frame
-        STATE_END: r_curr_cs_n <= 1'b1;
-
-        default: begin
-          if (r_counter == STATE_IDLE || r_counter > STATE_END) begin
-            // Idle state (wait for send_enable_in)
-            r_curr_cs_n <= 1'b1;
-            r_int_clk_enable_sipo <= 1'b0;
-
-            // Load piso
-            r_piso_load <= 1'b1;
-            r_int_clk_enable_piso <= 1'b1;
+      if (int_clk && ! r_prev_int_clk) begin 
+        case (r_counter)
+          STATE_IDLE: begin
+            if (send_enable_in && !r_prev_send_enable) begin
+              r_counter <= 0;
+            end
+            r_prev_send_enable <= send_enable_in;
           end
-        end
-      endcase
 
-      if (send_enable_in) begin
-        if (r_counter < STATE_END) begin
-          // Increment state on positive clk
-          if (int_clk) begin
+          default: begin
             r_counter <= r_counter + 1;
           end
-
-          r_ready_out <= 1'b0;
-        end else begin
-          r_ready_out <= 1'b1;
-        end
-      end else begin
-        r_counter <= STATE_IDLE;
-        r_ready_out <= 1'b1;
+        endcase
       end
+
+      r_prev_int_clk <= int_clk;
     end
   end
 
@@ -121,16 +133,6 @@ module spi #(
     r_int_clk_sipo <= r_int_clk_enable_sipo ? int_clk : 1'b0;
     r_int_clk_piso <= r_int_clk_enable_piso ? int_clk : 1'b0;
   end
-
-  mux #(
-      .SIZE(CS_SIZE),
-      .INITIAL(~'b0)
-  ) mux1 (
-      .select_in(cs_select_in),
-      .sig_in(r_curr_cs_n),
-      .clk_in(clk_in),
-      .r_sig_out(cs_out_n)
-  );
 
   // parallel in serial out module driving the mosi pin
   piso #(

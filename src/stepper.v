@@ -304,7 +304,7 @@ module stepper (
       .clk_out(gn[1]),
       // MOSI
       .serial_out(gn[2]),
-      .cs_out_n(gn[14:3]),
+      .r_cs_out_n(gn[14:3]),
       .r_ready_out(spi_status[0])
   );
 
