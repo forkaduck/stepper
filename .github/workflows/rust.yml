@@ -1,6 +1,9 @@
 name: Rust
 
-on: [ push ]
+on:
+  push:
+    paths:
+      - firmware/**
 
 env:
   CARGO_TERM_COLOR: always
@@ -15,9 +18,18 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+
     - name: Add toolchain
-      run: rustup target add riscv32imac-unknown-none-elf
+      run: rustup target add riscv32i-unknown-none-elf
+
+    - name: Add binutils from cargo
+      run: rustup component add llvm-tools-preview
+
+    - name: Get the gcc for riscv32i
+      run: sudo dpkg --add-architecture riscv64 && sudo apt install gcc-riscv64-unknown-elf
+
     - name: Build
       run: cargo build --verbose
+
     # - name: Run tests
       # run: cargo test --verbose
