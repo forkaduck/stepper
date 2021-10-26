@@ -12,28 +12,23 @@ module memory #(
     input clk_in,
 
     // mem port
-    input enable,
-    input write,
-    output reg ready,
+    input  enable,
+    input  write,
+    output ready,
 
     // bus
-    input [DATA_WIDTH - 1:0] addr_in,
-    input [DATA_WIDTH - 1:0] data_in,
-    output reg [DATA_WIDTH - 1:0] r_data_out
+    input  [DATA_WIDTH - 1:0] addr_in,
+    input  [DATA_WIDTH - 1:0] data_in,
+    output [DATA_WIDTH - 1:0] data_out
 );
 
   reg [DATA_WIDTH - 1:0] r_mem[0:DATA_SIZE - 1];
 
   integer i;
   initial begin
-    ready = 'b0;
-    r_data_out = 'bz;
-
-    for (i = 0; i < DATA_SIZE; i++) begin
-      r_mem[i] = 'b0;
+    if (PATH != "") begin
+      $readmemh(PATH, r_mem, 0, DATA_SIZE - 1);
     end
-
-    if (PATH != "") $readmemh(PATH, r_mem);
 
 `ifdef __ICARUS__
     for (i = 0; i < DATA_SIZE; i++) begin
@@ -45,16 +40,11 @@ module memory #(
   end
 
   always @(posedge clk_in) begin
-    if (enable) begin
-      if (write) begin
-        r_mem[addr_in] <= data_in;
-        r_data_out <= 'bz;
-      end
-      r_data_out <= r_mem[addr_in];
-      ready <= 1'b1;
-    end else begin
-      r_data_out <= 'bz;
-      ready <= 'bz;
+    if (write & enable) begin
+      r_mem[addr_in] <= data_in;
     end
   end
+
+  assign ready = enable ? 1'b1 : 1'bz;
+  assign data_out = enable ? r_mem[addr_in] : 'bz;
 endmodule

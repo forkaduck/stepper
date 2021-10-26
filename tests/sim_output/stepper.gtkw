@@ -1,18 +1,18 @@
 [*]
 [*] GTKWave Analyzer v3.3.109 (w)1999-2020 BSI
-[*] Sun Sep 19 10:03:45 2021
+[*] Fri Oct 22 07:17:23 2021
 [*]
 [dumpfile] "/home/fuckaduck/Desktop/projects/stepper/tests/sim_output/stepper.vcd"
-[dumpfile_mtime] "Sat Sep 18 18:43:01 2021"
-[dumpfile_size] 626005
+[dumpfile_mtime] "Fri Oct 22 07:16:23 2021"
+[dumpfile_size] 13707496
 [savefile] "/home/fuckaduck/Desktop/projects/stepper/tests/sim_output/stepper.gtkw"
-[timestart] 5263000
-[size] 3436 1395
+[timestart] 46360000
+[size] 1916 1027
 [pos] -1 -1
-*-18.000000 21267600 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-24.000000 52340000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] stepper.
 [sst_width] 227
-[signals_width] 476
+[signals_width] 366
 [sst_expanded] 1
 [sst_vpaned_height] 292
 @28
@@ -27,6 +27,8 @@ stepper.mem_wdata[31:0]
 stepper.mem_wstrb[3:0]
 @200
 -
+@22
+stepper.enable[31:0]
 @28
 stepper.mem_instr
 stepper.mem_ready
@@ -34,14 +36,14 @@ stepper.mem_valid
 stepper.read_write
 @200
 -
-@28
-stepper.rom_enable
-stepper.ram_enable
-stepper.io_enable
-@200
 -
-@22
-stepper.led[7:0]
+@29
+stepper.spi1.cs_out_n[11:0]
+@28
+stepper.spi1.serial_in
+stepper.spi1.serial_out
+stepper.spi1.r_ready_out
+stepper.spi1.send_enable_in
 @200
 -
 -
@@ -92,9 +94,7 @@ stepper.cpu.cpuregs_wrdata[31:0]
 stepper.cpu.cpuregs_write
 @22
 stepper.cpu.current_pc[31:0]
-@23
 stepper.cpu.dbg_ascii_instr[63:0]
-@22
 stepper.cpu.dbg_ascii_state[127:0]
 stepper.cpu.dbg_insn_addr[31:0]
 stepper.cpu.dbg_insn_imm[31:0]

@@ -53,41 +53,30 @@ def compile_firmware():
     wd = os.getcwd()
     os.chdir("firmware")
 
-    #  # Build the firmware
-    #  run_subcommand(
-    #      ["cargo", "build", "--release"],
-    #  )
-    #
-    #  # Strip the firmware of debug symbols
-    #  run_subcommand(
-    #      [
-    #          "riscv64-unknown-elf-strip",
-    #          "target/riscv32imac-unknown-none-elf/release/stepper",
-    #      ],
-    #  )
-    #
-    #  # Copy sections to bin for use with rom initialisation
-    #  run_subcommand(
-    #      [
-    #          "riscv64-unknown-elf-objcopy",
-    #          "-O",
-    #          "binary",
-    #          "target/riscv32imac-unknown-none-elf/release/stepper",
-    #          "target/riscv32imac-unknown-none-elf/release/stepper.bin",
-    #      ],
-    #  )
-    #
+    # Build the firmware
+    run_subcommand(
+        ["cargo", "build", "--release"],
+    )
+
+    # Copy sections to bin for use with rom initialisation
+    run_subcommand(
+        [
+            "cargo",
+            "objcopy",
+            "--release",
+            "--",
+            "-O",
+            "binary",
+            "stepper.bin",
+        ],
+    )
+
     #  Format output to work with readmemh
     counter = 1
-    with open(
-        "target/riscv32imac-unknown-none-elf/release/stepper.mem", "w"
-    ) as firm_out:
-        with open(
-            "target/riscv32imac-unknown-none-elf/release/stepper.bin", "rb"
-        ) as firm_in:
+    with open("stepper.mem", "w") as firm_out:
+        with open("stepper.bin", "rb") as firm_in:
             firm = bytearray(firm_in.read())
             for i in reverse_byte_order(firm):
-                #  print("{:02x}".format(i), end=" ")
                 firm_out.write("{:02x}".format(i))
 
                 if counter % 4 == 0:
@@ -104,8 +93,8 @@ def build():
     run_subcommand(
         [
             "yosys",
-            "-p",
-            "read_verilog src/*.v; synth_ecp5 -json stepper.json",
+            "-s",
+            "synth_flow.txt",
         ],
     )
 
@@ -113,8 +102,6 @@ def build():
     run_subcommand(
         [
             "nextpnr-ecp5",
-            "-v",
-            "--debug",
             "--12k",
             "--package",
             "CABGA381",
@@ -131,7 +118,6 @@ def build():
     run_subcommand(
         [
             "ecppack",
-            "-v",
             "ulx3s_out.config",
             "ulx3s.bit",
             "--idcode",
