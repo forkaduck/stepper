@@ -75,18 +75,21 @@ impl RegIO {
             }
           
             // set cs
-            self.spi_config.write((self.spi_config.read() & !0x0000001e) | ((cs << 1) & 0x0000001e));
+            // self.spi_config.write((self.spi_config.read() & !0x0000001e) | ((cs & 0xf) << 1));
 
             // unset spi enable pin
-            self.spi_config.write(self.spi_config.read() & !0x1);
+            // self.spi_config.write(self.spi_config.read() & !0x1);
+            self.spi_config.write(0x00000000 | ((cs & 0xf) << 1));
 
             self.spi_outgoing_upper.write(data_upper);
             self.spi_outgoing_lower.write(data_lower);
 
-            self.spi_config.write(self.spi_config.read() | 0x1);
+            self.spi_config.write(0x00000001 | ((cs & 0xf) << 1));
 
-            while !(self.spi_status.read() & 0x1 == 0x0) {
-            }
+            // wait until ready is 0
+            // while !(self.spi_status.read() & 0x1 == 0x0) {
+            // }
+            wait(100);
         }
     }
 
@@ -111,6 +114,8 @@ impl RegIO {
 
             // PWMCONF
             self.spi_blocking_send(PWMCONF + WRITE_ADDR, 0x00040a74, i);
+
+            wait(200);
         }
     }
 }
@@ -140,14 +145,17 @@ fn wait(instr: u32) {
 fn main() -> ! {
     let io = RegIO::get_reg_io();
 
-    io.init_driver();
+    // io.init_driver();
     loop {
         unsafe {
             // heartbeat
-            io.leds.write(0xffffffff);
-            wait(3125000 / 2);
-            io.leds.write(0x00000000);
-            wait(3125000 / 2);
+            for _ in 0..3 {
+                io.leds.write(0xffffffff);
+                wait(3125000 / 2);
+                io.leds.write(0x00000000);
+                wait(3125000 / 2);
+            }
+            wait(3125000);
         }
     }
 }
