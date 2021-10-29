@@ -11,15 +11,15 @@ module spi #(
     input [CLK_SIZE - 1:0] clk_count_max,
 
     // parallel i/o
-    input [SIZE - 1:0] data_in,
+    input  [SIZE - 1:0] data_in,
     output [SIZE - 1:0] data_out,
 
     // cs selection
     input [$clog2(CS_SIZE) - 1:0] cs_select_in,
     output reg [CS_SIZE - 1 : 0] r_cs_out_n,
-   
+
     // serial i/o
-    input serial_in,
+    input  serial_in,
     output serial_out,
 
     // output control
@@ -57,8 +57,8 @@ module spi #(
   clk_divider #(
       .SIZE(CLK_SIZE)
   ) clk_divider1 (
-      .clk_in (clk_in),
-      .max_in (clk_count_max),
+      .clk_in(clk_in),
+      .max_in(clk_count_max),
       .r_clk_out(int_clk)
   );
 
@@ -74,7 +74,7 @@ module spi #(
         r_ready_out <= 1'b0;
       end
 
-        // Begin of receiver
+      // Begin of receiver
       1: r_int_clk_enable_sipo <= 1'b1;
 
       // Stop loading which happened in the STATE_IDLE state
@@ -95,7 +95,7 @@ module spi #(
           // Load piso
           r_piso_load <= 1'b1;
           r_int_clk_enable_piso <= 1'b1;
-        
+
           r_ready_out <= 1'b1;
         end
       end
@@ -110,7 +110,7 @@ module spi #(
       r_counter <= STATE_IDLE;
 
     end else begin
-      if (int_clk && ! r_prev_int_clk) begin 
+      if (int_clk && !r_prev_int_clk) begin
         case (r_counter)
           STATE_IDLE: begin
             if (send_enable_in && !r_prev_send_enable) begin

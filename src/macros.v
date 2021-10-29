@@ -5,4 +5,3 @@
             $display("ASSERTION FAILED in %m: signal != value"); \
             $finish; \
         end
-

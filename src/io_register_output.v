@@ -6,8 +6,8 @@ module io_register_output #(
     input clk_in,
 
     // port
-    input enable,
-    input write,
+    input  enable,
+    input  write,
     output ready,
 
     // port
@@ -22,7 +22,7 @@ module io_register_output #(
 
   assign mem = r_mem;
 
-  reg [DATA_WIDTH - 1: 0] r_mem;
+  reg [DATA_WIDTH - 1:0] r_mem;
 
   always @(posedge clk_in) begin
     if (write & enable) begin
