@@ -17,8 +17,8 @@ async def test_clk_divider(dut):
         await RisingEdge(dut.clk_in)
         assert dut.r_clk_out.value == 0
 
-        await RisingEdge(dut.clk_in)
-        assert dut.r_clk_out.value == 1
+    await RisingEdge(dut.clk_in)
+    assert dut.r_clk_out.value == 1
 
-        await RisingEdge(dut.clk_in)
-        assert dut.r_clk_out.value == 0
+    await RisingEdge(dut.clk_in)
+    assert dut.r_clk_out.value == 0
