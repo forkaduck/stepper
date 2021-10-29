@@ -44,7 +44,7 @@ module spi #(
   reg r_int_clk_enable_piso = 1'b0;
 
   // Load line of the sipo module
-  reg r_piso_load = 1'b0;
+  reg r_piso_load = 1'b1;
 
   assign clk_out = !r_int_clk_sipo;
 
@@ -62,7 +62,7 @@ module spi #(
       .r_clk_out(int_clk)
   );
 
-  parameter STATE_CLK_OFF = SIZE + 1, STATE_IDLE = SIZE + 2;
+  parameter STATE_IDLE = SIZE + 2;
 
   // Output always statement
   always @(posedge clk_in) begin
@@ -81,7 +81,7 @@ module spi #(
       2: r_piso_load <= 1'b0;
 
       // End of data transmission
-      STATE_CLK_OFF: begin
+      SIZE + 1: begin
         r_int_clk_enable_sipo <= 1'b0;
         r_int_clk_enable_piso <= 1'b0;
       end
