@@ -5,8 +5,8 @@ from cocotb.triggers import RisingEdge, ClockCycles
 
 @cocotb.test()
 async def test_stepper(dut):
-    dut.btn = 0
-    dut.led = 0
+    dut.btn.value = 0
+    dut.led.value = 0
 
     # 25 MHz clock
     clock = Clock(dut.clk_25mhz, 40, units="ns")
