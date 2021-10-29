@@ -88,19 +88,19 @@ module stepper (
       end else begin
         if (mem_addr >= 'h00001000 & mem_addr < 'h00002000) begin
           enable[1] <= 1'b1;
-        end else if (mem_addr == 'h10000000) begin
+        end else if (mem_addr >= 'h10000000 && mem_addr < 'h10000004) begin
           enable[2] <= 1'b1;
-        end else if (mem_addr == 'h10000004) begin
+        end else if (mem_addr >= 'h10000004 && mem_addr < 'h10000008) begin
           enable[3] <= 1'b1;
-        end else if (mem_addr == 'h10000008) begin
+        end else if (mem_addr >= 'h10000008 && mem_addr < 'h1000000c) begin
           enable[4] <= 1'b1;
-        end else if (mem_addr == 'h1000000c) begin
+        end else if (mem_addr >= 'h1000000c && mem_addr < 'h10000010) begin
           enable[5] <= 1'b1;
-        end else if (mem_addr == 'h10000010) begin
+        end else if (mem_addr >= 'h10000010 && mem_addr < 'h10000014) begin
           enable[6] <= 1'b1;
-        end else if (mem_addr == 'h10000014) begin
+        end else if (mem_addr >= 'h10000014 && mem_addr < 'h10000018) begin
           enable[7] <= 1'b1;
-        end else if (mem_addr == 'h10000018) begin
+        end else if (mem_addr >= 'h10000018 && mem_addr < 'h1000001c) begin
           enable[8] <= 1'b1;
         end
       end
