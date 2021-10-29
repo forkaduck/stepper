@@ -2,7 +2,7 @@
 #![no_std]
 #![no_main]
 
-use volatile_register::{RW, RO};
+use volatile_register::{RO, RW};
 
 mod halt;
 
@@ -50,7 +50,6 @@ const PWM_SCALE: u32 = 0x71;
 const ENCM_CTRL: u32 = 0x72;
 const LOST_STEPS: u32 = 0x73;
 
-
 /// IO registers
 #[repr(C)]
 struct RegIO {
@@ -65,31 +64,24 @@ struct RegIO {
 
 impl RegIO {
     fn get_reg_io() -> &'static mut RegIO {
-        unsafe { &mut *(0x10000000 as *mut RegIO)}
+        unsafe { &mut *(0x10000000 as *mut RegIO) }
     }
 
     fn spi_blocking_send(&mut self, data_upper: u32, data_lower: u32, cs: u32) {
         unsafe {
             // wait until ready is 1
-            while !(self.spi_status.read() & 0x1 == 0x1) {
-            }
-          
-            // set cs
-            // self.spi_config.write((self.spi_config.read() & !0x0000001e) | ((cs & 0xf) << 1));
+            while !(self.spi_status.read() & 0x1 == 0x1) {}
 
-            // unset spi enable pin
-            // self.spi_config.write(self.spi_config.read() & !0x1);
-            self.spi_config.write(0x00000000 | ((cs & 0xf) << 1));
+            self.spi_config
+                .write((self.spi_config.read() & !0x1f) | ((cs & 0xf) << 1));
 
             self.spi_outgoing_upper.write(data_upper);
             self.spi_outgoing_lower.write(data_lower);
 
-            self.spi_config.write(0x00000001 | ((cs & 0xf) << 1));
+            self.spi_config
+                .write((self.spi_config.read() & !0x1f) | ((cs & 0xf) << 1) | 0x1);
 
-            // wait until ready is 0
-            // while !(self.spi_status.read() & 0x1 == 0x0) {
-            // }
-            wait(100);
+            self.leds.write(self.spi_config.read());
         }
     }
 
@@ -120,7 +112,6 @@ impl RegIO {
     }
 }
 
-
 /// Rust entry point (_start_rust)
 ///
 /// Zeros bss section, initializes data section and calls main. This function
@@ -145,17 +136,14 @@ fn wait(instr: u32) {
 fn main() -> ! {
     let io = RegIO::get_reg_io();
 
-    // io.init_driver();
+    io.init_driver();
     loop {
         unsafe {
             // heartbeat
-            for _ in 0..3 {
-                io.leds.write(0xffffffff);
-                wait(3125000 / 2);
-                io.leds.write(0x00000000);
-                wait(3125000 / 2);
-            }
-            wait(3125000);
+            // io.leds.write(0x00000000);
+            // wait(3125000 / 2);
+            // io.leds.write(0xffffffff);
+            // wait(3125000 / 2);
         }
     }
 }
