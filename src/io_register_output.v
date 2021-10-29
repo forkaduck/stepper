@@ -6,8 +6,8 @@ module io_register_output #(
     input clk_in,
 
     // port
-    input  enable,
-    input  write,
+    input enable,
+    input write,
     output ready,
 
     // port
