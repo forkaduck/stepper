@@ -29,40 +29,26 @@ module spi #(
 
   reg [$clog2(SIZE) + 1 : 0] r_counter;
 
+
+  // Enable for sipo and piso
+  reg r_sipo_enable = 1'b0;
+  reg r_piso_enable = 1'b0;
+
   // Internal divided clk
   wire int_clk;
-
-  // send_enable of the previous clk cycle
-  reg r_prev_send_enable = 1'b0;
-
-  // Internal clks for sipo and piso
-  reg r_int_clk_sipo = 1'b0;
-  reg r_int_clk_piso = 1'b0;
-
-  // Intenal enable lines for clk on the above lines
-  reg r_int_clk_enable_sipo = 1'b0;
-  reg r_int_clk_enable_piso = 1'b0;
+  assign clk_out = (r_counter >= 1'b1 && r_counter < SIZE + 1) ? int_clk : 1'b1;
 
   // Load line of the sipo module
   reg r_piso_load = 1'b1;
 
-  assign clk_out = !r_int_clk_sipo;
+  reg r_prev_send_enable = 1'b0;
+
+  parameter STATE_IDLE = SIZE + 2;
 
   initial begin
     r_ready_out = 1'b0;
     r_cs_out_n = ~'b0;
   end
-
-  // initialize clock divider
-  clk_divider #(
-      .SIZE(CLK_SIZE)
-  ) clk_divider1 (
-      .clk_in(clk_in),
-      .max_in(clk_count_max),
-      .r_clk_out(int_clk)
-  );
-
-  parameter STATE_IDLE = SIZE + 2;
 
   // Output always statement
   always @(posedge clk_in) begin
@@ -75,26 +61,28 @@ module spi #(
       end
 
       // Begin of receiver
-      1: r_int_clk_enable_sipo <= 1'b1;
+      1: begin
+        r_sipo_enable <= 1'b1;
+      end
 
       // Stop loading which happened in the STATE_IDLE state
       2: r_piso_load <= 1'b0;
 
       // End of data transmission
       SIZE + 1: begin
-        r_int_clk_enable_sipo <= 1'b0;
-        r_int_clk_enable_piso <= 1'b0;
+        r_sipo_enable <= 1'b0;
+        r_piso_enable <= 1'b0;
       end
 
       default: begin
         if (r_counter >= STATE_IDLE) begin
           // Idle state (wait for send_enable_in)
           r_cs_out_n[cs_select_in] <= 1'b1;
-          r_int_clk_enable_sipo <= 1'b0;
+          r_sipo_enable <= 1'b0;
 
           // Load piso
           r_piso_load <= 1'b1;
-          r_int_clk_enable_piso <= 1'b1;
+          r_piso_enable <= 1'b1;
 
           r_ready_out <= 1'b1;
         end
@@ -102,45 +90,45 @@ module spi #(
     endcase
   end
 
-  // Next state always statement
-  reg r_prev_int_clk;
-
-  always @(posedge clk_in, negedge reset_n_in) begin
+  always @(posedge int_clk) begin
     if (!reset_n_in) begin
       r_counter <= STATE_IDLE;
 
     end else begin
-      if (int_clk && !r_prev_int_clk) begin
-        case (r_counter)
-          STATE_IDLE: begin
-            if (send_enable_in && !r_prev_send_enable) begin
-              r_counter <= 0;
-            end
-            r_prev_send_enable <= send_enable_in;
-          end
-
-          default: begin
-            r_counter <= r_counter + 1;
-          end
-        endcase
+      if (r_counter < STATE_IDLE) begin
+        if (send_enable_in) begin
+          r_counter <= r_counter + 1;
+        end
+      end else if (r_counter == STATE_IDLE) begin
+        if (!r_prev_send_enable && send_enable_in) begin
+          r_counter <= 0;
+        end
+      end else begin
+        r_counter <= STATE_IDLE;
       end
-
-      r_prev_int_clk <= int_clk;
     end
+
+    r_prev_send_enable <= send_enable_in;
   end
 
-  always @(posedge clk_in) begin
-    r_int_clk_sipo <= r_int_clk_enable_sipo ? int_clk : 1'b0;
-    r_int_clk_piso <= r_int_clk_enable_piso ? int_clk : 1'b0;
-  end
+
+  // initialize clock divider
+  clk_divider #(
+      .SIZE(CLK_SIZE)
+  ) clk_divider1 (
+      .clk_in (clk_in),
+      .max_in (clk_count_max),
+      .clk_out(int_clk)
+  );
 
   // parallel in serial out module driving the mosi pin
   piso #(
       .SIZE(SIZE)
   ) piso1 (
-      .data_in (data_in),
-      .clk_in  (r_int_clk_piso),
-      .load_in (r_piso_load),
+      .data_in(data_in),
+      .clk_in(clk_in),
+      .en_in(r_piso_enable),
+      .load_in(r_piso_load),
       .data_out(serial_out)
   );
 
@@ -149,7 +137,8 @@ module spi #(
       .SIZE(SIZE)
   ) sipo1 (
       .data_in(serial_in),
-      .clk_in(r_int_clk_sipo),
+      .clk_in(clk_in),
+      .en_in(r_sipo_enable),
       .r_data_out(data_out)
   );
 endmodule
