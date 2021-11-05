@@ -23,8 +23,8 @@ module piso #(
         r_data <= data_in;
       end else begin
         r_data <= r_data << 1;
+        $display("%m>\tr_data:%b load_in:%x", r_data, load_in);
       end
     end
-    // $display("%m>\tr_data:%b load_in:%x", r_data, load_in);
   end
 endmodule

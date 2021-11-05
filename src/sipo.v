@@ -13,7 +13,7 @@ module sipo #(
   always @(posedge clk_in) begin
     if (en_in) begin
       r_data_out <= {data_in, r_data_out[SIZE-1:1]};
+      $display("%m>\tdata_in:%x r_data_out:%b", data_in, r_data_out);
     end
-    // $display("%m>\tdata_in:%x r_data_out:%b", data_in, r_data_out);
   end
 endmodule
