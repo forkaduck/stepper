@@ -1,6 +1,6 @@
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import ClockCycles, RisingEdge
+from cocotb.triggers import ClockCycles, RisingEdge, FallingEdge
 
 clk_divider = 2
 
@@ -29,7 +29,7 @@ async def start(dut):
 async def sipo_data(dut, data):
     for i in range(40):
         dut.serial_in.value = (data & (0x1 << i)) >> i
-        await RisingEdge(dut.clk_out)
+        await FallingEdge(dut.clk_out)
 
     await RisingEdge(dut.r_ready_out)
     assert dut.data_out.value == data
@@ -41,7 +41,7 @@ async def piso_data(dut, data, current_cs):
 
     # test io bit by bit
     for i in range(39, 0):
-        await RisingEdge(dut.clk_out)
+        await FallingEdge(dut.clk_out)
 
         assert dut.r_ready_out.value == 0
         assert dut.r_cs_out_n[i].value == 0
@@ -61,7 +61,7 @@ async def piso_data(dut, data, current_cs):
 async def standard_ms_io(dut):
     await start(dut)
 
-    test_data = [0x123456789A, 0xBCDEF12345, 0x6789ABCDEF, 0xDEADBEEF69]
+    test_data = [0x123456789A, 0xBCDEFFEDCB, 0xA987654321, 0xDEADBEEF69]
 
     for i in range(4):
         cocotb.fork(sipo_data(dut, test_data[i]))
