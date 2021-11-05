@@ -29,11 +29,6 @@ module spi #(
 
   reg [$clog2(SIZE) + 1 : 0] r_counter;
 
-
-  // Enable for sipo and piso
-  reg r_sipo_enable = 1'b0;
-  reg r_piso_enable = 1'b0;
-
   // Internal divided clk
   wire int_clk;
   assign clk_out = (r_counter >= 1'b1 && r_counter < SIZE + 1) ? int_clk : 1'b1;
@@ -41,9 +36,13 @@ module spi #(
   // Load line of the sipo module
   reg r_piso_load = 1'b1;
 
+  // Enable for sipo and piso
+  reg r_sipo_enable = 1'b0;
+  reg r_piso_enable = 1'b1;
+
   reg r_prev_send_enable = 1'b0;
 
-  parameter STATE_IDLE = SIZE + 2;
+  parameter STATE_IDLE = SIZE + 1;
 
   initial begin
     r_ready_out = 1'b0;
@@ -63,13 +62,10 @@ module spi #(
       // Begin of receiver
       1: begin
         r_sipo_enable <= 1'b1;
+        r_piso_load <= 1'b0;
       end
 
-      // Stop loading which happened in the STATE_IDLE state
-      2: r_piso_load <= 1'b0;
-
-      // End of data transmission
-      SIZE + 1: begin
+      SIZE: begin
         r_sipo_enable <= 1'b0;
         r_piso_enable <= 1'b0;
       end
@@ -126,7 +122,7 @@ module spi #(
       .SIZE(SIZE)
   ) piso1 (
       .data_in(data_in),
-      .clk_in(clk_in),
+      .clk_in(int_clk),
       .en_in(r_piso_enable),
       .load_in(r_piso_load),
       .data_out(serial_out)
@@ -137,7 +133,7 @@ module spi #(
       .SIZE(SIZE)
   ) sipo1 (
       .data_in(serial_in),
-      .clk_in(clk_in),
+      .clk_in(int_clk),
       .en_in(r_sipo_enable),
       .r_data_out(data_out)
   );
