@@ -88,8 +88,11 @@ impl RegIO {
             self.leds.write(self.spi_config.read());
 
             // wait until ready is 0
-            while (self.spi_status.read() & 0x1) == 0x1 {}
-            // wait(100);
+            // while (self.spi_status.read() & 0x1) == 0x1 {}
+
+            for _ in 0..100 {
+                asm!("nop");
+            }
         }
     }
 
