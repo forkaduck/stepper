@@ -27,10 +27,11 @@ async def start(dut):
 
 @cocotb.coroutine
 async def sipo_data(dut, data):
-    for i in range(40):
+    for i in range(39, -1, -1):
         dut.serial_in.value = (data & (0x1 << i)) >> i
-        await FallingEdge(dut.clk_out)
+        await RisingEdge(dut.clk_out)
 
+    # last bit is always 1
     await RisingEdge(dut.r_ready_out)
     assert dut.data_out.value == data
 
@@ -40,11 +41,11 @@ async def piso_data(dut, data, current_cs):
     dut.data_in.value = data
 
     # test io bit by bit
-    for i in range(39, 0):
+    for i in range(39, 0, -1):
         await FallingEdge(dut.clk_out)
 
-        assert dut.r_ready_out.value == 0
-        assert dut.r_cs_out_n[i].value == 0
+        # Check if the piso module works
+        assert dut.data_in[i].value == dut.serial_out.value
 
         # Check that every other cs bit is high
         for k in range(0, current_cs):
@@ -53,8 +54,8 @@ async def piso_data(dut, data, current_cs):
         for k in range(current_cs + 1, 4):
             assert dut.r_cs_out_n[k].value == 1
 
-        # Check if the piso module works
-        assert dut.data_in[i].value == dut.serial_out.value
+        assert dut.r_ready_out.value == 0
+        assert dut.r_cs_out_n[current_cs].value == 0
 
 
 @cocotb.test()

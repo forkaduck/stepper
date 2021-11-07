@@ -66,7 +66,7 @@ module spi #(
       end
 
       SIZE: begin
-        r_sipo_enable <= 1'b0;
+        /* r_sipo_enable <= 1'b0; */
         r_piso_enable <= 1'b0;
       end
 
@@ -135,6 +135,6 @@ module spi #(
       .data_in(serial_in),
       .clk_in(int_clk),
       .en_in(r_sipo_enable),
-      .r_data_out(data_out)
+      .data_out(data_out)
   );
 endmodule
