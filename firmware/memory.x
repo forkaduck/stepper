@@ -1,6 +1,6 @@
 MEMORY
 {
-  IO (rw!x): ORIGIN = 0x10000000, LENGTH = 0x20
+  IO (rw!x): ORIGIN = 0x10000000, LENGTH = 0x30
   ROM (x!rw): ORIGIN = 0x00000000, LENGTH = 0x1000
   RAM (rw!x): ORIGIN = 0x00001000, LENGTH = 0x1000
 }
@@ -68,7 +68,7 @@ SECTIONS
   } > RAM
 
   /* fictitious region that represents the memory available for the stack */
-  _stack_size = 1024;
+  _stack_size = 0x400;
   . = _stack_start;
   .stack (INFO) :
   {
