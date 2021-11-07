@@ -42,7 +42,7 @@ module spi #(
 
   reg r_prev_send_enable = 1'b0;
 
-  parameter STATE_IDLE = SIZE + 1;
+  parameter STATE_IDLE = SIZE + 2;
 
   initial begin
     r_ready_out = 1'b0;
@@ -65,9 +65,10 @@ module spi #(
         r_piso_load <= 1'b0;
       end
 
-      SIZE: begin
-        /* r_sipo_enable <= 1'b0; */
+      SIZE + 1: begin
+        r_cs_out_n[cs_select_in] <= 1'b0;
         r_piso_enable <= 1'b0;
+        r_sipo_enable <= 1'b0;
       end
 
       default: begin
