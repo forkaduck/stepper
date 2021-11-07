@@ -88,11 +88,13 @@ impl RegIO {
                 .write((self.spi_config.read() & !0x1f) | ((cs & 0xf) << 1) | 0x1);
 
             self.leds.write(self.spi_status.read());
+            while (self.spi_status.read() & 0x1) == 0x1 {}
 
-            for _ in 0..100 {
-                asm!("nop");
-            }
             self.leds.write(self.spi_status.read());
+
+            // for _ in 0..100 {
+            // asm!("nop");
+            // }
         }
     }
 
