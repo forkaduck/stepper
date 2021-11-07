@@ -55,8 +55,8 @@ pub struct RegIO {
     pub leds: RW<u32>,
     pub spi_outgoing_upper: RW<u32>,
     pub spi_outgoing_lower: RW<u32>,
-    pub spi_ingoing_upper: RW<u32>,
-    pub spi_ingoing_lower: RW<u32>,
+    pub spi_ingoing_upper: RO<u32>,
+    pub spi_ingoing_lower: RO<u32>,
     pub spi_config: RW<u32>,
     pub spi_status: RO<u32>,
 }
