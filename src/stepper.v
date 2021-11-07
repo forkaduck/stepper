@@ -69,7 +69,7 @@ module stepper (
 
   wire read_write = mem_wstrb > 0 ? 1'b1 : 1'b0;
 
-  reg [31:0] enable = 'b0;  // memory enable lines
+  reg [31:0] enable = {32{1'b0}};  // memory enable lines
   // Memory Map (please update constantly):
   // 0x00000000 rom
   // 0x00001000 ram
@@ -82,30 +82,26 @@ module stepper (
   // 0x10000014 spi_config
   // 0x10000018 spi_status
   always @(posedge clk_25mhz) begin
-    if (mem_valid) begin
-      if (mem_instr) begin
-        enable[0] <= 1'b1;
-      end else begin
-        if (mem_addr >= 'h00001000 & mem_addr < 'h00002000) begin
-          enable[1] <= 1'b1;
-        end else if (mem_addr >= 'h10000000 && mem_addr < 'h10000004) begin
-          enable[2] <= 1'b1;
-        end else if (mem_addr >= 'h10000004 && mem_addr < 'h10000008) begin
-          enable[3] <= 1'b1;
-        end else if (mem_addr >= 'h10000008 && mem_addr < 'h1000000c) begin
-          enable[4] <= 1'b1;
-        end else if (mem_addr >= 'h1000000c && mem_addr < 'h10000010) begin
-          enable[5] <= 1'b1;
-        end else if (mem_addr >= 'h10000010 && mem_addr < 'h10000014) begin
-          enable[6] <= 1'b1;
-        end else if (mem_addr >= 'h10000014 && mem_addr < 'h10000018) begin
-          enable[7] <= 1'b1;
-        end else if (mem_addr >= 'h10000018 && mem_addr < 'h1000001c) begin
-          enable[8] <= 1'b1;
-        end
-      end
+    if (mem_valid && mem_instr) begin
+      enable[0] <= 1'b1;
+    end else if (mem_valid && !mem_instr && mem_addr >= 'h00001000 && mem_addr < 'h00002000) begin
+      enable[1] <= 1'b1;
+    end else if (mem_valid && !mem_instr && mem_addr >= 'h10000000 && mem_addr < 'h10000004) begin
+      enable[2] <= 1'b1;
+    end else if (mem_valid && !mem_instr && mem_addr >= 'h10000004 && mem_addr < 'h10000008) begin
+      enable[3] <= 1'b1;
+    end else if (mem_valid && !mem_instr && mem_addr >= 'h10000008 && mem_addr < 'h1000000c) begin
+      enable[4] <= 1'b1;
+    end else if (mem_valid && !mem_instr && mem_addr >= 'h1000000c && mem_addr < 'h10000010) begin
+      enable[5] <= 1'b1;
+    end else if (mem_valid && !mem_instr && mem_addr >= 'h10000010 && mem_addr < 'h10000014) begin
+      enable[6] <= 1'b1;
+    end else if (mem_valid && !mem_instr && mem_addr >= 'h10000014 && mem_addr < 'h10000018) begin
+      enable[7] <= 1'b1;
+    end else if (mem_valid && !mem_instr && mem_addr >= 'h10000018 && mem_addr < 'h1000001c) begin
+      enable[8] <= 1'b1;
     end else begin
-      enable <= 'b0;
+      enable <= {32{1'b0}};
     end
   end
 
@@ -239,7 +235,7 @@ module stepper (
 
       .mem(spi_status)
   );
-  assign spi_status[31:1] = 'b0;
+  assign spi_status[31:1] = {31{1'b0}};
 
 
   picorv32 #(
