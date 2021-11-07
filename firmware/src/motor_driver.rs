@@ -67,13 +67,15 @@ impl RegIO {
     }
 
     pub fn spi_blocking_send(&mut self, data_upper: u32, data_lower: u32, cs: u32) {
-        // spi_config.read() returns 0x00000000
-        // leds.read() 0xffffffff
+        // spi_status.read() -> always 0011
+        // leds.read() 0x1111
 
         unsafe {
+            self.leds.write(self.spi_status.read());
             // wait until ready is 1
             while (self.spi_status.read() & 0x1) == 0x0 {}
 
+            self.leds.write(self.spi_status.read());
             // unset send_enable and set cs
             self.spi_config
                 .write((self.spi_config.read() & !0x1f) | ((cs & 0xf) << 1));
@@ -85,14 +87,12 @@ impl RegIO {
             self.spi_config
                 .write((self.spi_config.read() & !0x1f) | ((cs & 0xf) << 1) | 0x1);
 
-            self.leds.write(self.spi_config.read());
-
-            // wait until ready is 0
-            // while (self.spi_status.read() & 0x1) == 0x1 {}
+            self.leds.write(self.spi_status.read());
 
             for _ in 0..100 {
                 asm!("nop");
             }
+            self.leds.write(self.spi_status.read());
         }
     }
 

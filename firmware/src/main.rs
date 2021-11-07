@@ -37,10 +37,13 @@ fn main() -> ! {
     loop {
         unsafe {
             // heartbeat
-            io.leds.write(0x00000000);
-            util::wait(3125000 / 2);
-            io.leds.write(0xffffffff);
-            util::wait(3125000 / 2);
+            // io.leds.write(!io.leds.read());
+            // util::wait(3125000 / 2);
+
+            // io.leds.write(0x00000000);
+            // util::wait(3125000 / 2);
+            // io.leds.write(0xffffffff);
+            // util::wait(3125000 / 2);
         }
     }
 }
