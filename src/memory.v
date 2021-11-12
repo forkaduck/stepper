@@ -46,5 +46,5 @@ module memory #(
   end
 
   assign ready = enable ? 1'b1 : 1'bz;
-  assign data_out = enable ? r_mem[addr_in] : 'bz;
+  assign data_out = (enable && !write) ? r_mem[addr_in] : {DATA_WIDTH{1'bz}};
 endmodule

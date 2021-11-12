@@ -67,9 +67,9 @@ module stepper (
 
   wire trap;
 
-  wire read_write = mem_wstrb > 0 ? 1'b1 : 1'b0;
+  wire read_write = mem_wstrb == 0 ? 1'b0 : 1'b1;
 
-  reg [31:0] enable = {32{1'b0}};  // memory enable lines
+  wire [31:0] enable;  // memory enable lines
   // Memory Map (please update constantly):
   // 0x00000000 rom
   // 0x00001000 ram
@@ -81,29 +81,40 @@ module stepper (
   // 0x10000010 spi_ingoing_lower
   // 0x10000014 spi_config
   // 0x10000018 spi_status
-  always @(posedge clk_25mhz) begin
-    if (mem_valid && mem_instr) begin
-      enable[0] <= 1'b1;
-    end else if (mem_valid && !mem_instr && mem_addr >= 'h00001000 && mem_addr < 'h00002000) begin
-      enable[1] <= 1'b1;
-    end else if (mem_valid && !mem_instr && mem_addr >= 'h10000000 && mem_addr < 'h10000004) begin
-      enable[2] <= 1'b1;
-    end else if (mem_valid && !mem_instr && mem_addr >= 'h10000004 && mem_addr < 'h10000008) begin
-      enable[3] <= 1'b1;
-    end else if (mem_valid && !mem_instr && mem_addr >= 'h10000008 && mem_addr < 'h1000000c) begin
-      enable[4] <= 1'b1;
-    end else if (mem_valid && !mem_instr && mem_addr >= 'h1000000c && mem_addr < 'h10000010) begin
-      enable[5] <= 1'b1;
-    end else if (mem_valid && !mem_instr && mem_addr >= 'h10000010 && mem_addr < 'h10000014) begin
-      enable[6] <= 1'b1;
-    end else if (mem_valid && !mem_instr && mem_addr >= 'h10000014 && mem_addr < 'h10000018) begin
-      enable[7] <= 1'b1;
-    end else if (mem_valid && !mem_instr && mem_addr >= 'h10000018 && mem_addr < 'h1000001c) begin
-      enable[8] <= 1'b1;
-    end else begin
-      enable <= {32{1'b0}};
-    end
-  end
+  /* always @(posedge clk_25mhz) begin */
+  /* if (mem_valid && mem_instr) begin */
+  /* enable[0] <= 1'b1; */
+  /* end else if (mem_valid && !mem_instr && mem_addr >= 'h00001000 && mem_addr < 'h00002000) begin */
+  /* enable[1] <= 1'b1; */
+  /* end else if (mem_valid && !mem_instr && mem_addr >= 'h10000000 && mem_addr < 'h10000004) begin */
+  /* enable[2] <= 1'b1; */
+  /* end else if (mem_valid && !mem_instr && mem_addr >= 'h10000004 && mem_addr < 'h10000008) begin */
+  /* enable[3] <= 1'b1; */
+  /* end else if (mem_valid && !mem_instr && mem_addr >= 'h10000008 && mem_addr < 'h1000000c) begin */
+  /* enable[4] <= 1'b1; */
+  /* end else if (mem_valid && !mem_instr && mem_addr >= 'h1000000c && mem_addr < 'h10000010) begin */
+  /* enable[5] <= 1'b1; */
+  /* end else if (mem_valid && !mem_instr && mem_addr >= 'h10000010 && mem_addr < 'h10000014) begin */
+  /* enable[6] <= 1'b1; */
+  /* end else if (mem_valid && !mem_instr && mem_addr >= 'h10000014 && mem_addr < 'h10000018) begin */
+  /* enable[7] <= 1'b1; */
+  /* end else if (mem_valid && !mem_instr && mem_addr >= 'h10000018 && mem_addr < 'h1000001c) begin */
+  /* enable[8] <= 1'b1; */
+  /* end else begin */
+  /* enable <= {32{1'b0}}; */
+  /* end */
+  /* end */
+
+  assign enable[0] = mem_valid && mem_instr;
+  assign enable[1] = mem_valid && !mem_instr && mem_addr >= 'h00001000 && mem_addr < 'h00002000;
+  assign enable[2] = mem_valid && !mem_instr && mem_addr >= 'h10000000 && mem_addr < 'h10000004;
+  assign enable[3] = mem_valid && !mem_instr && mem_addr >= 'h10000004 && mem_addr < 'h10000008;
+  assign enable[4] = mem_valid && !mem_instr && mem_addr >= 'h10000008 && mem_addr < 'h1000000c;
+  assign enable[5] = mem_valid && !mem_instr && mem_addr >= 'h1000000c && mem_addr < 'h10000010;
+  assign enable[6] = mem_valid && !mem_instr && mem_addr >= 'h10000010 && mem_addr < 'h10000014;
+  assign enable[7] = mem_valid && !mem_instr && mem_addr >= 'h10000014 && mem_addr < 'h10000018;
+  assign enable[8] = mem_valid && !mem_instr && mem_addr >= 'h10000018 && mem_addr < 'h1000001c;
+  assign enable[31:8] = {24{1'b0}};
 
   // Instruction RAM
   memory #(
