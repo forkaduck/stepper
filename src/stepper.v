@@ -114,7 +114,7 @@ module stepper (
   assign enable[6] = mem_valid && !mem_instr && mem_addr >= 'h10000010 && mem_addr < 'h10000014;
   assign enable[7] = mem_valid && !mem_instr && mem_addr >= 'h10000014 && mem_addr < 'h10000018;
   assign enable[8] = mem_valid && !mem_instr && mem_addr >= 'h10000018 && mem_addr < 'h1000001c;
-  assign enable[31:8] = {24{1'b0}};
+  assign enable[31:9] = {23{1'b0}};
 
   // Instruction RAM
   memory #(
