@@ -46,7 +46,7 @@ module spi #(
 
   initial begin
     r_ready_out = 1'b0;
-    r_cs_out_n = ~'b0;
+    r_cs_out_n  = ~'b0;
   end
 
   // Output always statement
@@ -62,7 +62,7 @@ module spi #(
       // Begin of receiver
       1: begin
         r_sipo_enable <= 1'b1;
-        r_piso_load <= 1'b0;
+        r_piso_load   <= 1'b0;
       end
 
       SIZE + 1: begin
