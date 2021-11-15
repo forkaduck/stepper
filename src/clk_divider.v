@@ -11,9 +11,9 @@ module clk_divider #(
   reg [SIZE - 1:0] r_count = 0;
 
   always @(posedge clk_in) begin
-    int_clk <= (r_count == max_in - 1);
+    int_clk <= (r_count >= max_in - 1);
 
-    if (r_count == max_in - 1) begin
+    if (r_count >= max_in - 1) begin
       r_count <= 0;
     end else begin
       r_count <= r_count + 1;
