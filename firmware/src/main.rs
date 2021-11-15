@@ -36,14 +36,8 @@ fn main() -> ! {
     io.init_driver();
     loop {
         unsafe {
-            // heartbeat
-            // io.leds.write(!io.leds.read());
-            // util::wait(3125000 / 2);
-
-            // io.leds.write(0x00000000);
-            // util::wait(3125000 / 2);
-            // io.leds.write(0xffffffff);
-            // util::wait(3125000 / 2);
+            io.spi_blocking_send(motor_driver::tmc2130::DRV_STATUS, 0x00000000, 0x00000000);
+            io.leds.write(io.spi_ingoing_upper.read());
         }
     }
 }
