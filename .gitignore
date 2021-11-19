@@ -14,3 +14,5 @@ tests/sim_output/srclist.txt
 .vim
 firmware/stepper.bin
 firmware/stepper.mem
+.gdb_history
+veridian.yml
