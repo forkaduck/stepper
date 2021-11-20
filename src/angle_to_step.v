@@ -8,8 +8,8 @@ module angle_to_step #(
     parameter SYSCLK = 25000000,
     parameter DIVMAX = 32,
     parameter SIZE   = 64,
-    parameter VRISE  = 2500,
-    parameter TRISE  = 300
+    parameter VRISE  = 250,
+    parameter TRISE  = 2500
 ) (
     input clk_i,
     input reset_n_i,
@@ -37,8 +37,8 @@ module angle_to_step #(
       .SIZE(32)
   ) internal (
       .clk_in (clk_i),
-      // Every 100 us
-      .max_in (SYSCLK / 10000),
+      // Every 1 us
+      .max_in (SYSCLK / 1000000),
       .clk_out(int_clk)
   );
 
@@ -56,15 +56,15 @@ module angle_to_step #(
     if (!reset_n_i) begin
       r_t <= 1;
     end else begin
-      if (r_t > 0 && r_t < SHIFT_TRISE / 2) begin
-        //f(x)
+      if (r_t > 0 && r_t < TRISE / 2) begin
         r_div = 2 * JERCK * $pow(r_t, 2);
 
-      end else if (r_t >= SHIFT_TRISE / 2 && r_t <= SHIFT_TRISE) begin
-        //g(x)
+      end else if (r_t >= TRISE / 2 && r_t <= TRISE) begin
         r_div = 1 * JERCK * (4 * r_t * SHIFT_TRISE - 2 * $pow(r_t, 2) - $pow(SHIFT_TRISE, 2));
-      end else if (r_t > SHIFT_TRISE) begin
-        r_div = 2500;
+
+      end else if (r_t > TRISE) begin
+        r_div = VRISE;
+
       end
 
       r_t <= r_t + 1;
