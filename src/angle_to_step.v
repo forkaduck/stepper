@@ -45,7 +45,7 @@ module angle_to_step #(
       .SIZE(SIZE)
   ) div (
       .clk_in (clk_i),
-      .max_in (VRISE - r_div),
+      .max_in (VRISE + VOFFSET - r_div),
       .clk_out(output_clk)
   );
 
