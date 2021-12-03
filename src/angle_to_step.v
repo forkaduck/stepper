@@ -7,9 +7,9 @@ module angle_to_step #(
 
     parameter SYSCLK = 25000000,
     parameter SIZE = 64,
-    parameter VRISE = 25000.0,
+    parameter VRISE = 20000.0,
     parameter TRISE = 100.0,
-    parameter VOFFSET = 10.0
+    parameter VOFFSET = 3000.0
 ) (
     input clk_i,
     input reset_n_i,
@@ -18,7 +18,7 @@ module angle_to_step #(
     input [31:0] relative_angle_i,
     output step_o
 );
-  parameter JERCK = (4.0 * (VRISE - VOFFSET) / $pow(TRISE, 2.0));
+  parameter JERCK = (4.0 * VRISE / $pow(TRISE, 2.0));
 
   wire int_clk;
   wire output_clk;
@@ -45,7 +45,7 @@ module angle_to_step #(
       .SIZE(SIZE)
   ) div (
       .clk_in (clk_i),
-      .max_in (VRISE + VOFFSET - r_div),
+      .max_in (VRISE - r_div + VOFFSET),
       .clk_out(output_clk)
   );
 
@@ -56,17 +56,16 @@ module angle_to_step #(
     end else begin
       if (r_t > 0 && r_t < (TRISE / 2)) begin
         // Wenn(x < t_{rise} / 2 ∧ x > 0, 1 / 2 J x²)
-        r_div = 0.5 * JERCK * $pow(r_t, 2.0) + VOFFSET;
+        r_div = 0.5 * JERCK * $pow(r_t, 2.0);
         ding <= 1;
 
-      end else if (r_t >= (TRISE / 2) && r_t <= TRISE) begin
+      end else if (r_t >= (TRISE / 2) && r_t < TRISE) begin
         // Wenn(t_{rise} / 2 ≤ x ∧ x < t_{rise}, 1 / 4 J (4x t_{rise} - 2x² - t_{rise}²))
-        r_div = 0.25 * JERCK * (r_t * 4.0 * TRISE - 2.0 * $pow(r_t, 2.0) - $pow(TRISE, 2.0)) +
-            VOFFSET;
+        r_div = 0.25 * JERCK * (r_t * 4.0 * TRISE - 2.0 * $pow(r_t, 2.0) - $pow(TRISE, 2.0));
         ding <= 2;
 
-      end else if (r_t > TRISE) begin
-        r_div = (VRISE - VOFFSET);
+      end else if (r_t >= TRISE) begin
+        r_div = (VRISE);
         ding <= 3;
 
       end
