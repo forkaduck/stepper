@@ -13,4 +13,4 @@ async def test_angle_to_step(dut):
     clock = Clock(dut.clk_i, 40, units="ns")
     cocotb.fork(clock.start())
 
-    await ClockCycles(dut.clk_i, 200000, rising=True)
+    await ClockCycles(dut.clk_i, 1500000, rising=True)

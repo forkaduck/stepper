@@ -1,4 +1,5 @@
 // Dividies the clk_in with max_in * 2
+// s = 25Mhz / (max * 2)
 module clk_divider #(
     parameter SIZE = 8
 ) (

@@ -1,43 +1,31 @@
 [*]
 [*] GTKWave Analyzer v3.3.109 (w)1999-2020 BSI
-[*] Fri Dec  3 09:27:48 2021
+[*] Sat Dec 11 14:58:34 2021
 [*]
 [dumpfile] "/home/fuckaduck/Desktop/projects/stepper/tests/sim_output/angle_to_step.vcd"
-[dumpfile_mtime] "Fri Dec  3 09:25:58 2021"
-[dumpfile_size] 4987685
+[dumpfile_mtime] "Sat Dec 11 12:20:15 2021"
+[dumpfile_size] 90359304
 [savefile] "/home/fuckaduck/Desktop/projects/stepper/tests/sim_output/angle_to_step.gtkw"
-[timestart] 0
-[size] 1916 763
+[timestart] 58200000
+[size] 2286 1411
 [pos] -1 -1
-*-30.000000 2061000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-26.000000 140000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] angle_to_step.
 [sst_width] 227
-[signals_width] 336
+[signals_width] 311
 [sst_expanded] 1
-[sst_vpaned_height] 198
+[sst_vpaned_height] 387
 @28
 angle_to_step.clk_i
+@29
 angle_to_step.int_clk
+@28
 angle_to_step.output_clk
 angle_to_step.enable_i
 angle_to_step.reset_n_i
 @200
 -
-@c00028
-angle_to_step.ding[1:0]
 @28
-(0)angle_to_step.ding[1:0]
-(1)angle_to_step.ding[1:0]
-@1401200
--group_end
-@22
-angle_to_step.r_div[63:0]
-@23
-angle_to_step.div.max_in[63:0]
-@22
-angle_to_step.r_t[63:0]
-angle_to_step.relative_angle_i[31:0]
-@28
-angle_to_step.step_o
+angle_to_step.ding[2:0]
 [pattern_trace] 1
 [pattern_trace] 0
