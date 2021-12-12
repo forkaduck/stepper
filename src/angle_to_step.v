@@ -39,7 +39,7 @@ module angle_to_step #(
   ) internal (
       .clk_in (clk_i),
       // Every 1 us
-      .max_in ((SYSCLK / 25000.0) / 2),
+      .max_in ((SYSCLK / 1000000.0) / 2),
       .clk_out(int_clk)
   );
 
@@ -53,7 +53,7 @@ module angle_to_step #(
   );
 
   // Update the clkdivider output every int_clk
-  always @(posedge int_clk, negedge reset_n_i) begin
+  always @(posedge int_clk) begin
     if (r_t > 0 && r_t < (TRISE / 2)) begin
       //First rise
       // Wenn(x < t_{rise} / 2 ∧ x > 0, 1 / 2 J x²)
@@ -90,5 +90,4 @@ module angle_to_step #(
       end
     end
   end
-
 endmodule
