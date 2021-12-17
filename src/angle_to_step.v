@@ -8,15 +8,14 @@ module angle_to_step #(
     parameter SYSCLK = 25000000,
     parameter SIZE = 64,
     parameter VRISE = 20000.00,
-    parameter TRISE = 700.00,
-    parameter VOFFSET = 10.00,
-    parameter TON = 100.00
+    parameter TRISE = 20000.00,
+    parameter VOFFSET = 6000.00
 ) (
     input clk_i,
     input reset_n_i,
 
     input enable_i,
-    input [31:0] relative_angle_i,
+    input [SIZE - 1:0] relative_angle_i,
     output step_o
 );
   parameter JERCK = (4.0 * VRISE / $pow(TRISE, 2.0));
@@ -30,6 +29,9 @@ module angle_to_step #(
   reg [SIZE - 1:0] r_t = {SIZE{1'b0}} | 1'b1;
 
   reg count_back = 1'b0;
+
+  reg [SIZE - 1:0] steps_done = 0;
+  reg [SIZE - 1:0] steps_needed = 0;
 
   reg [1:0] ding = 0;
 
@@ -73,11 +75,25 @@ module angle_to_step #(
     end
   end
 
+  always @(posedge output_clk, negedge reset_n_i) begin
+    if (!reset_n_i) begin
+      steps_done <= 0;
+    end else begin
+
+      if (steps_needed == steps_done) begin
+        steps_done <= 0;
+      end else begin
+        steps_done <= steps_done + 1;
+      end
+    end
+  end
+
   always @(posedge int_clk, negedge reset_n_i) begin
     if (!reset_n_i) begin
       r_t <= 1;
+      steps_needed <= 0;
     end else begin
-      if (r_t >= (TRISE + TON / 2)) begin
+      if (r_t >= TRISE && (steps_needed / 2) >= steps_done) begin
         count_back <= 1'b1;
       end else if (r_t == 0) begin
         count_back <= 1'b0;
@@ -89,5 +105,7 @@ module angle_to_step #(
         r_t <= r_t + 1;
       end
     end
+
+    steps_needed <= (relative_angle_i * GEARUP) / STEPANGLE * MICROSTEPS;
   end
 endmodule

@@ -7,10 +7,10 @@ from cocotb.triggers import RisingEdge, ClockCycles
 async def test_angle_to_step(dut):
     dut.reset_n_i.value = 1
     dut.enable_i.value = 1
-    dut.relative_angle_i.value = 24
+    dut.relative_angle_i.value = 10
 
     # 25 MHz clock
     clock = Clock(dut.clk_i, 40, units="ns")
     cocotb.fork(clock.start())
 
-    await ClockCycles(dut.clk_i, 1500000, rising=True)
+    await ClockCycles(dut.clk_i, 1000000, rising=True)

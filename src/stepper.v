@@ -81,6 +81,7 @@ module stepper (
   // 0x10000010 spi_ingoing_lower
   // 0x10000014 spi_config
   // 0x10000018 spi_status
+  // 0x1000001c test_angle_control
 
   assign enable[0] = mem_valid && mem_instr;
   assign enable[1] = mem_valid && !mem_instr && mem_addr >= 'h00001000 && mem_addr < 'h00002000;
@@ -91,7 +92,8 @@ module stepper (
   assign enable[6] = mem_valid && !mem_instr && mem_addr >= 'h10000010 && mem_addr < 'h10000014;
   assign enable[7] = mem_valid && !mem_instr && mem_addr >= 'h10000014 && mem_addr < 'h10000018;
   assign enable[8] = mem_valid && !mem_instr && mem_addr >= 'h10000018 && mem_addr < 'h1000001c;
-  assign enable[31:9] = {23{1'b0}};
+  assign enable[9] = mem_valid && !mem_instr && mem_addr >= 'h1000001c && mem_addr < 'h10000020;
+  assign enable[31:10] = {32{1'b0}};
 
   // Instruction RAM
   memory #(
@@ -225,6 +227,60 @@ module stepper (
   );
   assign spi_status[31:1] = {31{1'b0}};
 
+  spi #(
+      .SIZE(40),
+      .CS_SIZE(12),
+      .CLK_SIZE(3)
+  ) spi1 (
+      .data_in({spi_outgoing_upper[7:0], spi_outgoing_lower}),
+      .clk_in(clk_25mhz),
+      .clk_count_max('h4),
+      // MISO
+      .serial_in(gn[0]),
+      .send_enable_in(spi_config[0]),
+      .cs_select_in(spi_config[4:1]),
+      .reset_n_in(reset_n),
+      .data_out({spi_ingoing_upper[7:0], spi_ingoing_lower}),
+      // SCK
+      .clk_out(gn[1]),
+      // MOSI
+      .serial_out(gn[2]),
+      .r_cs_out_n(gn[14:3]),
+      .r_ready_out(spi_status[0])
+  );
+
+  wire [31:0] test_angle_control;
+  io_register_output #(
+      .DATA_WIDTH(32)
+  ) test_reg_angle_control (
+      .clk_in(clk_25mhz),
+      .enable(enable[9]),
+      .write(read_write),
+      .ready(mem_ready),
+      .data_in(mem_wdata),
+      .data_out(mem_rdata),
+
+      .mem(test_angle_control)
+  );
+
+  angle_to_step #(
+      .MICROSTEPS(256),
+      .STEPANGLE(1.80),
+      .GEARUP(26.85),
+      .SYSCLK(25000000),
+      .SIZE(32),
+      .VRISE(20000.00),
+      .TRISE(20000.00),
+      .VOFFSET(6000.00)
+  ) test_angle_to_step (
+      .clk_i(clk_25mhz),
+      .reset_n_i(reset_n),
+
+      .enable_i(test_angle_control[0]),
+      .relative_angle_i({1'b0, test_angle_control[31:1]}),
+      .step_o(gp[0])
+  );
+
 
   picorv32 #(
       .ENABLE_COUNTERS(1'b1),
@@ -270,26 +326,5 @@ module stepper (
       .trap(trap)
   );
 
-  spi #(
-      .SIZE(40),
-      .CS_SIZE(12),
-      .CLK_SIZE(3)
-  ) spi1 (
-      .data_in({spi_outgoing_upper[7:0], spi_outgoing_lower}),
-      .clk_in(clk_25mhz),
-      .clk_count_max('h4),
-      // MISO
-      .serial_in(gn[0]),
-      .send_enable_in(spi_config[0]),
-      .cs_select_in(spi_config[4:1]),
-      .reset_n_in(reset_n),
-      .data_out({spi_ingoing_upper[7:0], spi_ingoing_lower}),
-      // SCK
-      .clk_out(gn[1]),
-      // MOSI
-      .serial_out(gn[2]),
-      .r_cs_out_n(gn[14:3]),
-      .r_ready_out(spi_status[0])
-  );
 
 endmodule

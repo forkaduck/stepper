@@ -34,10 +34,10 @@ fn main() -> ! {
     let io = motor_driver::RegIO::get_reg_io();
 
     io.init_driver();
-    loop {
-        unsafe {
-            io.spi_blocking_send(motor_driver::tmc2130::DRV_STATUS, 0x00000000, 0x00000000);
-            io.leds.write(io.spi_ingoing_upper.read());
-        }
+    unsafe {
+        //b10101
+        io.test_angle_control.write(0x0000000b);
     }
+
+    loop {}
 }
