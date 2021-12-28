@@ -1,4 +1,4 @@
-// All floating point parameters are 14.2
+// All floating point parameters are 24.8
 // notation (GEARUP, STEPANGLE)
 module angle_to_step #(
     parameter MICROSTEPS = 256,
@@ -8,10 +8,11 @@ module angle_to_step #(
     parameter SYSCLK = 25000000,
     parameter SIZE = 64,
     // 20000
-    parameter integer VRISE = 'b0100111000100000_0000,
-    // 1000
-    parameter integer TRISE = 'b001111101000_0000,
-    parameter integer VOFFSET = 'b0001011101110000_0000
+    parameter integer VRISE = 'b0100111000100000_00000000,
+    // 10000 us
+    parameter integer TRISE = 'b0010011100010000_00000000,
+    // 6000
+    parameter integer VOFFSET = 'b0001011101110000_00000000
 ) (
     input clk_i,
     input reset_n_i,
@@ -21,21 +22,21 @@ module angle_to_step #(
     output step_o
 );
   parameter JERCK = (4 * VRISE / (TRISE ** 2));
-  parameter SF = 4;
-  parameter TIME_INC = 5'b1_0000;
+  parameter SF = 8;
+  parameter integer TIME_INC = 'b1_00000000;
 
   wire int_clk;
   wire output_clk;
 
   assign step_o = enable_i ? output_clk : 1'b0;
 
-  reg [SIZE - 1:0] r_div = 0;
-  reg [SIZE - 1:0] r_t;
+  reg [SIZE - 1:0] r_div = 'b0_00000000;
+  reg [SIZE - 1:0] r_t = 'b0_00000000;
 
   reg count_back = 1'b0;
 
-  reg [SIZE - 1:0] steps_done;
-  reg [SIZE - 1:0] steps_needed;
+  reg [SIZE - 1:0] steps_done = 0;
+  reg [SIZE - 1:0] steps_needed = 0;
 
   reg [1:0] state = 1'b0;
 
@@ -63,13 +64,13 @@ module angle_to_step #(
     if (r_t > 0 && r_t < (TRISE / 2)) begin
       //First rise
       // Wenn(x < t_{rise} / 2 ∧ x > 0, 1 / 2 J x²)
-      r_div <= 8 * JERCK * r_t ** 2;
+      r_div <= ('b0_1000 << SF) * JERCK * r_t ** 2;
       state <= 1;
 
     end else if (r_t >= (TRISE / 2) && r_t < TRISE) begin
       // Second rise
       // Wenn(t_{rise} / 2 ≤ x ∧ x < t_{rise}, 1 / 4 J (4x t_{rise} - 2x² - t_{rise}²))
-      r_div <= 4 * JERCK * (4 * r_t * TRISE - 2 * (r_t ** 2) - TRISE ** 2);
+      r_div <= ('b0_0100 << SF) * JERCK * ((4 << SF) * r_t * TRISE - (2 << SF) * (r_t ** 2) - TRISE ** 2);
       state <= 2;
 
     end else begin
