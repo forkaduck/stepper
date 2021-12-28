@@ -47,7 +47,7 @@ module stepper (
   assign gn[26:18] = {9{1'b0}};
 
   // step lines
-  assign gp[11:0]  = {12{1'b0}};
+  assign gp[11:1]  = {12{1'b0}};
 
   // dir lines
   assign gp[23:12] = {12{1'b0}};

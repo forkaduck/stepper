@@ -36,7 +36,7 @@ fn main() -> ! {
     io.init_driver();
     unsafe {
         //b10101
-        io.test_angle_control.write(0x0000000b);
+        io.test_angle_control.write(0x00000003);
     }
 
     loop {}
