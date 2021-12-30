@@ -1,31 +1,55 @@
 [*]
-[*] GTKWave Analyzer v3.3.109 (w)1999-2020 BSI
-[*] Sat Dec 11 14:58:34 2021
+[*] GTKWave Analyzer v3.3.111 (w)1999-2020 BSI
+[*] Thu Dec 30 18:15:13 2021
 [*]
 [dumpfile] "/home/fuckaduck/Desktop/projects/stepper/tests/sim_output/angle_to_step.vcd"
-[dumpfile_mtime] "Sat Dec 11 12:20:15 2021"
-[dumpfile_size] 90359304
+[dumpfile_mtime] "Thu Dec 30 12:01:26 2021"
+[dumpfile_size] 11477166
 [savefile] "/home/fuckaduck/Desktop/projects/stepper/tests/sim_output/angle_to_step.gtkw"
-[timestart] 58200000
-[size] 2286 1411
+[timestart] 0
+[size] 2370 1411
 [pos] -1 -1
-*-26.000000 140000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-32.000000 2340000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] angle_to_step.
+[treeopen] angle_to_step.div.
 [sst_width] 227
-[signals_width] 311
+[signals_width] 512
 [sst_expanded] 1
 [sst_vpaned_height] 387
 @28
 angle_to_step.clk_i
-@29
 angle_to_step.int_clk
-@28
 angle_to_step.output_clk
 angle_to_step.enable_i
 angle_to_step.reset_n_i
 @200
 -
 @28
-angle_to_step.ding[2:0]
+angle_to_step.state[1:0]
+@200
+-
+@22
+angle_to_step.r_div[127:0]
+angle_to_step.r_div1[127:0]
+angle_to_step.r_div2[127:0]
+angle_to_step.r_div3[127:0]
+@24
+angle_to_step.r_t[127:0]
+@200
+-
+@28
+angle_to_step.step_o
+@200
+-
+@28
+angle_to_step.count_back
+@200
+-
+-
+@22
+angle_to_step.steps_done[127:0]
+angle_to_step.steps_needed[127:0]
+@24
+angle_to_step.r_debug[127:0]
 [pattern_trace] 1
 [pattern_trace] 0
