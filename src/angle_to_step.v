@@ -7,12 +7,9 @@ module angle_to_step #(
 
     parameter SYSCLK = 25000000,
     parameter SIZE = 128,
-    // 20000
-    parameter integer VRISE = 'b0100111000100000_00000000,
-    // 10000 us
-    parameter integer TRISE = 'b0010011100010000_00000000,
-    // 6000
-    parameter integer VOFFSET = 'b0001011101110000_00000000
+    parameter [SIZE - 1:0] VRISE = 20000,
+    parameter [SIZE - 1:0] TRISE = 10000,
+    parameter [SIZE - 1:0] VOFFSET = 6000
 ) (
     input clk_i,
     input reset_n_i,
@@ -22,13 +19,13 @@ module angle_to_step #(
     output step_o
 );
   // Shifted algorithm parameters
-  parameter SF = 64;
+  parameter SF = SIZE >> 1;
   parameter SF_VRISE = (VRISE << SF);
   parameter SF_TRISE = (TRISE << SF);
   parameter SF_VOFFSET = (VOFFSET << SF);
 
   parameter JERCK = ((4 * SF_VRISE) / (SF_TRISE ** 2));
-  parameter integer TIME_INC = {1'b1, {(SIZE / 2) {1'b0}}};
+  parameter TIME_INC = {1'b1, {(SIZE >> 1) {1'b0}}};
 
   wire int_clk;
   wire output_clk;
@@ -40,8 +37,9 @@ module angle_to_step #(
   reg [SIZE - 1:0] r_div1 = {SIZE{1'b0}};
   reg [SIZE - 1:0] r_div2 = {SIZE{1'b0}};
   reg [SIZE - 1:0] r_div3 = {SIZE{1'b0}};
+  reg [SIZE - 1:0] r_debug = {SIZE{1'b0}};
 
-  reg [SIZE - 1:0] r_t = {SIZE{1'b0}};
+  reg [SIZE - 1:0] r_t = TIME_INC;
 
   reg count_back = 1'b0;
 
@@ -71,19 +69,19 @@ module angle_to_step #(
   );
 
   // Update the clkdivider output every int_clk
-  always @(posedge int_clk) begin
-    if (r_t > 0 && r_t < (SF_TRISE / 2)) begin
+  always @(posedge clk_i) begin
+    if (r_t > 0 && r_t < (SF_TRISE >> 1)) begin
       //First rise
       // Wenn(x < t_{rise} / 2 ∧ x > 0, 1 / 2 J x²)
       /* r_div <= ('b0_1000 << SF) * JERCK * r_t ** 2; */
       r_div  <= r_div1 * r_div2 * r_div3;
       r_div1 <= ('b0_1000 << SF);
       r_div2 <= JERCK;
-      r_div3 <= r_t ** 2;
+      r_div3 <= r_t * r_t;
 
       state  <= 1;
 
-    end else if (r_t >= (SF_TRISE / 2) && r_t < SF_TRISE) begin
+    end else if (r_t >= (SF_TRISE >> 1) && r_t < SF_TRISE) begin
       // Second rise
       // Wenn(t_{rise} / 2 ≤ x ∧ x < t_{rise}, 1 / 4 J (4x t_{rise} - 2x² - t_{rise}²))
       r_div <= ('b0_0100 << SF) * JERCK * ((4 << SF) * r_t * SF_TRISE - (2 << SF) * (r_t ** 2) - SF_TRISE ** 2);
@@ -94,6 +92,7 @@ module angle_to_step #(
       r_div = SF_VRISE;
       state <= 3;
     end
+    r_debug <= SF;
   end
 
   always @(posedge output_clk, negedge reset_n_i) begin

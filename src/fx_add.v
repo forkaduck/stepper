@@ -1,7 +1,6 @@
 // Originally from https://github.com/freecores/verilog_fixed_point_math_library
 
 module fx_add #(
-    //Parameterized value
     parameter Q = 15,
     parameter N = 32
 ) (
