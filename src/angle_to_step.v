@@ -1,6 +1,7 @@
 module angle_to_step #(
     parameter SIZE = 64,
     // MICROSTEPS / (STEPANGLE / GEARING)
+    // (in Q(SIZE >> 1).(SIZE>>1))
     parameter [SIZE - 1 : 0] SCALE = {32'd4103, {(SIZE >> 1) {1'b0}}},
 
     parameter SYSCLK = 25000000,
@@ -51,20 +52,23 @@ module angle_to_step #(
   // Counter to keep track of how far the algorithm has already stepped.
   // It is used to find out when the algorithm needs to be reversed for the falloff.
   always @(posedge output_clk) begin
+    // Count the steps done up until it reaches steps_done
     if (steps_needed <= steps_done) begin
       steps_done <= 0;
     end else begin
       steps_done <= steps_done + {1'b1, {(SIZE >> 1) {1'b0}}};
     end
-  end
 
-  always @(posedge int_clk) begin
-    if (r_t >= TRISE && (steps_needed / 2) <= steps_done) begin
+    // Set the reverse count flag half way up steps_needed
+    if (r_t >= TRISE && (steps_needed >> 1) <= steps_done) begin
       count_back <= 1'b1;
     end else if (r_t == 0) begin
       count_back <= 1'b0;
     end
+  end
 
+  always @(posedge int_clk) begin
+    // Increment time
     if (enable_i) begin
       if (count_back) begin
         r_t <= r_t - 1'b1;
