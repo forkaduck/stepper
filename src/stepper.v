@@ -264,17 +264,15 @@ module stepper (
   );
 
   angle_to_step #(
-      .MICROSTEPS(256),
-      .STEPANGLE(1.80),
-      .GEARUP(26.85),
-      .SYSCLK(25000000),
-      .SIZE(32),
-      .VRISE(20000.00),
-      .TRISE(20000.00),
-      .VOFFSET(6000.00)
+      .SIZE (64),
+      .SCALE({32'd4103, {(64 >> 1) {1'b0}}}),
+
+      .SYSCLK (25000000),
+      .VRISE  (20000),
+      .TRISE  (20000),
+      .VOFFSET(6000)
   ) test_angle_to_step (
       .clk_i(clk_25mhz),
-      .reset_n_i(reset_n),
 
       .enable_i(test_angle_control[0]),
       .relative_angle_i({1'b0, test_angle_control[31:1]}),
