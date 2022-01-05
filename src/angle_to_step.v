@@ -12,6 +12,8 @@ module angle_to_step #(
     input clk_i,
 
     input enable_i,
+    output reg done_o = 1'b0,
+
     input [SIZE - 1:0] relative_angle_i,
     output step_o
 );
@@ -20,63 +22,82 @@ module angle_to_step #(
   wire int_clk;
   wire output_clk;
 
-  assign step_o = enable_i ? output_clk : 1'b0;
-
   // Used as the actual frequency divider (inverse)
   reg [SIZE - 1:0] r_div = 1'b0;
 
   reg [SIZE - 1:0] r_t = 1'b1;
 
-  reg count_back = 1'b0;
+  reg r_enable_prev = 1'b0;
+  reg r_run = 1'b0;
 
   reg [SIZE - 1:0] steps_done = 0;
   wire [SIZE - 1:0] steps_needed;
 
-  // Indicates the current state of the machine (debugging)
-  reg [1:0] r_state = 1'b0;
+  assign step_o = (r_t > 1) ? output_clk : 1'b0;
 
-  // Update the clkdivider output every int_clk
   always @(posedge clk_i) begin
-    if (r_t > 0 && r_t < TRISE) begin
-      //First rise
-      r_div   <= SPEEDUP * r_t;
-      r_state <= 1;
-
-    end else begin
-      // Error
-      r_div = VRISE;
-      r_state <= 2;
+    // Reset on negative edge
+    if (!enable_i && r_enable_prev) begin
+      r_run  <= 1'b0;
+      done_o <= 1'b0;
     end
+
+    if (steps_done >= steps_needed) begin
+      r_run  <= 1'b0;
+      done_o <= 1'b1;
+    end
+
+    // Enable output
+    if (enable_i && !r_enable_prev) begin
+      r_run  <= 1'b1;
+      done_o <= 1'b0;
+    end
+
+    r_enable_prev <= enable_i;
   end
 
   // Counter to keep track of how far the algorithm has already stepped.
   // It is used to find out when the algorithm needs to be reversed for the falloff.
   always @(posedge output_clk) begin
     // Count the steps done up until it reaches steps_done
-    if (steps_needed <= steps_done) begin
-      steps_done <= 0;
-    end else begin
+    if (r_run) begin
       steps_done <= steps_done + {1'b1, {(SIZE >> 1) {1'b0}}};
-    end
-
-    // Set the reverse count flag half way up steps_needed
-    if (r_t >= TRISE && (steps_needed >> 1) <= steps_done) begin
-      count_back <= 1'b1;
-    end else if (r_t == 0) begin
-      count_back <= 1'b0;
+    end else begin
+      steps_done <= 0;
     end
   end
 
+  always @(negedge output_clk) begin
+    // Count the steps done up until it reaches steps_done
+    if (r_run) begin
+      steps_done <= steps_done + {1'b1, {(SIZE >> 1) {1'b0}}};
+    end else begin
+      steps_done <= 0;
+    end
+  end
+
+  // Increment time if the output is enabled
   always @(posedge int_clk) begin
-    // Increment time
-    if (enable_i) begin
-      if (count_back) begin
+    if (r_run) begin
+      if ((steps_needed >> 1) <= steps_done) begin
         r_t <= r_t - 1'b1;
       end else begin
         r_t <= r_t + 1'b1;
       end
     end else begin
       r_t <= 1'b1;
+    end
+  end
+
+  // Update the clkdivider output every int_clk
+  always @(posedge clk_i) begin
+    if (r_t > 0 && r_t < TRISE) begin
+      //First rise
+      r_div <= SPEEDUP * r_t;
+
+    end else begin
+      // Error
+      r_div = VRISE;
     end
   end
 
