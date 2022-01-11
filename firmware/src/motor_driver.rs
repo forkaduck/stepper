@@ -60,6 +60,7 @@ pub struct RegIO {
     pub spi_config: RW<u32>,
     pub spi_status: RO<u32>,
     pub test_angle_control: RW<u32>,
+    pub test_angle_status: RO<u32>,
 }
 
 impl RegIO {

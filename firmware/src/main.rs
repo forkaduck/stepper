@@ -1,4 +1,3 @@
-#![feature(asm)]
 #![no_std]
 #![no_main]
 
@@ -34,10 +33,18 @@ fn main() -> ! {
     let io = motor_driver::RegIO::get_reg_io();
 
     io.init_driver();
-    unsafe {
-        //b10101
-        io.test_angle_control.write(0x00000003);
-    }
+    loop {
+        unsafe {
+            //b10101
+            io.leds.write(0x00000000);
 
-    loop {}
+            while io.test_angle_status.read() & 0x1 == 0x0 {}
+            io.test_angle_control.write(0x00000003);
+
+            io.leds.write(0x00000007);
+
+            while io.test_angle_status.read() & 0x1 == 0x0 {}
+            io.test_angle_control.write(0x00000003);
+        }
+    }
 }

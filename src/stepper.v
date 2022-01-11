@@ -71,17 +71,19 @@ module stepper (
 
   wire [31:0] enable;  // memory enable lines
   // Memory Map (please update constantly):
-  // 0x00000000 rom
-  // 0x00001000 ram
+  // Start       Access Name
+  // 0x00000000  r      rom
+  // 0x00001000  rw     ram
   //
-  // 0x10000000 leds
-  // 0x10000004 spi_outgoing_upper
-  // 0x10000008 spi_outgoing_lower
-  // 0x1000000c spi_ingoing_upper
-  // 0x10000010 spi_ingoing_lower
-  // 0x10000014 spi_config
-  // 0x10000018 spi_status
-  // 0x1000001c test_angle_control
+  // 0x10000000  rw     leds
+  // 0x10000004  rw     spi_outgoing_upper
+  // 0x10000008  rw     spi_outgoing_lower
+  // 0x1000000c  r      spi_ingoing_upper
+  // 0x10000010  r      spi_ingoing_lower
+  // 0x10000014  rw     spi_config
+  // 0x10000018  r      spi_status
+  // 0x1000001c  rw     test_angle_control
+  // 0x10000020  r      test_angle_status
 
   assign enable[0] = mem_valid && mem_instr;
   assign enable[1] = mem_valid && !mem_instr && mem_addr >= 'h00001000 && mem_addr < 'h00002000;
@@ -93,7 +95,8 @@ module stepper (
   assign enable[7] = mem_valid && !mem_instr && mem_addr >= 'h10000014 && mem_addr < 'h10000018;
   assign enable[8] = mem_valid && !mem_instr && mem_addr >= 'h10000018 && mem_addr < 'h1000001c;
   assign enable[9] = mem_valid && !mem_instr && mem_addr >= 'h1000001c && mem_addr < 'h10000020;
-  assign enable[31:10] = {32{1'b0}};
+  assign enable[10] = mem_valid && !mem_instr && mem_addr >= 'h10000020 && mem_addr < 'h10000024;
+  assign enable[31:11] = {32{1'b0}};
 
   // Instruction RAM
   memory #(
@@ -263,22 +266,33 @@ module stepper (
       .mem(test_angle_control)
   );
 
-  angle_to_step #(
-      .SIZE (64),
-      .SCALE({32'd4103, {(64 >> 1) {1'b0}}}),
+  wire [31:0] test_angle_status;
+  io_register_input #(
+      .DATA_WIDTH(32)
+  ) test_reg_angle_status (
+      .enable(enable[10]),
+      .ready(mem_ready),
+      .data_out(mem_rdata),
 
-      .SYSCLK (25000000),
-      .VRISE  (20000),
-      .TRISE  (20000),
+      .mem(test_angle_status)
+  );
+
+  assign test_angle_status[31:1] = {31{1'b0}};
+
+  angle_to_step #(
+      .SIZE(64),
+      .SCALE({32'd4103, {(64 >> 1) {1'b0}}}),
+      .SYSCLK(25000000),
+      .VRISE(20000),
+      .TRISE(10000),
       .VOFFSET(6000)
   ) test_angle_to_step (
       .clk_i(clk_25mhz),
-
       .enable_i(test_angle_control[0]),
+      .done_o(test_angle_status[0]),
       .relative_angle_i({1'b0, test_angle_control[31:1]}),
       .step_o(gp[0])
   );
-
 
   picorv32 #(
       .ENABLE_COUNTERS(1'b1),

@@ -12,7 +12,7 @@ module angle_to_step #(
     input clk_i,
 
     input enable_i,
-    output reg done_o = 1'b0,
+    output reg done_o = 1'b1,
 
     input [SIZE - 1:0] relative_angle_i,
     output step_o
@@ -59,15 +59,6 @@ module angle_to_step #(
   // Counter to keep track of how far the algorithm has already stepped.
   // It is used to find out when the algorithm needs to be reversed for the falloff.
   always @(posedge output_clk) begin
-    // Count the steps done up until it reaches steps_done
-    if (r_run) begin
-      steps_done <= steps_done + {1'b1, {(SIZE >> 1) {1'b0}}};
-    end else begin
-      steps_done <= 0;
-    end
-  end
-
-  always @(negedge output_clk) begin
     // Count the steps done up until it reaches steps_done
     if (r_run) begin
       steps_done <= steps_done + {1'b1, {(SIZE >> 1) {1'b0}}};
