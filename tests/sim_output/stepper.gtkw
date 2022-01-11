@@ -1,20 +1,20 @@
 [*]
-[*] GTKWave Analyzer v3.3.109 (w)1999-2020 BSI
-[*] Sun Nov  7 15:55:08 2021
+[*] GTKWave Analyzer v3.3.111 (w)1999-2020 BSI
+[*] Tue Jan 11 14:54:24 2022
 [*]
 [dumpfile] "/home/fuckaduck/Desktop/projects/stepper/tests/sim_output/stepper.vcd"
-[dumpfile_mtime] "Sun Nov  7 15:54:18 2021"
-[dumpfile_size] 10911004
+[dumpfile_mtime] "Tue Jan 11 13:42:43 2022"
+[dumpfile_size] 365368074
 [savefile] "/home/fuckaduck/Desktop/projects/stepper/tests/sim_output/stepper.gtkw"
 [timestart] 0
-[size] 2336 1390
+[size] 1916 1049
 [pos] -1 -1
-*-26.000000 155664000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-27.000000 84440000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] stepper.
 [sst_width] 227
 [signals_width] 411
 [sst_expanded] 1
-[sst_vpaned_height] 284
+[sst_vpaned_height] 269
 @28
 stepper.clk_25mhz
 stepper.reset_n
