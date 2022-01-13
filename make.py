@@ -188,7 +188,8 @@ def test(test_name):
         [
             "vvp",
             "-M",
-            "/usr/lib/python3.10/site-packages/cocotb/libs",
+            #  "/usr/lib/python3.10/site-packages/cocotb/libs",
+            "/home/fuckaduck/.local/lib/python3.10/site-packages/cocotb/libs",
             "-m",
             "libcocotbvpi_icarus",
             output_dir + test_name + ".vvp",
