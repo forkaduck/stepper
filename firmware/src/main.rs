@@ -39,12 +39,14 @@ fn main() -> ! {
             io.leds.write(0x00000000);
 
             while io.test_angle_status.read() & 0x1 == 0x0 {}
-            io.test_angle_control.write(0x00000003);
+            io.test_angle_control_upper.write(0x00000001);
+            io.test_angle_control_lower.write(0x00000001);
 
             io.leds.write(0x00000007);
 
             while io.test_angle_status.read() & 0x1 == 0x0 {}
-            io.test_angle_control.write(0x00000003);
+            io.test_angle_control_upper.write(0x00000001);
+            io.test_angle_control_upper.write(0x00000001);
         }
     }
 }

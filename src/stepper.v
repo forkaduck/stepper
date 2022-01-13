@@ -82,8 +82,9 @@ module stepper (
   // 0x10000010  r      spi_ingoing_lower
   // 0x10000014  rw     spi_config
   // 0x10000018  r      spi_status
-  // 0x1000001c  rw     test_angle_control
-  // 0x10000020  r      test_angle_status
+  // 0x1000001c  rw     test_angle_control_upper
+  // 0x10000020  rw     test_angle_control_lower
+  // 0x10000024  r      test_angle_status
 
   assign enable[0] = mem_valid && mem_instr;
   assign enable[1] = mem_valid && !mem_instr && mem_addr >= 'h00001000 && mem_addr < 'h00002000;
@@ -96,7 +97,8 @@ module stepper (
   assign enable[8] = mem_valid && !mem_instr && mem_addr >= 'h10000018 && mem_addr < 'h1000001c;
   assign enable[9] = mem_valid && !mem_instr && mem_addr >= 'h1000001c && mem_addr < 'h10000020;
   assign enable[10] = mem_valid && !mem_instr && mem_addr >= 'h10000020 && mem_addr < 'h10000024;
-  assign enable[31:11] = {32{1'b0}};
+  assign enable[11] = mem_valid && !mem_instr && mem_addr >= 'h10000024 && mem_addr < 'h10000028;
+  assign enable[31:12] = {32{1'b0}};
 
   // Instruction RAM
   memory #(
@@ -252,10 +254,10 @@ module stepper (
       .r_ready_out(spi_status[0])
   );
 
-  wire [31:0] test_angle_control;
+  wire [31:0] test_angle_control_upper;
   io_register_output #(
       .DATA_WIDTH(32)
-  ) test_reg_angle_control (
+  ) test_reg_angle_control_upper (
       .clk_in(clk_25mhz),
       .enable(enable[9]),
       .write(read_write),
@@ -263,14 +265,28 @@ module stepper (
       .data_in(mem_wdata),
       .data_out(mem_rdata),
 
-      .mem(test_angle_control)
+      .mem(test_angle_control_upper)
+  );
+
+  wire [31:0] test_angle_control_lower;
+  io_register_output #(
+      .DATA_WIDTH(32)
+  ) test_reg_angle_control_lower (
+      .clk_in(clk_25mhz),
+      .enable(enable[10]),
+      .write(read_write),
+      .ready(mem_ready),
+      .data_in(mem_wdata),
+      .data_out(mem_rdata),
+
+      .mem(test_angle_control_lower)
   );
 
   wire [31:0] test_angle_status;
   io_register_input #(
       .DATA_WIDTH(32)
   ) test_reg_angle_status (
-      .enable(enable[10]),
+      .enable(enable[11]),
       .ready(mem_ready),
       .data_out(mem_rdata),
 
@@ -288,9 +304,9 @@ module stepper (
       .VOFFSET(6000)
   ) test_angle_to_step (
       .clk_i(clk_25mhz),
-      .enable_i(test_angle_control[0]),
+      .enable_i(test_angle_control_lower[0]),
       .done_o(test_angle_status[0]),
-      .relative_angle_i({1'b0, test_angle_control[31:1]}),
+      .relative_angle_i({1'b0, test_angle_control_upper, test_angle_control_lower[31:1]}),
       .step_o(gp[0])
   );
 

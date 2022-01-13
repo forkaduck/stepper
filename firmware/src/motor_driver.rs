@@ -59,7 +59,8 @@ pub struct RegIO {
     pub spi_ingoing_lower: RO<u32>,
     pub spi_config: RW<u32>,
     pub spi_status: RO<u32>,
-    pub test_angle_control: RW<u32>,
+    pub test_angle_control_upper: RW<u32>,
+    pub test_angle_control_lower: RW<u32>,
     pub test_angle_status: RO<u32>,
 }
 
