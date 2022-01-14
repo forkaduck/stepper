@@ -40,17 +40,17 @@ module stepper (
 
   // Map the button outputs to some functions
   wire reset_n;
-  assign reset_n = btn_debounced[1];
+  assign reset_n   = btn_debounced[1];
   assign gn[17:15] = btn_debounced[2] ? 3'b111 : 3'b000;
 
   // driver enable
-  assign gn[26:18] = 0;
+  assign gn[26:18] = {9{1'b0}};
 
   // step lines
-  assign gp[11:0] = 0;
+  assign gp[11:1]  = {12{1'b0}};
 
   // dir lines
-  assign gp[23:12] = 0;
+  assign gp[23:12] = {12{1'b0}};
 
 
 
@@ -67,47 +67,38 @@ module stepper (
 
   wire trap;
 
-  wire read_write = mem_wstrb > 0 ? 1'b1 : 1'b0;
+  wire read_write = mem_wstrb == 0 ? 1'b0 : 1'b1;
 
-  reg [31:0] enable = 'b0;  // memory enable lines
+  wire [31:0] enable;  // memory enable lines
   // Memory Map (please update constantly):
-  // 0x00000000 rom
-  // 0x00001000 ram
+  // Start       Access Name
+  // 0x00000000  r      rom
+  // 0x00001000  rw     ram
   //
-  // 0x10000000 leds
-  // 0x10000004 spi_outgoing_upper
-  // 0x10000008 spi_outgoing_lower
-  // 0x1000000c spi_ingoing_upper
-  // 0x10000010 spi_ingoing_lower
-  // 0x10000014 spi_config
-  // 0x10000018 spi_status
-  always @(posedge clk_25mhz) begin
-    if (mem_valid) begin
-      if (mem_instr) begin
-        enable[0] <= 1'b1;
-      end else begin
-        if (mem_addr >= 'h00001000 & mem_addr < 'h00002000) begin
-          enable[1] <= 1'b1;
-        end else if (mem_addr == 'h10000000) begin
-          enable[2] <= 1'b1;
-        end else if (mem_addr == 'h10000004) begin
-          enable[3] <= 1'b1;
-        end else if (mem_addr == 'h10000008) begin
-          enable[4] <= 1'b1;
-        end else if (mem_addr == 'h1000000c) begin
-          enable[5] <= 1'b1;
-        end else if (mem_addr == 'h10000010) begin
-          enable[6] <= 1'b1;
-        end else if (mem_addr == 'h10000014) begin
-          enable[7] <= 1'b1;
-        end else if (mem_addr == 'h10000018) begin
-          enable[8] <= 1'b1;
-        end
-      end
-    end else begin
-      enable <= 'b0;
-    end
-  end
+  // 0x10000000  rw     leds
+  // 0x10000004  rw     spi_outgoing_upper
+  // 0x10000008  rw     spi_outgoing_lower
+  // 0x1000000c  r      spi_ingoing_upper
+  // 0x10000010  r      spi_ingoing_lower
+  // 0x10000014  rw     spi_config
+  // 0x10000018  r      spi_status
+  // 0x1000001c  rw     test_angle_control_upper
+  // 0x10000020  rw     test_angle_control_lower
+  // 0x10000024  r      test_angle_status
+
+  assign enable[0] = mem_valid && mem_instr;
+  assign enable[1] = mem_valid && !mem_instr && mem_addr >= 'h00001000 && mem_addr < 'h00002000;
+  assign enable[2] = mem_valid && !mem_instr && mem_addr >= 'h10000000 && mem_addr < 'h10000004;
+  assign enable[3] = mem_valid && !mem_instr && mem_addr >= 'h10000004 && mem_addr < 'h10000008;
+  assign enable[4] = mem_valid && !mem_instr && mem_addr >= 'h10000008 && mem_addr < 'h1000000c;
+  assign enable[5] = mem_valid && !mem_instr && mem_addr >= 'h1000000c && mem_addr < 'h10000010;
+  assign enable[6] = mem_valid && !mem_instr && mem_addr >= 'h10000010 && mem_addr < 'h10000014;
+  assign enable[7] = mem_valid && !mem_instr && mem_addr >= 'h10000014 && mem_addr < 'h10000018;
+  assign enable[8] = mem_valid && !mem_instr && mem_addr >= 'h10000018 && mem_addr < 'h1000001c;
+  assign enable[9] = mem_valid && !mem_instr && mem_addr >= 'h1000001c && mem_addr < 'h10000020;
+  assign enable[10] = mem_valid && !mem_instr && mem_addr >= 'h10000020 && mem_addr < 'h10000024;
+  assign enable[11] = mem_valid && !mem_instr && mem_addr >= 'h10000024 && mem_addr < 'h10000028;
+  assign enable[31:12] = {32{1'b0}};
 
   // Instruction RAM
   memory #(
@@ -239,8 +230,85 @@ module stepper (
 
       .mem(spi_status)
   );
-  assign spi_status[31:1] = 'b0;
+  assign spi_status[31:1] = {31{1'b0}};
 
+  spi #(
+      .SIZE(40),
+      .CS_SIZE(12),
+      .CLK_SIZE(3)
+  ) spi1 (
+      .data_in({spi_outgoing_upper[7:0], spi_outgoing_lower}),
+      .clk_in(clk_25mhz),
+      .clk_count_max('h4),
+      // MISO
+      .serial_in(gn[0]),
+      .send_enable_in(spi_config[0]),
+      .cs_select_in(spi_config[4:1]),
+      .reset_n_in(reset_n),
+      .data_out({spi_ingoing_upper[7:0], spi_ingoing_lower}),
+      // SCK
+      .clk_out(gn[1]),
+      // MOSI
+      .serial_out(gn[2]),
+      .r_cs_out_n(gn[14:3]),
+      .r_ready_out(spi_status[0])
+  );
+
+  wire [31:0] test_angle_control_upper;
+  io_register_output #(
+      .DATA_WIDTH(32)
+  ) test_reg_angle_control_upper (
+      .clk_in(clk_25mhz),
+      .enable(enable[9]),
+      .write(read_write),
+      .ready(mem_ready),
+      .data_in(mem_wdata),
+      .data_out(mem_rdata),
+
+      .mem(test_angle_control_upper)
+  );
+
+  wire [31:0] test_angle_control_lower;
+  io_register_output #(
+      .DATA_WIDTH(32)
+  ) test_reg_angle_control_lower (
+      .clk_in(clk_25mhz),
+      .enable(enable[10]),
+      .write(read_write),
+      .ready(mem_ready),
+      .data_in(mem_wdata),
+      .data_out(mem_rdata),
+
+      .mem(test_angle_control_lower)
+  );
+
+  wire [31:0] test_angle_status;
+  io_register_input #(
+      .DATA_WIDTH(32)
+  ) test_reg_angle_status (
+      .enable(enable[11]),
+      .ready(mem_ready),
+      .data_out(mem_rdata),
+
+      .mem(test_angle_status)
+  );
+
+  assign test_angle_status[31:1] = {31{1'b0}};
+
+  angle_to_step #(
+      .SIZE(64),
+      .SCALE({32'd4103, {(64 >> 1) {1'b0}}}),
+      .SYSCLK(25000000),
+      .VRISE(20000),
+      .TRISE(10000),
+      .VOFFSET(6000)
+  ) test_angle_to_step (
+      .clk_i(clk_25mhz),
+      .enable_i(test_angle_control_lower[0]),
+      .done_o(test_angle_status[0]),
+      .relative_angle_i({1'b0, test_angle_control_upper, test_angle_control_lower[31:1]}),
+      .step_o(gp[0])
+  );
 
   picorv32 #(
       .ENABLE_COUNTERS(1'b1),
@@ -286,26 +354,5 @@ module stepper (
       .trap(trap)
   );
 
-  spi #(
-      .SIZE(40),
-      .CS_SIZE(12),
-      .CLK_SIZE(3)
-  ) spi1 (
-      .data_in({spi_outgoing_upper[7:0], spi_outgoing_lower}),
-      .clk_in(clk_25mhz),
-      .clk_count_max('h7),
-      // MISO
-      .serial_in(gn[0]),
-      .send_enable_in(spi_config[0]),
-      .cs_select_in(spi_config[4:1]),
-      .reset_n_in(reset_n),
-      .data_out({spi_ingoing_upper[7:0], spi_ingoing_lower}),
-      // SCK
-      .clk_out(gn[1]),
-      // MOSI
-      .serial_out(gn[2]),
-      .cs_out_n(gn[14:3]),
-      .r_ready_out(spi_status[0])
-  );
 
 endmodule

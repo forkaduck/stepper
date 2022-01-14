@@ -12,7 +12,7 @@ module mux #(
   initial r_sig_out = INITIAL;
 
   always @(posedge clk_in) begin
-    r_sig_out[select_in] <= sig_in;
+    r_sig_out <= (sig_in << select_in) | (INITIAL & ~(1'h1 << select_in));
   end
 
 endmodule

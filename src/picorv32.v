@@ -17,6 +17,8 @@
  *
  */
 
+`include "macros.v"
+
 /* verilator lint_off WIDTH */
 /* verilator lint_off PINMISSING */
 /* verilator lint_off CASEOVERLAP */
@@ -33,12 +35,6 @@
 `define debug(debug_command) debug_command
 `else
 `define debug(debug_command)
-`endif
-
-`ifdef FORMAL
-`define assert(assert_expr) assert(assert_expr)
-`else
-`define assert(assert_expr) empty_statement
 `endif
 
 // uncomment this for register file in extra module
@@ -205,13 +201,6 @@ module picorv32 #(
     end
   end
 `endif
-
-  task empty_statement;
-    // This task is used by the `assert directive in non-formal mode to
-    // avoid empty statement (which are unsupported by plain Verilog syntax).
-    begin
-    end
-  endtask
 
 `ifdef DEBUGREGS
   wire [31:0] dbg_reg_x0 = 0;
@@ -604,15 +593,15 @@ module picorv32 #(
 
   always @(posedge clk) begin
     if (resetn && !trap) begin
-      if (mem_do_prefetch || mem_do_rinst || mem_do_rdata) `assert(!mem_do_wdata);
+      if (mem_do_prefetch || mem_do_rinst || mem_do_rdata) `ASSERT(!mem_do_wdata);
 
-      if (mem_do_prefetch || mem_do_rinst) `assert(!mem_do_rdata);
+      if (mem_do_prefetch || mem_do_rinst) `ASSERT(!mem_do_rdata);
 
-      if (mem_do_rdata) `assert(!mem_do_prefetch && !mem_do_rinst);
+      if (mem_do_rdata) `ASSERT(!mem_do_prefetch && !mem_do_rinst);
 
-      if (mem_do_wdata) `assert(!(mem_do_prefetch || mem_do_rinst || mem_do_rdata));
+      if (mem_do_wdata) `ASSERT(!(mem_do_prefetch || mem_do_rinst || mem_do_rdata));
 
-      if (mem_state == 2 || mem_state == 3) `assert(mem_valid || mem_do_prefetch);
+      if (mem_state == 2 || mem_state == 3) `ASSERT(mem_valid || mem_do_prefetch);
     end
   end
 
@@ -645,10 +634,10 @@ module picorv32 #(
           end
         end
         1: begin
-          `assert(mem_wstrb == 0);
-          `assert(mem_do_prefetch || mem_do_rinst || mem_do_rdata);
-          `assert(mem_valid == !mem_la_use_prefetched_high_word);
-          `assert(mem_instr == (mem_do_prefetch || mem_do_rinst));
+          `ASSERT(mem_wstrb == 0);
+          `ASSERT(mem_do_prefetch || mem_do_rinst || mem_do_rdata);
+          `ASSERT(mem_valid == !mem_la_use_prefetched_high_word);
+          `ASSERT(mem_instr == (mem_do_prefetch || mem_do_rinst));
           if (mem_xfer) begin
             if (COMPRESSED_ISA && mem_la_read) begin
               mem_valid <= 1;
@@ -670,16 +659,16 @@ module picorv32 #(
           end
         end
         2: begin
-          `assert(mem_wstrb != 0);
-          `assert(mem_do_wdata);
+          `ASSERT(mem_wstrb != 0);
+          `ASSERT(mem_do_wdata);
           if (mem_xfer) begin
             mem_valid <= 0;
             mem_state <= 0;
           end
         end
         3: begin
-          `assert(mem_wstrb == 0);
-          `assert(mem_do_prefetch);
+          `ASSERT(mem_wstrb == 0);
+          `ASSERT(mem_do_prefetch);
           if (mem_do_rinst) begin
             mem_state <= 0;
           end
@@ -2222,7 +2211,7 @@ module picorv32 #(
   always @* begin
     if (resetn) begin
       // instruction fetches are read-only
-      if (mem_valid && mem_instr) assert (mem_wstrb == 0);
+      if (mem_valid && mem_instr) `ASSERT(mem_wstrb == 0);
 
       // cpu_state must be valid
       ok = 0;
@@ -2234,7 +2223,7 @@ module picorv32 #(
       if (cpu_state == cpu_state_shift) ok = 1;
       if (cpu_state == cpu_state_stmem) ok = 1;
       if (cpu_state == cpu_state_ldmem) ok = 1;
-      assert (ok);
+      `ASSERT(ok);
     end
   end
 
@@ -2252,18 +2241,18 @@ module picorv32 #(
     last_mem_la_wstrb <= mem_la_wstrb;
 
     if (last_mem_la_read) begin
-      assert (mem_valid);
-      assert (mem_addr == last_mem_la_addr);
-      assert (mem_wstrb == 0);
+      `ASSERT(mem_valid);
+      `ASSERT(mem_addr == last_mem_la_addr);
+      `ASSERT(mem_wstrb == 0);
     end
     if (last_mem_la_write) begin
-      assert (mem_valid);
-      assert (mem_addr == last_mem_la_addr);
-      assert (mem_wdata == last_mem_la_wdata);
-      assert (mem_wstrb == last_mem_la_wstrb);
+      `ASSERT(mem_valid);
+      `ASSERT(mem_addr == last_mem_la_addr);
+      `ASSERT(mem_wdata == last_mem_la_wdata);
+      `ASSERT(mem_wstrb == last_mem_la_wstrb);
     end
     if (mem_la_read || mem_la_write) begin
-      assert (!mem_valid || mem_ready);
+      `ASSERT(!mem_valid || mem_ready);
     end
   end
 `endif

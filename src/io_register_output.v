@@ -14,15 +14,15 @@ module io_register_output #(
     input  [DATA_WIDTH - 1:0] data_in,
     output [DATA_WIDTH - 1:0] data_out,
 
-    inout [DATA_WIDTH - 1:0] mem
+    output [DATA_WIDTH - 1:0] mem
 );
-  initial begin
-    r_mem = 'b0;
-  end
+  reg [DATA_WIDTH - 1:0] r_mem;
 
   assign mem = r_mem;
 
-  reg [DATA_WIDTH - 1: 0] r_mem;
+  initial begin
+    r_mem = {DATA_WIDTH{1'b0}};
+  end
 
   always @(posedge clk_in) begin
     if (write & enable) begin
@@ -31,5 +31,5 @@ module io_register_output #(
   end
 
   assign ready = enable ? 1'b1 : 1'bz;
-  assign data_out = enable ? r_mem : 'bz;
+  assign data_out = (enable && !write) ? r_mem : {DATA_WIDTH{1'bz}};
 endmodule

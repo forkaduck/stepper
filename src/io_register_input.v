@@ -13,5 +13,5 @@ module io_register_input #(
     input [DATA_WIDTH - 1:0] mem
 );
   assign ready = enable ? 1'b1 : 1'bz;
-  assign data_out = enable ? mem : 'bz;
+  assign data_out = enable ? mem : {DATA_WIDTH{1'bz}};
 endmodule

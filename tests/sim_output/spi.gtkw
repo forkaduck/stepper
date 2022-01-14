@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.109 (w)1999-2020 BSI
-[*] Fri Oct 22 06:50:29 2021
+[*] Sat Oct 30 19:04:06 2021
 [*]
 [dumpfile] "/home/fuckaduck/Desktop/projects/stepper/tests/sim_output/spi.vcd"
-[dumpfile_mtime] "Fri Oct 22 06:45:38 2021"
-[dumpfile_size] 29558
+[dumpfile_mtime] "Sat Oct 30 17:38:10 2021"
+[dumpfile_size] 55155
 [savefile] "/home/fuckaduck/Desktop/projects/stepper/tests/sim_output/spi.gtkw"
 [timestart] 0
-[size] 1916 1027
+[size] 3436 1390
 [pos] -1 -1
-*-23.000000 8720000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-21.000000 17810000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] spi.
 [sst_width] 227
 [signals_width] 190
@@ -18,16 +18,14 @@
 @28
 spi.clk_in
 spi.reset_n_in
-spi.internal_clk
 spi.r_piso_load
 @200
 -
 -
+@29
+spi.r_cs_out_n[3:0]
 @28
 spi.clk_out
-@23
-spi.cs_out_n[3:0]
-@28
 spi.serial_in
 spi.serial_out
 @200
