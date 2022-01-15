@@ -27,6 +27,7 @@ module angle_to_step #(
 
   reg [SIZE - 1:0] r_t = 1'b1;
 
+  reg r_output_clk_prev = 1'b0;
   reg r_enable_prev = 1'b0;
   reg r_run = 1'b0;
 
@@ -40,6 +41,7 @@ module angle_to_step #(
     if (!enable_i && r_enable_prev) begin
       r_run  <= 1'b0;
       done_o <= 1'b0;
+      $display("%m>\tDisabled");
     end
 
     if (steps_done >= steps_needed) begin
@@ -51,6 +53,7 @@ module angle_to_step #(
     if (enable_i && !r_enable_prev) begin
       r_run  <= 1'b1;
       done_o <= 1'b0;
+      $display("%m>\tEnabled");
     end
 
     r_enable_prev <= enable_i;
@@ -58,13 +61,17 @@ module angle_to_step #(
 
   // Counter to keep track of how far the algorithm has already stepped.
   // It is used to find out when the algorithm needs to be reversed for the falloff.
-  always @(posedge output_clk) begin
+  always @(posedge clk_i) begin
     // Count the steps done up until it reaches steps_done
     if (r_run) begin
-      steps_done <= steps_done + {1'b1, {(SIZE >> 1) {1'b0}}};
+      if (output_clk && !r_output_clk_prev) begin
+        steps_done <= steps_done + {1'b1, {(SIZE >> 1) {1'b0}}};
+      end
     end else begin
       steps_done <= 0;
     end
+
+    r_output_clk_prev <= output_clk;
   end
 
   // Increment time if the output is enabled
