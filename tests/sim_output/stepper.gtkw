@@ -1,25 +1,26 @@
 [*]
 [*] GTKWave Analyzer v3.3.111 (w)1999-2020 BSI
-[*] Thu Jan 13 12:50:49 2022
+[*] Sat Jan 29 11:22:55 2022
 [*]
 [dumpfile] "/home/fuckaduck/Desktop/projects/stepper/tests/sim_output/stepper.vcd"
-[dumpfile_mtime] "Thu Jan 13 12:50:07 2022"
-[dumpfile_size] 775344691
+[dumpfile_mtime] "Sat Jan 29 11:22:48 2022"
+[dumpfile_size] 386711088
 [savefile] "/home/fuckaduck/Desktop/projects/stepper/tests/sim_output/stepper.gtkw"
-[timestart] 0
-[size] 1916 793
+[timestart] 77810000
+[size] 2276 1409
 [pos] -1 -1
-*-33.000000 14080120000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-23.000000 92520000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] stepper.
 [sst_width] 227
-[signals_width] 370
+[signals_width] 434
 [sst_expanded] 1
-[sst_vpaned_height] 236
+[sst_vpaned_height] 276
 @28
 stepper.clk_25mhz
 stepper.reset_n
 @200
 -
+-Memory bus
 @22
 stepper.mem_addr[31:0]
 stepper.mem_rdata[31:0]
@@ -33,13 +34,18 @@ stepper.enable[31:0]
 stepper.mem_instr
 stepper.mem_ready
 stepper.mem_valid
+@29
 stepper.read_write
 @200
 -
-@29
-stepper.test_angle_to_step.output_clk
+-angle_to_step
+@28
+stepper.test_angle_to_step.step_o
+stepper.test_angle_to_step.done_o
+stepper.test_angle_to_step.enable_i
 @200
 -
+-spi
 @22
 stepper.spi1.r_counter[7:0]
 @28
@@ -50,9 +56,6 @@ stepper.spi1.r_cs_out_n[11:0]
 @28
 stepper.spi1.serial_in
 stepper.spi1.serial_out
-@200
--
-@28
 stepper.spi1.send_enable_in
 stepper.spi1.r_ready_out
 @200

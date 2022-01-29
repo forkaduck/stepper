@@ -32,21 +32,18 @@ pub unsafe extern "C" fn start_rust() -> ! {
 fn main() -> ! {
     let io = motor_driver::RegIO::get_reg_io();
 
-    io.init_driver();
+    // io.init_driver();
     loop {
         unsafe {
-            //b10101
-            io.leds.write(0x00000000);
-
+            // Wait for done == 1
             while io.test_angle_status.read() & 0x1 == 0x0 {}
-            io.test_angle_control_upper.write(0x00000002);
-            io.test_angle_control_lower.write(0x00000001);
+            io.test_angle_control_upper.write(0x00000000);
+            io.test_angle_control_lower.write(0x00000000);
 
-            io.leds.write(0x0000000f);
+            io.test_angle_control_upper.write(0x00000001);
+            io.test_angle_control_lower.write(0x00200001);
 
-            while io.test_angle_status.read() & 0x1 == 0x0 {}
-            io.test_angle_control_upper.write(0x00000002);
-            io.test_angle_control_lower.write(0x00000001);
+            // util::wait(6250000);
         }
     }
 }

@@ -29,3 +29,6 @@ async def test_angle_to_step(dut):
         dut.enable_i.value = 0
         await FallingEdge(dut.done_o)
         await ClockCycles(dut.clk_i, 1000, rising=True)
+
+    await ClockCycles(dut.clk_i, 100000, rising=True)
+
