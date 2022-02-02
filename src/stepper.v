@@ -299,9 +299,9 @@ module stepper (
       .SIZE(64),
       .SCALE({32'd4103, {(64 >> 1) {1'b0}}}),
       .SYSCLK(25000000),
-      .VRISE(20000),
-      .TRISE(10000),
-      .VOFFSET(6000)
+      .VRISE(180),
+      .TRISE(500000),
+      .VOFFSET(100)
   ) test_angle_to_step (
       .clk_i(clk_25mhz),
       .enable_i(test_angle_control_lower[0]),

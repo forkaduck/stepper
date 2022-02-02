@@ -5,9 +5,9 @@ module angle_to_step #(
     parameter [SIZE - 1 : 0] SCALE = {32'd4103, {(SIZE >> 1) {1'b0}}},
 
     parameter SYSCLK = 25000000,
-    parameter integer VRISE = 20000,
-    parameter integer TRISE = 10000,
-    parameter integer VOFFSET = 6000
+    parameter [SIZE - 1 : 0] VRISE = 20000,
+    parameter [SIZE - 1 : 0] TRISE = 10000,
+    parameter [SIZE - 1 : 0] VOFFSET = 6000
 ) (
     input clk_i,
 
@@ -17,15 +17,17 @@ module angle_to_step #(
     input [SIZE - 1:0] relative_angle_i,
     output step_o
 );
-  parameter [SIZE - 1:0] SPEEDUP = VRISE / TRISE;
+  parameter SF = SIZE >> 1;
+  parameter INC = {1'b1, {SF{1'b0}}};
 
   wire int_clk;
   wire output_clk;
 
   // Used as the actual frequency divider (inverse)
-  reg [SIZE - 1:0] r_div = 1'b0;
 
-  reg [SIZE - 1:0] r_t = 1'b1;
+  reg [SIZE - 1:0] r_t = INC;
+  wire [SIZE - 1:0] div;
+  wire [SIZE -1:0] speedup;
 
   reg r_output_clk_prev = 1'b0;
   reg r_enable_prev = 1'b0;
@@ -65,7 +67,7 @@ module angle_to_step #(
     // Count the steps done up until it reaches steps_done
     if (r_run) begin
       if (output_clk && !r_output_clk_prev) begin
-        steps_done <= steps_done + {1'b1, {(SIZE >> 1) {1'b0}}};
+        steps_done <= steps_done + INC;
       end
     end else begin
       steps_done <= 0;
@@ -78,30 +80,46 @@ module angle_to_step #(
   always @(posedge int_clk) begin
     if (r_run) begin
       if ((steps_needed >> 1) <= steps_done) begin
-        r_t <= r_t - 1'b1;
+        r_t <= r_t - INC;
       end else begin
-        r_t <= r_t + 1'b1;
+        r_t <= r_t + INC;
       end
     end else begin
-      r_t <= 1'b1;
+      r_t <= INC;
     end
   end
+
+  // Calculate the speedup coefficient
+  fx_div #(
+      .Q(SF),
+      .N(SIZE)
+  ) calc_speedup (
+      .dividend_i(VRISE << SF),
+      .divisor(TRISE << SF),
+      .quotient_o(speedup),
+
+      .start_i(1'b1),
+      .clk_i(clk_i),
+      .complete_o(),
+      .overflow_o()
+  );
 
   // Update the clkdivider output every int_clk
-  always @(posedge clk_i) begin
-    if (r_t > 0 && r_t < TRISE) begin
-      //First rise
-      r_div <= SPEEDUP * r_t;
+  // div <= SPEEDUP * r_t
+  fx_mult #(
+      .Q(SF),
+      .N(SIZE)
+  ) update_clk_divider (
+      .multiplicand_i(speedup),
+      .multiplier_i(r_t),
+      .r_result_o(div),
+      .overflow_r_o()
+  );
 
-    end else begin
-      // Error
-      r_div = VRISE;
-    end
-  end
 
   /* steps_needed <= relative_angle_i * SCALE; */
   fx_mult #(
-      .Q(SIZE >> 1),
+      .Q(SF),
       .N(SIZE)
   ) steps_needed_mult (
       .multiplicand_i(relative_angle_i),
@@ -113,19 +131,19 @@ module angle_to_step #(
   // Internal clk (used for timekeeping)
   clk_divider #(
       .SIZE(32)
-  ) internal (
+  ) internal_clk_gen (
       .clk_in (clk_i),
       // Every 1 us
-      .max_in ((SYSCLK / 1000000) / 2),
+      .max_in ((SYSCLK / 1000000) >> 1),
       .clk_out(int_clk)
   );
 
   // Step pulse generator clk divider
   clk_divider #(
       .SIZE(SIZE)
-  ) div (
+  ) step_pulse_gen (
       .clk_in (clk_i),
-      .max_in ((VRISE - r_div + VOFFSET) / 2),
+      .max_in ((VRISE - (div >> SF) + VOFFSET) >> 1),
       .clk_out(output_clk)
   );
 endmodule
