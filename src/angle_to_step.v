@@ -36,7 +36,7 @@ module angle_to_step #(
   reg [SIZE - 1:0] steps_done = 0;
   wire [SIZE - 1:0] steps_needed;
 
-  assign step_o = (r_t > 1) ? output_clk : 1'b0;
+  assign step_o = (r_t > INC) ? output_clk : 1'b0;
 
   always @(posedge clk_i) begin
     // Reset on negative edge
@@ -46,7 +46,7 @@ module angle_to_step #(
       $display("%m>\tDisabled");
     end
 
-    if (steps_done >= steps_needed) begin
+    if ((steps_done >> SF) >= (steps_needed >> SF)) begin
       r_run  <= 1'b0;
       done_o <= 1'b1;
     end
