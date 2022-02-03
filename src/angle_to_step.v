@@ -27,7 +27,10 @@ module angle_to_step #(
 
   reg [SIZE - 1:0] r_t = INC;
   wire [SIZE - 1:0] div;
-  wire [SIZE -1:0] speedup;
+  wire [SIZE - 1:0] speedup;
+  wire [SIZE - 1:0] offset_div;
+  wire [SIZE - 1:0] negated_offset_div;
+  wire [SIZE - 1:0] invers_offset_div;
 
   reg r_output_clk_prev = 1'b0;
   reg r_enable_prev = 1'b0;
@@ -109,13 +112,35 @@ module angle_to_step #(
   fx_mult #(
       .Q(SF),
       .N(SIZE)
-  ) update_clk_divider (
+  ) calc_clk_divider (
       .multiplicand_i(speedup),
       .multiplier_i(r_t),
       .r_result_o(div),
       .overflow_r_o()
   );
 
+  /* (VRISE - (div >> SF) + VOFFSET) */
+  fx_add #(
+      .Q(SF),
+      .N(SIZE)
+  ) calc_add_offset (
+      .summand_a_i(div),
+      .summand_b_i(VOFFSET << SF),
+      .sum_i(offset_div)
+  );
+
+  // negate the sign of the offset_div wire
+  assign negated_offset_div[SIZE-2:0] = offset_div[SIZE-2:0];
+  assign negated_offset_div[SIZE-1]   = offset_div[SIZE-1];
+
+  fx_add #(
+      .Q(SF),
+      .N(SIZE)
+  ) calc_invert_div (
+      .summand_a_i(VRISE << SF),
+      .summand_b_i(negated_offset_div),
+      .sum_i(invers_offset_div)
+  );
 
   /* steps_needed <= relative_angle_i * SCALE; */
   fx_mult #(
@@ -143,7 +168,7 @@ module angle_to_step #(
       .SIZE(SIZE)
   ) step_pulse_gen (
       .clk_in (clk_i),
-      .max_in ((VRISE - (div >> SF) + VOFFSET) >> 1),
+      .max_in ((invers_offset_div >> SF) >> 1),
       .clk_out(output_clk)
   );
 endmodule

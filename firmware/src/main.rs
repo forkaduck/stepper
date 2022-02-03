@@ -35,15 +35,13 @@ fn main() -> ! {
     io.init_driver();
     loop {
         unsafe {
-            // Wait for done == 1
             while io.test_angle_status.read() & 0x1 == 0x0 {}
             io.test_angle_control_upper.write(0x00000000);
             io.test_angle_control_lower.write(0x00000000);
 
             io.test_angle_control_upper.write(0x00000168);
+            // io.test_angle_control_upper.write(0x00000001);
             io.test_angle_control_lower.write(0x00000001);
-
-            // util::wait(6250000);
         }
     }
 }
