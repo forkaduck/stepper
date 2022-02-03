@@ -17,7 +17,7 @@ async def test_angle_to_step(dut):
 
     await ClockCycles(dut.clk_i, 10, rising=True)
 
-    for i in range(1):
+    for i in range(2):
         # Run first cycle
         print(str(i) + " cycle")
         
