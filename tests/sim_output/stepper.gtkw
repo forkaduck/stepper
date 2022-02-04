@@ -1,18 +1,19 @@
 [*]
-[*] GTKWave Analyzer v3.3.109 (w)1999-2020 BSI
-[*] Fri Oct 22 07:17:23 2021
+[*] GTKWave Analyzer v3.3.111 (w)1999-2020 BSI
+[*] Fri Feb  4 08:06:32 2022
 [*]
 [dumpfile] "/home/fuckaduck/Desktop/projects/stepper/tests/sim_output/stepper.vcd"
-[dumpfile_mtime] "Fri Oct 22 07:16:23 2021"
-[dumpfile_size] 13707496
+[dumpfile_mtime] "Fri Feb  4 07:58:51 2022"
+[dumpfile_size] 455300995
 [savefile] "/home/fuckaduck/Desktop/projects/stepper/tests/sim_output/stepper.gtkw"
 [timestart] 46360000
-[size] 1916 1027
+[size] 2226 1409
 [pos] -1 -1
 *-24.000000 52340000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] stepper.
+[treeopen] stepper.test_angle_to_step.
 [sst_width] 227
-[signals_width] 366
+[signals_width] 470
 [sst_expanded] 1
 [sst_vpaned_height] 292
 @28
@@ -20,6 +21,7 @@ stepper.clk_25mhz
 stepper.reset_n
 @200
 -
+-data bus
 @22
 stepper.mem_addr[31:0]
 stepper.mem_rdata[31:0]
@@ -37,16 +39,22 @@ stepper.read_write
 @200
 -
 -
-@29
-stepper.spi1.cs_out_n[11:0]
+-spi
 @28
 stepper.spi1.serial_in
 stepper.spi1.serial_out
 stepper.spi1.r_ready_out
 stepper.spi1.send_enable_in
+@201
+-
 @200
 -
--
+-angle to step
+@28
+stepper.test_angle_to_step.done_o
+stepper.test_angle_to_step.enable_i
+stepper.test_angle_to_step.step_o
+@200
 -
 @28
 stepper.cpu.trap
