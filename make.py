@@ -109,6 +109,8 @@ def build():
             "stepper.json",
             "--lpf",
             "ulx3s_v20.lpf",
+            "--speed",
+            "6",
             "--textcfg",
             "ulx3s_out.config",
         ],
