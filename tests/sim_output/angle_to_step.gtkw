@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.111 (w)1999-2020 BSI
-[*] Thu Feb  3 15:14:13 2022
+[*] Sat Feb  5 15:50:46 2022
 [*]
 [dumpfile] "/home/fuckaduck/Desktop/projects/stepper/tests/sim_output/angle_to_step.vcd"
-[dumpfile_mtime] "Thu Feb  3 14:09:02 2022"
-[dumpfile_size] 774110681
+[dumpfile_mtime] "Sat Feb  5 15:50:46 2022"
+[dumpfile_size] 70807552
 [savefile] "/home/fuckaduck/Desktop/projects/stepper/tests/sim_output/angle_to_step.gtkw"
 [timestart] 0
-[size] 2256 1409
+[size] 2216 1409
 [pos] -1 -1
-*-35.000000 41140000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-32.000000 3880000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] angle_to_step.
 [sst_width] 227
 [signals_width] 346

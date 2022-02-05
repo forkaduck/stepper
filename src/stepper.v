@@ -19,7 +19,6 @@ module stepper (
 );
 
   // Primary clock
-  wire main_clk;
   wire cpu_clk;
   wire peripheral_clk;
 
@@ -53,69 +52,14 @@ module stepper (
   // dir lines
   assign gp[23:12] = {12{1'b0}};
 
-
-  // Instantiate the PLL for use as the system clock
-`ifndef __ICARUS__
-  EHXPLLL #(
-      // Input clk divider (25MHz)
-      .CLKI_DIV(1),
-
-      // Divide feedback (100MHz)
-      .CLKFB_DIV(4),
-
-      // Output clock
-      .CLKOP_DIV(1),
-
-      .CLKOS_DIV (8),
-      .CLKOS2_DIV(8),
-      .CLKOS3_DIV(8),
-
-      .CLKOP_ENABLE ("ENABLED"),
-      .CLKOS_ENABLE ("ENABLED"),
-      .CLKOS2_ENABLE("DISABLED"),
-      .CLKOS3_ENABLE("DISABLED")
-
-  ) clk_generator (
-      // Inputs
-      .CLKI (clk_25mhz),
-      .CLKFB(),
-
-      .PHASESEL1(),
-      .PHASESEL0(),
-      .PHASEDIR(),
-      .PHASESTEP(),
-      .PHASELOADREG(),
-
-      .STDBY('h0),
-      .PLLWAKESYNC('h0),  // Disable switch to user clk when awakening
-      .RST(reset_n),
-      .ENCLKOP('h1),
-      .ENCLKOS('h1),
-      .ENCLKOS2('h0),
-      .ENCLKOS3('h0),
-
-      // Outputs
-      .CLKOP(main_clk),
-      .CLKOS(),
-      .CLKOS2(),
-      .CLKOS3(),
-      .LOCK(),
-      .INTLOCK(),
-      .REFCLK(),
-      .CLKINTFB()
-  );
-`else
-  assign main_clk = clk_25mhz;
-`endif
-
   toggle_ff #() peripheral_clk_generator (
-      .clk_in(main_clk),
+      .clk_in(clk_25mhz),
       .toggle_in(1'b1),
       .r_q_out(peripheral_clk)
   );
 
   toggle_ff #() cpu_clk_generator (
-      .clk_in(main_clk),
+      .clk_in(clk_25mhz),
       .toggle_in(1'b1),
       .r_q_out(cpu_clk)
   );
@@ -366,9 +310,9 @@ module stepper (
   angle_to_step #(
       .SIZE(64),
       .SCALE({32'd4103, {(64 >> 1) {1'b0}}}),
-      .SYSCLK(25000000),
+      .SYSCLK(12000000),
       .VRISE(500),
-      .TRISE(500000),
+      .TRISE(50),
       .VOFFSET(72)
   ) test_angle_to_step (
       .clk_i(peripheral_clk),
@@ -385,15 +329,15 @@ module stepper (
       .ENABLE_REGS_DUALPORT(1'b1),
       .LATCHED_MEM_RDATA(1'b0),
       .TWO_STAGE_SHIFT(1'b1),
-      .BARREL_SHIFTER(1'b0),
+      .BARREL_SHIFTER(1'b1),
       .TWO_CYCLE_COMPARE(1'b1),
       .TWO_CYCLE_ALU(1'b0),
       .COMPRESSED_ISA(1'b1),
       .CATCH_MISALIGN(1'b1),
       .CATCH_ILLINSN(1'b1),
       .ENABLE_PCPI(1'b0),
-      .ENABLE_MUL(1'b1),
-      .ENABLE_FAST_MUL(1'b0),
+      .ENABLE_MUL(1'b0),
+      .ENABLE_FAST_MUL(1'b1),
       .ENABLE_DIV(1'b1),
       .ENABLE_IRQ(1'b0),
       .ENABLE_IRQ_QREGS(1'b0),
