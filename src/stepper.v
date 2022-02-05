@@ -19,6 +19,7 @@ module stepper (
 );
 
   // Primary clock
+  wire main_clk;
   wire cpu_clk;
   wire peripheral_clk;
 
@@ -62,13 +63,10 @@ module stepper (
       // Divide feedback (100MHz)
       .CLKFB_DIV(4),
 
-      // Output clocks
-      // CPU clk (50MHz)
-      .CLKOP_DIV(2),
+      // Output clock
+      .CLKOP_DIV(1),
 
-      // Peripheral clk (50MHz)
-      .CLKOS_DIV(2),
-
+      .CLKOS_DIV (8),
       .CLKOS2_DIV(8),
       .CLKOS3_DIV(8),
 
@@ -97,8 +95,8 @@ module stepper (
       .ENCLKOS3('h0),
 
       // Outputs
-      .CLKOP(cpu_clk),
-      .CLKOS(peripheral_clk),
+      .CLKOP(main_clk),
+      .CLKOS(),
       .CLKOS2(),
       .CLKOS3(),
       .LOCK(),
@@ -107,13 +105,21 @@ module stepper (
       .CLKINTFB()
   );
 `else
-  // FIXME
-  // Main and peripheral clock are the same
-  // which could lead to timing issues in hardware
-  // but not in the simulation.
-  assign peripheral_clk = clk_25mhz;
-  assign cpu_clk = clk_25mhz;
+  assign main_clk = clk_25mhz;
 `endif
+
+  toggle_ff #() peripheral_clk_generator (
+      .clk_in(main_clk),
+      .toggle_in(1'b1),
+      .r_q_out(peripheral_clk)
+  );
+
+  toggle_ff #() cpu_clk_generator (
+      .clk_in(main_clk),
+      .toggle_in(1'b1),
+      .r_q_out(cpu_clk)
+  );
+
 
   // CPU Memory Bus
   wire [31:0] mem_addr;  // memory address
