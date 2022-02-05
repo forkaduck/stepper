@@ -66,11 +66,17 @@ module stepper (
       // CPU clk (50MHz)
       .CLKOP_DIV(2),
 
-      // Peripheral clk (25MHz)
-      .CLKOS_DIV(4),
+      // Peripheral clk (50MHz)
+      .CLKOS_DIV(2),
 
       .CLKOS2_DIV(8),
-      .CLKOS3_DIV(8)
+      .CLKOS3_DIV(8),
+
+      .CLKOP_ENABLE ("ENABLED"),
+      .CLKOS_ENABLE ("ENABLED"),
+      .CLKOS2_ENABLE("DISABLED"),
+      .CLKOS3_ENABLE("DISABLED")
+
   ) clk_generator (
       // Inputs
       .CLKI (clk_25mhz),
@@ -372,15 +378,15 @@ module stepper (
       .ENABLE_REGS_16_31(1'b1),
       .ENABLE_REGS_DUALPORT(1'b1),
       .LATCHED_MEM_RDATA(1'b0),
-      .TWO_STAGE_SHIFT(1'b0),
-      .BARREL_SHIFTER(1'b0),
-      .TWO_CYCLE_COMPARE(1'b0),
+      .TWO_STAGE_SHIFT(1'b1),
+      .BARREL_SHIFTER(1'b1),
+      .TWO_CYCLE_COMPARE(1'b1),
       .TWO_CYCLE_ALU(1'b0),
       .COMPRESSED_ISA(1'b1),
       .CATCH_MISALIGN(1'b1),
       .CATCH_ILLINSN(1'b1),
       .ENABLE_PCPI(1'b0),
-      .ENABLE_MUL(1'b1),
+      .ENABLE_MUL(1'b0),
       .ENABLE_FAST_MUL(1'b1),
       .ENABLE_DIV(1'b1),
       .ENABLE_IRQ(1'b0),

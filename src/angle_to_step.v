@@ -22,6 +22,7 @@ module angle_to_step #(
 
   wire int_clk;
   wire output_clk;
+  wire local_clk;
 
   // Used as the actual frequency divider (inverse)
 
@@ -41,7 +42,13 @@ module angle_to_step #(
 
   assign step_o = (r_t > INC) ? output_clk : 1'b0;
 
-  always @(posedge clk_i) begin
+  toggle_ff #() local_clk_generator (
+      .clk_in(clk_i),
+      .toggle_in(1'b1),
+      .r_q_out(local_clk)
+  );
+
+  always @(posedge local_clk) begin
     // Reset on negative edge
     if (!enable_i && r_enable_prev) begin
       r_run  <= 1'b0;
@@ -66,7 +73,7 @@ module angle_to_step #(
 
   // Counter to keep track of how far the algorithm has already stepped.
   // It is used to find out when the algorithm needs to be reversed for the falloff.
-  always @(posedge clk_i) begin
+  always @(posedge local_clk) begin
     // Count the steps done up until it reaches steps_done
     if (r_run) begin
       if (output_clk && !r_output_clk_prev) begin
@@ -80,7 +87,7 @@ module angle_to_step #(
   end
 
   // Increment time if the output is enabled
-  always @(posedge int_clk) begin
+  always @(posedge local_clk) begin
     if (r_run) begin
       if ((steps_needed >> 1) <= steps_done) begin
         r_t <= r_t - INC;
@@ -93,19 +100,18 @@ module angle_to_step #(
   end
 
   // Calculate the speedup coefficient
-  fx_div #(
-      .Q(SF),
-      .N(SIZE)
-  ) calc_speedup (
-      .dividend_i(VRISE << SF),
-      .divisor(TRISE << SF),
-      .quotient_o(speedup),
-
-      .start_i(1'b1),
-      .clk_i(clk_i),
-      .complete_o(),
-      .overflow_o()
-  );
+  /* fx_div #( */
+  /* .Q(SF), */
+  /* .N(SIZE) */
+  /* ) calc_speedup ( */
+  /* .dividend_i(VRISE << SF), */
+  /* .divisor(TRISE << SF), */
+  /* .quotient_o(speedup), */
+  /* .start_i(1'b1), */
+  /* .clk_i(local_clk), */
+  /* .complete_o(), */
+  /* .overflow_o() */
+  /* ); */
 
   // Update the clkdivider output every int_clk
   // div <= SPEEDUP * r_t
@@ -113,7 +119,7 @@ module angle_to_step #(
       .Q(SF),
       .N(SIZE)
   ) calc_clk_divider (
-      .multiplicand_i(speedup),
+      .multiplicand_i((VRISE / TRISE) << SF),
       .multiplier_i(r_t),
       .r_result_o(div),
       .overflow_r_o()
@@ -157,9 +163,9 @@ module angle_to_step #(
   clk_divider #(
       .SIZE(32)
   ) internal_clk_gen (
-      .clk_in (clk_i),
+      .clk_in (local_clk),
       // Every 1 us
-      .max_in ((SYSCLK / 1000000) >> 1),
+      .max_in ((SYSCLK >> 1 / 1000000) >> 1),
       .clk_out(int_clk)
   );
 
@@ -167,7 +173,7 @@ module angle_to_step #(
   clk_divider #(
       .SIZE(SIZE)
   ) step_pulse_gen (
-      .clk_in (clk_i),
+      .clk_in (local_clk),
       .max_in ((invers_offset_div >> SF) >> 1),
       .clk_out(output_clk)
   );
