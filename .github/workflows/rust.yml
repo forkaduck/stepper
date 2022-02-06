@@ -25,8 +25,8 @@ jobs:
     - name: Add binutils from cargo
       run: rustup component add llvm-tools-preview
 
-    #  - name: Get the gcc for riscv32i
-      #  run: sudo dpkg --add-architecture riscv64 && sudo apt install gcc-riscv64-unknown-elf
+    - name: Get the gcc for riscv32i
+      run: sudo dpkg --add-architecture riscv64 && sudo apt install gcc-riscv64-unknown-elf
 
     - name: Build
       run: cargo build --verbose

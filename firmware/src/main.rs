@@ -36,6 +36,7 @@ fn main() -> ! {
     loop {
         unsafe {
             while io.test_angle_status.read() & 0x1 == 0x0 {}
+
             io.test_angle_control_upper.write(0x00000000);
             io.test_angle_control_lower.write(0x00000000);
 
