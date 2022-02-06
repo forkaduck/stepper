@@ -40,7 +40,6 @@ fn main() -> ! {
             io.test_angle_control_lower.write(0x00000000);
 
             io.test_angle_control_upper.write(0x00000168);
-            // io.test_angle_control_upper.write(0x00000000);
             io.test_angle_control_lower.write(0x00000001);
         }
     }
