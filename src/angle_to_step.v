@@ -91,8 +91,7 @@ module angle_to_step #(
     end
   end
 
-  // Update the clkdivider output every int_clk
-  // div <= SPEEDUP * r_t
+  /* div = r_t * (VRISE / TRISE)  */
   fx_mult #(
       .Q(SF),
       .N(SIZE)
@@ -103,7 +102,7 @@ module angle_to_step #(
       .overflow_r_o()
   );
 
-  /* (VRISE - (div >> SF) + VOFFSET) */
+  /* offset = div + VOFFSET */
   fx_add #(
       .Q(SF),
       .N(SIZE)
@@ -113,10 +112,12 @@ module angle_to_step #(
       .sum_i(offset_div)
   );
 
-  // negate the sign of the offset_div wire
+
+  /* negated_offset_div = -offset_div */
   assign negated_offset_div[SIZE-2:0] = offset_div[SIZE-2:0];
   assign negated_offset_div[SIZE-1]   = ~offset_div[SIZE-1];
 
+  /* invers_offset_div = VRISE + negated_offset_div  */
   fx_add #(
       .Q(SF),
       .N(SIZE)
@@ -126,7 +127,7 @@ module angle_to_step #(
       .sum_i(invers_offset_div)
   );
 
-  /* steps_needed <= relative_angle_i * SCALE; */
+  /* steps_needed = relative_angle_i * SCALE; */
   fx_mult #(
       .Q(SF),
       .N(SIZE)
