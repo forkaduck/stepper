@@ -1,20 +1,21 @@
 [*]
 [*] GTKWave Analyzer v3.3.111 (w)1999-2020 BSI
-[*] Thu Jan 13 12:50:49 2022
+[*] Mon Feb  7 11:27:45 2022
 [*]
 [dumpfile] "/home/fuckaduck/Desktop/projects/stepper/tests/sim_output/stepper.vcd"
-[dumpfile_mtime] "Thu Jan 13 12:50:07 2022"
-[dumpfile_size] 775344691
+[dumpfile_mtime] "Mon Feb  7 11:09:39 2022"
+[dumpfile_size] 191446669
 [savefile] "/home/fuckaduck/Desktop/projects/stepper/tests/sim_output/stepper.gtkw"
-[timestart] 0
-[size] 1916 793
+[timestart] 18000000
+[size] 2477 1409
 [pos] -1 -1
-*-33.000000 14080120000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-28.000000 1410300000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] stepper.
-[sst_width] 227
-[signals_width] 370
+[treeopen] stepper.test_angle_to_step.
+[sst_width] 246
+[signals_width] 478
 [sst_expanded] 1
-[sst_vpaned_height] 236
+[sst_vpaned_height] 292
 @28
 stepper.clk_25mhz
 stepper.reset_n
@@ -36,25 +37,41 @@ stepper.mem_valid
 stepper.read_write
 @200
 -
-@29
-stepper.test_angle_to_step.output_clk
-@200
 -
-@22
-stepper.spi1.r_counter[7:0]
-@28
-stepper.spi1.int_clk
-stepper.spi1.clk_out
-@22
-stepper.spi1.r_cs_out_n[11:0]
 @28
 stepper.spi1.serial_in
 stepper.spi1.serial_out
+stepper.spi1.r_ready_out
+stepper.spi1.send_enable_in
 @200
 -
 @28
-stepper.spi1.send_enable_in
-stepper.spi1.r_ready_out
+stepper.test_angle_to_step.done_o
+stepper.test_angle_to_step.enable_i
+stepper.test_angle_to_step.step_o
+@200
+-
+@28
+stepper.test_angle_to_step.int_clk
+@22
+stepper.test_angle_to_step.r_t[63:0]
+stepper.test_angle_to_step.steps_needed[63:0]
+stepper.test_angle_to_step.steps_done[63:0]
+@200
+-
+@22
+stepper.test_angle_to_step.calc_clk_divider.multiplicand_i[63:0]
+stepper.test_angle_to_step.calc_clk_divider.multiplier_i[63:0]
+stepper.test_angle_to_step.div[63:0]
+@200
+-
+@22
+stepper.test_angle_to_step.calc_invert_div.summand_a_i[63:0]
+stepper.test_angle_to_step.calc_invert_div.summand_b_i[63:0]
+@200
+-
+@22
+stepper.test_angle_to_step.step_pulse_gen.max_in[63:0]
 @200
 -
 -

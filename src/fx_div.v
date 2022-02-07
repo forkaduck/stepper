@@ -7,7 +7,7 @@ module fx_div #(
 ) (
     // Numbers
     input [N-1:0] dividend_i,
-    input [N-1:0] divisor,
+    input [N-1:0] divisor_i,
 
     output [N-1:0] quotient_o,
 
@@ -81,10 +81,10 @@ module fx_div #(
       reg_working_dividend[N+Q-2:Q] <= dividend_i[N-2:0];
 
       //Left-align the divisor into its working register
-      reg_working_divisor[2*N+Q-3:N+Q-1] <= divisor[N-2:0];
+      reg_working_divisor[2*N+Q-3:N+Q-1] <= divisor_i[N-2:0];
 
       //Set the sign bit
-      reg_sign <= dividend_i[N-1] ^ divisor[N-1];
+      reg_sign <= dividend_i[N-1] ^ divisor_i[N-1];
 
     end else if (!reg_done) begin
       //Right shift the divisor (that is, divide it by two - aka reduce the divisor)

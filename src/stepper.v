@@ -1,7 +1,3 @@
-/*
-* TODO
-*/
-
 // top module
 // current pinout:
 // gn[0]      miso
@@ -22,6 +18,10 @@ module stepper (
     output wifi_gpio0
 );
 
+  // Primary clock
+  wire cpu_clk;
+  wire peripheral_clk;
+
   // Tie GPIO0, keep board from rebooting
   assign wifi_gpio0 = 1'b1;
 
@@ -31,7 +31,7 @@ module stepper (
   generate
     for (i = 0; i < 7; i = i + 1) begin
       debounce reset_debounce (
-          .clk_in(clk_25mhz),
+          .clk_in(peripheral_clk),
           .in(!btn[i]),
           .r_out(btn_debounced[i])
       );
@@ -41,10 +41,6 @@ module stepper (
   // Map the button outputs to some functions
   wire reset_n;
   assign reset_n   = btn_debounced[1];
-  assign gn[17:15] = btn_debounced[2] ? 3'b111 : 3'b000;
-
-  // driver enable
-  assign gn[26:18] = {9{1'b0}};
 
   // step lines
   assign gp[11:1]  = {12{1'b0}};
@@ -52,12 +48,23 @@ module stepper (
   // dir lines
   assign gp[23:12] = {12{1'b0}};
 
+  toggle_ff #() peripheral_clk_generator (
+      .clk_in(clk_25mhz),
+      .toggle_in(1'b1),
+      .r_q_out(peripheral_clk)
+  );
+
+  toggle_ff #() cpu_clk_generator (
+      .clk_in(clk_25mhz),
+      .toggle_in(1'b1),
+      .r_q_out(cpu_clk)
+  );
 
 
-  // CPU Registers
+  // CPU Memory Bus
   wire [31:0] mem_addr;  // memory address
   wire [31:0] mem_wdata;  // cpu write out
-  wire [3:0] mem_wstrb;  // byte level write enable
+  wire [3:0] mem_wstrb;  // byte level write enable (unused)
   wire [31:0] mem_rdata;  // cpu read in
   wire [31:0] irq = 'b0;
 
@@ -69,22 +76,24 @@ module stepper (
 
   wire read_write = mem_wstrb == 0 ? 1'b0 : 1'b1;
 
-  wire [31:0] enable;  // memory enable lines
   // Memory Map (please update constantly):
-  // Start       Access Name
-  // 0x00000000  r      rom
-  // 0x00001000  rw     ram
+  //N  Start       Access Name
+  //0  0x00000000  r      rom
+  //1  0x00001000  rw     ram
   //
-  // 0x10000000  rw     leds
-  // 0x10000004  rw     spi_outgoing_upper
-  // 0x10000008  rw     spi_outgoing_lower
-  // 0x1000000c  r      spi_ingoing_upper
-  // 0x10000010  r      spi_ingoing_lower
-  // 0x10000014  rw     spi_config
-  // 0x10000018  r      spi_status
-  // 0x1000001c  rw     test_angle_control_upper
-  // 0x10000020  rw     test_angle_control_lower
-  // 0x10000024  r      test_angle_status
+  //2  0x10000000  rw     leds
+  //3  0x10000004  rw     spi_outgoing_upper
+  //4  0x10000008  rw     spi_outgoing_lower
+  //5  0x1000000c  r      spi_ingoing_upper
+  //6  0x10000010  r      spi_ingoing_lower
+  //7  0x10000014  rw     spi_config
+  //8  0x10000018  r      spi_status
+  //9  0x1000001c  rw     motor_enable
+  //10 0x10000020  rw     test_angle_control_upper
+  //11 0x10000024  rw     test_angle_control_lower
+  //12 0x10000028  r      test_angle_status
+
+  wire [31:0] enable;  // memory enable lines
 
   assign enable[0] = mem_valid && mem_instr;
   assign enable[1] = mem_valid && !mem_instr && mem_addr >= 'h00001000 && mem_addr < 'h00002000;
@@ -98,7 +107,8 @@ module stepper (
   assign enable[9] = mem_valid && !mem_instr && mem_addr >= 'h1000001c && mem_addr < 'h10000020;
   assign enable[10] = mem_valid && !mem_instr && mem_addr >= 'h10000020 && mem_addr < 'h10000024;
   assign enable[11] = mem_valid && !mem_instr && mem_addr >= 'h10000024 && mem_addr < 'h10000028;
-  assign enable[31:12] = {32{1'b0}};
+  assign enable[12] = mem_valid && !mem_instr && mem_addr >= 'h10000028 && mem_addr < 'h1000002c;
+  assign enable[31:13] = {32{1'b0}};
 
   // Instruction RAM
   memory #(
@@ -110,7 +120,7 @@ module stepper (
       .PATH("firmware/stepper.mem")
 `endif
   ) rom (
-      .clk_in(clk_25mhz),
+      .clk_in(cpu_clk),
       .enable(enable[0]),
       .write(1'b0),  // constant read (simulate a rom block)
       .ready(mem_ready),
@@ -125,20 +135,20 @@ module stepper (
       .DATA_SIZE('h1000),
       .PATH("")
   ) ram (
-      .clk_in(clk_25mhz),
+      .clk_in(cpu_clk),
       .enable(enable[1]),
       .write(read_write),
       .ready(mem_ready),
       .addr_in(mem_addr[12:0] / 4),
-      .data_in(mem_wdata),  // crossed over because of data_in is the cpu input for data
+      .data_in(mem_wdata),
       .data_out(mem_rdata)
   );
 
-  // --- IO RAM ---
+  // LED Register
   io_register_output #(
       .DATA_WIDTH(32)
   ) leds_out (
-      .clk_in(clk_25mhz),
+      .clk_in(cpu_clk),
       .enable(enable[2]),
       .write(read_write),
       .ready(mem_ready),
@@ -157,7 +167,7 @@ module stepper (
   io_register_output #(
       .DATA_WIDTH(32)
   ) spi_reg_out_up (
-      .clk_in(clk_25mhz),
+      .clk_in(cpu_clk),
       .enable(enable[3]),
       .write(read_write),
       .ready(mem_ready),
@@ -171,7 +181,7 @@ module stepper (
   io_register_output #(
       .DATA_WIDTH(32)
   ) spi_reg_out_low (
-      .clk_in(clk_25mhz),
+      .clk_in(cpu_clk),
       .enable(enable[4]),
       .write(read_write),
       .ready(mem_ready),
@@ -209,7 +219,7 @@ module stepper (
   io_register_output #(
       .DATA_WIDTH(32)
   ) spi_reg_config (
-      .clk_in(clk_25mhz),
+      .clk_in(cpu_clk),
       .enable(enable[7]),
       .write(read_write),
       .ready(mem_ready),
@@ -238,7 +248,7 @@ module stepper (
       .CLK_SIZE(3)
   ) spi1 (
       .data_in({spi_outgoing_upper[7:0], spi_outgoing_lower}),
-      .clk_in(clk_25mhz),
+      .clk_in(peripheral_clk),
       .clk_count_max('h4),
       // MISO
       .serial_in(gn[0]),
@@ -254,12 +264,29 @@ module stepper (
       .r_ready_out(spi_status[0])
   );
 
+  // driver enable
+  wire [31:0] motor_enable;
+  io_register_output #(
+      .DATA_WIDTH(32)
+  ) motor_reg_enable (
+      .clk_in(cpu_clk),
+      .enable(enable[9]),
+      .write(read_write),
+      .ready(mem_ready),
+      .data_in(mem_wdata),
+      .data_out(mem_rdata),
+
+      .mem(motor_enable)
+  );
+
+  assign gn[26:15] = ~motor_enable[11:0];
+
   wire [31:0] test_angle_control_upper;
   io_register_output #(
       .DATA_WIDTH(32)
   ) test_reg_angle_control_upper (
-      .clk_in(clk_25mhz),
-      .enable(enable[9]),
+      .clk_in(cpu_clk),
+      .enable(enable[10]),
       .write(read_write),
       .ready(mem_ready),
       .data_in(mem_wdata),
@@ -272,8 +299,8 @@ module stepper (
   io_register_output #(
       .DATA_WIDTH(32)
   ) test_reg_angle_control_lower (
-      .clk_in(clk_25mhz),
-      .enable(enable[10]),
+      .clk_in(cpu_clk),
+      .enable(enable[11]),
       .write(read_write),
       .ready(mem_ready),
       .data_in(mem_wdata),
@@ -286,7 +313,7 @@ module stepper (
   io_register_input #(
       .DATA_WIDTH(32)
   ) test_reg_angle_status (
-      .enable(enable[11]),
+      .enable(enable[12]),
       .ready(mem_ready),
       .data_out(mem_rdata),
 
@@ -297,13 +324,13 @@ module stepper (
 
   angle_to_step #(
       .SIZE(64),
-      .SCALE({32'd4103, {(64 >> 1) {1'b0}}}),
-      .SYSCLK(25000000),
-      .VRISE(20000),
-      .TRISE(10000),
-      .VOFFSET(6000)
+      .SCALE({32'd3840, {(64 >> 1) {1'b0}}}),
+      .SYSCLK(12000000),
+      .VRISE(500),
+      .TRISE(500000),
+      .OUTPUT_DIV_MIN(100)
   ) test_angle_to_step (
-      .clk_i(clk_25mhz),
+      .clk_i(peripheral_clk),
       .enable_i(test_angle_control_lower[0]),
       .done_o(test_angle_status[0]),
       .relative_angle_i({1'b0, test_angle_control_upper, test_angle_control_lower[31:1]}),
@@ -316,19 +343,19 @@ module stepper (
       .ENABLE_REGS_16_31(1'b1),
       .ENABLE_REGS_DUALPORT(1'b1),
       .LATCHED_MEM_RDATA(1'b0),
-      .TWO_STAGE_SHIFT(1'b0),
-      .BARREL_SHIFTER(1'b0),
-      .TWO_CYCLE_COMPARE(1'b0),
+      .TWO_STAGE_SHIFT(1'b1),
+      .BARREL_SHIFTER(1'b1),
+      .TWO_CYCLE_COMPARE(1'b1),
       .TWO_CYCLE_ALU(1'b0),
       .COMPRESSED_ISA(1'b1),
       .CATCH_MISALIGN(1'b1),
       .CATCH_ILLINSN(1'b1),
       .ENABLE_PCPI(1'b0),
-      .ENABLE_MUL(1'b1),
+      .ENABLE_MUL(1'b0),
       .ENABLE_FAST_MUL(1'b1),
       .ENABLE_DIV(1'b1),
       .ENABLE_IRQ(1'b0),
-      .ENABLE_IRQ_QREGS(1'b1),
+      .ENABLE_IRQ_QREGS(1'b0),
       .ENABLE_IRQ_TIMER(1'b0),
       .ENABLE_TRACE(1'b0),
       .REGS_INIT_ZERO(1'b1),
@@ -338,7 +365,7 @@ module stepper (
       .PROGADDR_IRQ(32'h00000000),
       .STACKADDR(32'h00002000)
   ) cpu (
-      .clk   (clk_25mhz),
+      .clk   (cpu_clk),
       .resetn(reset_n),
 
       .mem_valid(mem_valid),
