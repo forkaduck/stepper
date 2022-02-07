@@ -2,7 +2,7 @@ module angle_to_step #(
     parameter SIZE = 64,
     // MICROSTEPS / (STEPANGLE / GEARING)
     // (in Q(SIZE >> 1).(SIZE>>1))
-    parameter [SIZE - 1 : 0] SCALE = {32'd4103, {(SIZE >> 1) {1'b0}}},
+    parameter [SIZE - 1 : 0] SCALE = {32'd4000, {(SIZE >> 1) {1'b0}}},
 
     parameter SYSCLK = 25000000,
     parameter [SIZE - 1 : 0] VRISE = 20000,
