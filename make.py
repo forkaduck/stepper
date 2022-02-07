@@ -111,6 +111,8 @@ def build():
             "ulx3s_v20.lpf",
             "--speed",
             "6",
+            "--freq",
+            "25",
             "--textcfg",
             "ulx3s_out.config",
         ],
