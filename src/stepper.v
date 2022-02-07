@@ -121,9 +121,9 @@ module stepper (
 `endif
   ) rom (
       .clk_in(cpu_clk),
-      .enable(enable[0]),
-      .write(1'b0),  // constant read (simulate a rom block)
-      .ready(mem_ready),
+      .enable_in(enable[0]),
+      .write_in(1'b0),  // constant read (simulate a rom block)
+      .ready_out(mem_ready),
       .addr_in(mem_addr[12:0] / 4),
       .data_in('b0),
       .data_out(mem_rdata)
@@ -136,9 +136,9 @@ module stepper (
       .PATH("")
   ) ram (
       .clk_in(cpu_clk),
-      .enable(enable[1]),
-      .write(read_write),
-      .ready(mem_ready),
+      .enable_in(enable[1]),
+      .write_in(read_write),
+      .ready_out(mem_ready),
       .addr_in(mem_addr[12:0] / 4),
       .data_in(mem_wdata),
       .data_out(mem_rdata)
@@ -149,13 +149,13 @@ module stepper (
       .DATA_WIDTH(32)
   ) leds_out (
       .clk_in(cpu_clk),
-      .enable(enable[2]),
-      .write(read_write),
-      .ready(mem_ready),
+      .enable_in(enable[2]),
+      .write_in(read_write),
+      .ready_out(mem_ready),
       .data_in(mem_wdata),
       .data_out(mem_rdata),
 
-      .mem(led[3:0])
+      .mem_out(led[3:0])
   );
 
   assign led[7] = trap;
@@ -168,13 +168,13 @@ module stepper (
       .DATA_WIDTH(32)
   ) spi_reg_out_up (
       .clk_in(cpu_clk),
-      .enable(enable[3]),
-      .write(read_write),
-      .ready(mem_ready),
+      .enable_in(enable[3]),
+      .write_in(read_write),
+      .ready_out(mem_ready),
       .data_in(mem_wdata),
       .data_out(mem_rdata),
 
-      .mem(spi_outgoing_upper)
+      .mem_out(spi_outgoing_upper)
   );
 
   wire [31:0] spi_outgoing_lower;
@@ -182,24 +182,24 @@ module stepper (
       .DATA_WIDTH(32)
   ) spi_reg_out_low (
       .clk_in(cpu_clk),
-      .enable(enable[4]),
-      .write(read_write),
-      .ready(mem_ready),
+      .enable_in(enable[4]),
+      .write_in(read_write),
+      .ready_out(mem_ready),
       .data_in(mem_wdata),
       .data_out(mem_rdata),
 
-      .mem(spi_outgoing_lower)
+      .mem_out(spi_outgoing_lower)
   );
 
   wire [31:0] spi_ingoing_upper;
   io_register_input #(
       .DATA_WIDTH(32)
   ) spi_reg_in_up (
-      .enable(enable[5]),
-      .ready(mem_ready),
-      .data_out(mem_rdata),
+      .enable_in(enable[5]),
+      .ready_out(mem_ready),
+      .data_out (mem_rdata),
 
-      .mem(spi_ingoing_upper)
+      .mem_in(spi_ingoing_upper)
   );
   assign spi_ingoing_upper[31:8] = 'b0;
 
@@ -207,11 +207,11 @@ module stepper (
   io_register_input #(
       .DATA_WIDTH(32)
   ) spi_reg_in_low (
-      .enable(enable[6]),
-      .ready(mem_ready),
-      .data_out(mem_rdata),
+      .enable_in(enable[6]),
+      .ready_out(mem_ready),
+      .data_out (mem_rdata),
 
-      .mem(spi_ingoing_lower)
+      .mem_in(spi_ingoing_lower)
   );
 
   // 4:1 - SPI CS Lines / 0 - SPI Send enable
@@ -220,13 +220,13 @@ module stepper (
       .DATA_WIDTH(32)
   ) spi_reg_config (
       .clk_in(cpu_clk),
-      .enable(enable[7]),
-      .write(read_write),
-      .ready(mem_ready),
+      .enable_in(enable[7]),
+      .write_in(read_write),
+      .ready_out(mem_ready),
       .data_in(mem_wdata),
       .data_out(mem_rdata),
 
-      .mem(spi_config)
+      .mem_out(spi_config)
   );
 
   // 0 - SPI ready
@@ -234,11 +234,11 @@ module stepper (
   io_register_input #(
       .DATA_WIDTH(32)
   ) spi_reg_status (
-      .enable(enable[8]),
-      .ready(mem_ready),
-      .data_out(mem_rdata),
+      .enable_in(enable[8]),
+      .ready_out(mem_ready),
+      .data_out (mem_rdata),
 
-      .mem(spi_status)
+      .mem_in(spi_status)
   );
   assign spi_status[31:1] = {31{1'b0}};
 
@@ -270,13 +270,13 @@ module stepper (
       .DATA_WIDTH(32)
   ) motor_reg_enable (
       .clk_in(cpu_clk),
-      .enable(enable[9]),
-      .write(read_write),
-      .ready(mem_ready),
+      .enable_in(enable[9]),
+      .write_in(read_write),
+      .ready_out(mem_ready),
       .data_in(mem_wdata),
       .data_out(mem_rdata),
 
-      .mem(motor_enable)
+      .mem_out(motor_enable)
   );
 
   assign gn[26:15] = ~motor_enable[11:0];
@@ -286,13 +286,13 @@ module stepper (
       .DATA_WIDTH(32)
   ) test_reg_angle_control_upper (
       .clk_in(cpu_clk),
-      .enable(enable[10]),
-      .write(read_write),
-      .ready(mem_ready),
+      .enable_in(enable[10]),
+      .write_in(read_write),
+      .ready_out(mem_ready),
       .data_in(mem_wdata),
       .data_out(mem_rdata),
 
-      .mem(test_angle_control_upper)
+      .mem_out(test_angle_control_upper)
   );
 
   wire [31:0] test_angle_control_lower;
@@ -300,24 +300,24 @@ module stepper (
       .DATA_WIDTH(32)
   ) test_reg_angle_control_lower (
       .clk_in(cpu_clk),
-      .enable(enable[11]),
-      .write(read_write),
-      .ready(mem_ready),
+      .enable_in(enable[11]),
+      .write_in(read_write),
+      .ready_out(mem_ready),
       .data_in(mem_wdata),
       .data_out(mem_rdata),
 
-      .mem(test_angle_control_lower)
+      .mem_out(test_angle_control_lower)
   );
 
   wire [31:0] test_angle_status;
   io_register_input #(
       .DATA_WIDTH(32)
   ) test_reg_angle_status (
-      .enable(enable[12]),
-      .ready(mem_ready),
-      .data_out(mem_rdata),
+      .enable_in(enable[12]),
+      .ready_out(mem_ready),
+      .data_out (mem_rdata),
 
-      .mem(test_angle_status)
+      .mem_in(test_angle_status)
   );
 
   assign test_angle_status[31:1] = {31{1'b0}};
@@ -330,11 +330,11 @@ module stepper (
       .TRISE(500000),
       .OUTPUT_DIV_MIN(100)
   ) test_angle_to_step (
-      .clk_i(peripheral_clk),
-      .enable_i(test_angle_control_lower[0]),
-      .done_o(test_angle_status[0]),
-      .relative_angle_i({1'b0, test_angle_control_upper, test_angle_control_lower[31:1]}),
-      .step_o(gp[0])
+      .clk_in(peripheral_clk),
+      .enable_in(test_angle_control_lower[0]),
+      .done_out(test_angle_status[0]),
+      .relative_angle_in({1'b0, test_angle_control_upper, test_angle_control_lower[31:1]}),
+      .step_out(gp[0])
   );
 
   picorv32 #(

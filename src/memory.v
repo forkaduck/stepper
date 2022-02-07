@@ -12,9 +12,9 @@ module memory #(
     input clk_in,
 
     // mem port
-    input  enable,
-    input  write,
-    output ready,
+    input  enable_in,
+    input  write_in,
+    output ready_out,
 
     // bus
     input  [DATA_WIDTH - 1:0] addr_in,
@@ -40,11 +40,11 @@ module memory #(
   end
 
   always @(posedge clk_in) begin
-    if (write & enable) begin
+    if (write_in & enable_in) begin
       r_mem[addr_in] <= data_in;
     end
   end
 
-  assign ready = enable ? 1'b1 : 1'bz;
-  assign data_out = (enable && !write) ? r_mem[addr_in] : {DATA_WIDTH{1'bz}};
+  assign ready_out = enable_in ? 1'b1 : 1'bz;
+  assign data_out  = (enable_in && !write_in) ? r_mem[addr_in] : {DATA_WIDTH{1'bz}};
 endmodule

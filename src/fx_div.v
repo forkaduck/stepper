@@ -6,17 +6,17 @@ module fx_div #(
     parameter N = 32
 ) (
     // Numbers
-    input [N-1:0] dividend_i,
-    input [N-1:0] divisor_i,
+    input [N-1:0] dividend_in,
+    input [N-1:0] divisor_in,
 
-    output [N-1:0] quotient_o,
+    output [N-1:0] quotient_out,
 
     // Flags
-    input start_i,
-    input clk_i,
+    input start_in,
+    input clk_in,
 
-    output complete_o,
-    output overflow_o
+    output complete_out,
+    output overflow_out
 );
   // Our working copy of the quotient
   reg [2*N+Q-3:0] reg_working_quotient = 0;
@@ -49,16 +49,16 @@ module fx_div #(
   reg reg_overflow = 1'b0;
 
   //The division results
-  assign quotient_o[N-2:0] = reg_quotient[N-2:0];
+  assign quotient_out[N-2:0] = reg_quotient[N-2:0];
 
   //The sign of the quotient
-  assign quotient_o[N-1]   = reg_sign;
+  assign quotient_out[N-1]   = reg_sign;
 
-  assign complete_o        = reg_done;
-  assign overflow_o        = reg_overflow;
+  assign complete_out        = reg_done;
+  assign overflow_out        = reg_overflow;
 
-  always @(posedge clk_i) begin
-    if (reg_done && start_i) begin
+  always @(posedge clk_in) begin
+    if (reg_done && start_in) begin
       //This is our startup condition
       reg_done <= 1'b0;
 
@@ -78,13 +78,13 @@ module fx_div #(
       reg_overflow <= 1'b0;
 
       //Left-align the dividend in its working register
-      reg_working_dividend[N+Q-2:Q] <= dividend_i[N-2:0];
+      reg_working_dividend[N+Q-2:Q] <= dividend_in[N-2:0];
 
       //Left-align the divisor into its working register
-      reg_working_divisor[2*N+Q-3:N+Q-1] <= divisor_i[N-2:0];
+      reg_working_divisor[2*N+Q-3:N+Q-1] <= divisor_in[N-2:0];
 
       //Set the sign bit
-      reg_sign <= dividend_i[N-1] ^ divisor_i[N-1];
+      reg_sign <= dividend_in[N-1] ^ divisor_in[N-1];
 
     end else if (!reg_done) begin
       //Right shift the divisor (that is, divide it by two - aka reduce the divisor)

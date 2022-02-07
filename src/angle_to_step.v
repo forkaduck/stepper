@@ -9,13 +9,13 @@ module angle_to_step #(
     parameter [SIZE - 1 : 0] TRISE = 10000,
     parameter [SIZE - 1 : 0] OUTPUT_DIV_MIN = 50
 ) (
-    input clk_i,
+    input clk_in,
 
-    input enable_i,
-    output reg done_o = 1'b1,
+    input enable_in,
+    output reg done_out = 1'b1,
 
-    input [SIZE - 1:0] relative_angle_i,
-    output step_o
+    input [SIZE - 1:0] relative_angle_in,
+    output step_out
 );
   parameter SF = SIZE >> 1;
   parameter INC = {1'b1, {SF{1'b0}}};
@@ -39,34 +39,34 @@ module angle_to_step #(
   reg [SIZE - 1:0] steps_done = 0;
   wire [SIZE - 1:0] steps_needed;
 
-  assign step_o = (r_t > INC) ? output_clk : 1'b0;
+  assign step_out = (r_t > INC) ? output_clk : 1'b0;
 
-  always @(posedge clk_i) begin
+  always @(posedge clk_in) begin
     // Reset on negative edge
-    if (!enable_i && r_enable_prev) begin
-      r_run  <= 1'b0;
-      done_o <= 1'b0;
+    if (!enable_in && r_enable_prev) begin
+      r_run <= 1'b0;
+      done_out <= 1'b0;
       $display("%m>\tDisabled");
     end
 
     if ((steps_done >> SF) >= (steps_needed >> SF)) begin
-      r_run  <= 1'b0;
-      done_o <= 1'b1;
+      r_run <= 1'b0;
+      done_out <= 1'b1;
     end
 
     // Enable output
-    if (enable_i && !r_enable_prev) begin
-      r_run  <= 1'b1;
-      done_o <= 1'b0;
+    if (enable_in && !r_enable_prev) begin
+      r_run <= 1'b1;
+      done_out <= 1'b0;
       $display("%m>\tEnabled");
     end
 
-    r_enable_prev <= enable_i;
+    r_enable_prev <= enable_in;
   end
 
   // Counter to keep track of how far the algorithm has already stepped.
   // It is used to find out when the algorithm needs to be reversed for the falloff.
-  always @(posedge clk_i) begin
+  always @(posedge clk_in) begin
     // Count the steps done up until it reaches steps_done
     if (r_run) begin
       if (output_clk && !r_output_clk_prev) begin
@@ -97,15 +97,15 @@ module angle_to_step #(
       .Q(SF),
       .N(SIZE)
   ) calc_speedup (
-      .dividend_i(VRISE << SF),
-      .divisor_i (TRISE << SF),
-      .quotient_o(speedup),
+      .dividend_in (VRISE << SF),
+      .divisor_in  (TRISE << SF),
+      .quotient_out(speedup),
 
-      .start_i(1'b1),
-      .clk_i  (clk_i),
+      .start_in(1'b1),
+      .clk_in  (clk_i),
 
-      .complete_o(),
-      .overflow_o()
+      .complete_out(),
+      .overflow_out()
   );
 
   /* div = r_t * speedup */
@@ -113,10 +113,10 @@ module angle_to_step #(
       .Q(SF),
       .N(SIZE)
   ) calc_clk_divider (
-      .multiplicand_i(speedup),
-      .multiplier_i(r_t),
-      .r_result_o(div),
-      .overflow_r_o()
+      .multiplicand_in(speedup),
+      .multiplier_in(r_t),
+      .r_result_out(div),
+      .overflow_r_out()
   );
 
   /* negated_div = -div */
@@ -128,22 +128,22 @@ module angle_to_step #(
       .Q(SF),
       .N(SIZE)
   ) calc_invert_div (
-      .summand_a_i((VRISE + OUTPUT_DIV_MIN) << SF),
-      .summand_b_i(negated_div),
-      .sum_i(invers_div)
+      .summand_a_in((VRISE + OUTPUT_DIV_MIN) << SF),
+      .summand_b_in(negated_div),
+      .sum_out(invers_div)
   );
 
   assign switched_invers_div = (r_t > 0 && r_t < (TRISE << SF)) ? invers_div : OUTPUT_DIV_MIN << SF;
 
-  /* steps_needed = relative_angle_i * SCALE; */
+  /* steps_needed = relative_angle_in * SCALE; */
   fx_mult #(
       .Q(SF),
       .N(SIZE)
   ) steps_needed_mult (
-      .multiplicand_i(relative_angle_i),
-      .multiplier_i(SCALE),
-      .r_result_o(steps_needed),
-      .overflow_r_o()
+      .multiplicand_in(relative_angle_in),
+      .multiplier_in(SCALE),
+      .r_result_out(steps_needed),
+      .overflow_r_out()
   );
 
   // Internal clk (used for timekeeping)
