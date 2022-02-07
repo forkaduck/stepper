@@ -7,7 +7,7 @@ module angle_to_step #(
     parameter SYSCLK = 25000000,
     parameter [SIZE - 1 : 0] VRISE = 20000,
     parameter [SIZE - 1 : 0] TRISE = 10000,
-    parameter [SIZE - 1 : 0] VOFFSET = 6000
+    parameter [SIZE - 1 : 0] OUTPUT_DIV_MIN = 50
 ) (
     input clk_i,
 
@@ -27,9 +27,9 @@ module angle_to_step #(
 
   reg [SIZE - 1:0] r_t = INC;
   wire [SIZE - 1:0] div;
-  wire [SIZE - 1:0] offset_div;
-  wire [SIZE - 1:0] negated_offset_div;
-  wire [SIZE - 1:0] invers_offset_div;
+  wire [SIZE - 1:0] negated_div;
+  wire [SIZE - 1:0] invers_div;
+  wire [SIZE - 1:0] switched_invers_div;
 
   reg r_output_clk_prev = 1'b0;
   reg r_enable_prev = 1'b0;
@@ -102,30 +102,21 @@ module angle_to_step #(
       .overflow_r_o()
   );
 
-  /* offset = div + VOFFSET */
-  fx_add #(
-      .Q(SF),
-      .N(SIZE)
-  ) calc_add_offset (
-      .summand_a_i(div),
-      .summand_b_i(VOFFSET << SF),
-      .sum_i(offset_div)
-  );
+  /* negated_div = -div */
+  assign negated_div[SIZE-2:0] = div[SIZE-2:0];
+  assign negated_div[SIZE-1]   = ~div[SIZE-1];
 
-
-  /* negated_offset_div = -offset_div */
-  assign negated_offset_div[SIZE-2:0] = offset_div[SIZE-2:0];
-  assign negated_offset_div[SIZE-1]   = ~offset_div[SIZE-1];
-
-  /* invers_offset_div = VRISE + negated_offset_div  */
+  /* invers_div = VRISE + negated_div  */
   fx_add #(
       .Q(SF),
       .N(SIZE)
   ) calc_invert_div (
-      .summand_a_i(VRISE << SF),
-      .summand_b_i(negated_offset_div),
-      .sum_i(invers_offset_div)
+      .summand_a_i((VRISE + OUTPUT_DIV_MIN) << SF),
+      .summand_b_i(negated_div),
+      .sum_i(invers_div)
   );
+
+  assign switched_invers_div = (r_t > 0 && r_t < (TRISE << SF)) ? invers_div : OUTPUT_DIV_MIN << SF;
 
   /* steps_needed = relative_angle_i * SCALE; */
   fx_mult #(
@@ -153,7 +144,7 @@ module angle_to_step #(
       .SIZE(SIZE)
   ) step_pulse_gen (
       .clk_in (clk_i),
-      .max_in ((invers_offset_div >> SF) >> 1),
+      .max_in ((switched_invers_div >> SF) >> 1),
       .clk_out(output_clk)
   );
 endmodule
