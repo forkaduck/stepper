@@ -26,6 +26,7 @@ module angle_to_step #(
   // Used as the actual frequency divider (inverse)
 
   reg [SIZE - 1:0] r_t = INC;
+  wire [SIZE - 1:0] speedup;
   wire [SIZE - 1:0] div;
   wire [SIZE - 1:0] negated_div;
   wire [SIZE - 1:0] invers_div;
@@ -91,12 +92,28 @@ module angle_to_step #(
     end
   end
 
-  /* div = r_t * (VRISE / TRISE)  */
+  /* speedup = VRISE / TRISE */
+  fx_div #(
+      .Q(SF),
+      .N(SIZE)
+  ) calc_speedup (
+      .dividend_i(VRISE << SF),
+      .divisor_i (TRISE << SF),
+      .quotient_o(speedup),
+
+      .start_i(1'b1),
+      .clk_i  (clk_i),
+
+      .complete_o(),
+      .overflow_o()
+  );
+
+  /* div = r_t * speedup */
   fx_mult #(
       .Q(SF),
       .N(SIZE)
   ) calc_clk_divider (
-      .multiplicand_i((VRISE / TRISE) << SF),
+      .multiplicand_i(speedup),
       .multiplier_i(r_t),
       .r_result_o(div),
       .overflow_r_o()

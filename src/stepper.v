@@ -43,9 +43,6 @@ module stepper (
   assign reset_n   = btn_debounced[1];
   assign gn[17:15] = btn_debounced[2] ? 3'b111 : 3'b000;
 
-  // driver enable
-  assign gn[26:18] = {9{1'b0}};
-
   // step lines
   assign gp[11:1]  = {12{1'b0}};
 
@@ -81,20 +78,21 @@ module stepper (
   wire read_write = mem_wstrb == 0 ? 1'b0 : 1'b1;
 
   // Memory Map (please update constantly):
-  // Start       Access Name
-  // 0x00000000  r      rom
-  // 0x00001000  rw     ram
+  //N  Start       Access Name
+  //0  0x00000000  r      rom
+  //1  0x00001000  rw     ram
   //
-  // 0x10000000  rw     leds
-  // 0x10000004  rw     spi_outgoing_upper
-  // 0x10000008  rw     spi_outgoing_lower
-  // 0x1000000c  r      spi_ingoing_upper
-  // 0x10000010  r      spi_ingoing_lower
-  // 0x10000014  rw     spi_config
-  // 0x10000018  r      spi_status
-  // 0x1000001c  rw     test_angle_control_upper
-  // 0x10000020  rw     test_angle_control_lower
-  // 0x10000024  r      test_angle_status
+  //2  0x10000000  rw     leds
+  //3  0x10000004  rw     spi_outgoing_upper
+  //4  0x10000008  rw     spi_outgoing_lower
+  //5  0x1000000c  r      spi_ingoing_upper
+  //6  0x10000010  r      spi_ingoing_lower
+  //7  0x10000014  rw     spi_config
+  //8  0x10000018  r      spi_status
+  //9  0x1000001c  rw     motor_enable
+  //10 0x10000020  rw     test_angle_control_upper
+  //11 0x10000024  rw     test_angle_control_lower
+  //12 0x10000028  r      test_angle_status
 
   wire [31:0] enable;  // memory enable lines
 
@@ -110,7 +108,8 @@ module stepper (
   assign enable[9] = mem_valid && !mem_instr && mem_addr >= 'h1000001c && mem_addr < 'h10000020;
   assign enable[10] = mem_valid && !mem_instr && mem_addr >= 'h10000020 && mem_addr < 'h10000024;
   assign enable[11] = mem_valid && !mem_instr && mem_addr >= 'h10000024 && mem_addr < 'h10000028;
-  assign enable[31:12] = {32{1'b0}};
+  assign enable[12] = mem_valid && !mem_instr && mem_addr >= 'h10000028 && mem_addr < 'h1000002c;
+  assign enable[31:13] = {32{1'b0}};
 
   // Instruction RAM
   memory #(
@@ -266,12 +265,29 @@ module stepper (
       .r_ready_out(spi_status[0])
   );
 
+  // driver enable
+  wire [31:0] motor_enable;
+  io_register_output #(
+      .DATA_WIDTH(32)
+  ) motor_reg_enable (
+      .clk_in(cpu_clk),
+      .enable(enable[9]),
+      .write(read_write),
+      .ready(mem_ready),
+      .data_in(mem_wdata),
+      .data_out(mem_rdata),
+
+      .mem(motor_enable)
+  );
+
+  assign gn[26:18] = motor_enable[8:0];
+
   wire [31:0] test_angle_control_upper;
   io_register_output #(
       .DATA_WIDTH(32)
   ) test_reg_angle_control_upper (
       .clk_in(cpu_clk),
-      .enable(enable[9]),
+      .enable(enable[10]),
       .write(read_write),
       .ready(mem_ready),
       .data_in(mem_wdata),
@@ -285,7 +301,7 @@ module stepper (
       .DATA_WIDTH(32)
   ) test_reg_angle_control_lower (
       .clk_in(cpu_clk),
-      .enable(enable[10]),
+      .enable(enable[11]),
       .write(read_write),
       .ready(mem_ready),
       .data_in(mem_wdata),
@@ -298,7 +314,7 @@ module stepper (
   io_register_input #(
       .DATA_WIDTH(32)
   ) test_reg_angle_status (
-      .enable(enable[11]),
+      .enable(enable[12]),
       .ready(mem_ready),
       .data_out(mem_rdata),
 
