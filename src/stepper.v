@@ -308,7 +308,7 @@ module stepper (
   assign test_angle_status[31:1] = {31{1'b0}};
 
   angle_to_step #(
-      .SIZE(128),
+      .SIZE(64),
       .SCALE({32'd4103, {(64 >> 1) {1'b0}}}),
       .SYSCLK(12000000),
       .VRISE(500),
