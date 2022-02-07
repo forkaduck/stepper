@@ -1,19 +1,19 @@
 [*]
 [*] GTKWave Analyzer v3.3.111 (w)1999-2020 BSI
-[*] Mon Feb  7 11:27:45 2022
+[*] Mon Feb  7 18:24:08 2022
 [*]
 [dumpfile] "/home/fuckaduck/Desktop/projects/stepper/tests/sim_output/stepper.vcd"
-[dumpfile_mtime] "Mon Feb  7 11:09:39 2022"
-[dumpfile_size] 191446669
+[dumpfile_mtime] "Mon Feb  7 16:31:44 2022"
+[dumpfile_size] 670235918
 [savefile] "/home/fuckaduck/Desktop/projects/stepper/tests/sim_output/stepper.gtkw"
-[timestart] 18000000
-[size] 2477 1409
+[timestart] 710800000
+[size] 2326 1409
 [pos] -1 -1
-*-28.000000 1410300000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-26.000000 861400000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] stepper.
 [treeopen] stepper.test_angle_to_step.
 [sst_width] 246
-[signals_width] 478
+[signals_width] 461
 [sst_expanded] 1
 [sst_vpaned_height] 292
 @28
@@ -51,14 +51,6 @@ stepper.test_angle_to_step.enable_i
 stepper.test_angle_to_step.step_o
 @200
 -
-@28
-stepper.test_angle_to_step.int_clk
-@22
-stepper.test_angle_to_step.r_t[63:0]
-stepper.test_angle_to_step.steps_needed[63:0]
-stepper.test_angle_to_step.steps_done[63:0]
-@200
--
 @22
 stepper.test_angle_to_step.calc_clk_divider.multiplicand_i[63:0]
 stepper.test_angle_to_step.calc_clk_divider.multiplier_i[63:0]
@@ -66,13 +58,13 @@ stepper.test_angle_to_step.div[63:0]
 @200
 -
 @22
-stepper.test_angle_to_step.calc_invert_div.summand_a_i[63:0]
-stepper.test_angle_to_step.calc_invert_div.summand_b_i[63:0]
+stepper.test_angle_to_step.invers_div[63:0]
+stepper.test_angle_to_step.negated_div[63:0]
+stepper.test_angle_to_step.switched_invers_div[63:0]
 @200
 -
-@22
-stepper.test_angle_to_step.step_pulse_gen.max_in[63:0]
-@200
+-
+-
 -
 -
 @28
