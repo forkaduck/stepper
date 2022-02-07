@@ -279,7 +279,7 @@ module stepper (
       .mem(motor_enable)
   );
 
-  assign gn[26:15] = motor_enable[11:0];
+  assign gn[26:15] = ~motor_enable[11:0];
 
   wire [31:0] test_angle_control_upper;
   io_register_output #(
