@@ -41,7 +41,6 @@ module stepper (
   // Map the button outputs to some functions
   wire reset_n;
   assign reset_n   = btn_debounced[1];
-  assign gn[17:15] = btn_debounced[2] ? 3'b111 : 3'b000;
 
   // step lines
   assign gp[11:1]  = {12{1'b0}};
@@ -280,7 +279,7 @@ module stepper (
       .mem(motor_enable)
   );
 
-  assign gn[26:18] = motor_enable[8:0];
+  assign gn[26:15] = motor_enable[11:0];
 
   wire [31:0] test_angle_control_upper;
   io_register_output #(
