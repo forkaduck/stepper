@@ -275,7 +275,7 @@ module stepper (
 
   // Remote control registers
   generate
-    for (i = 0; i < 2; i++) begin
+    for (i = 0; i < 2; i = i + 1) begin
       wire [31:0] remote_control;
       io_register_input #(
           .DATA_WIDTH(32)

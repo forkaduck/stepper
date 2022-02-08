@@ -102,7 +102,7 @@ module angle_to_step #(
       .quotient_out(speedup),
 
       .start_in(1'b1),
-      .clk_in  (clk_i),
+      .clk_in  (clk_in),
 
       .complete_out(),
       .overflow_out()
@@ -150,7 +150,7 @@ module angle_to_step #(
   clk_divider #(
       .SIZE(32)
   ) internal_clk_gen (
-      .clk_in (clk_i),
+      .clk_in (clk_in),
       // Every 1 us
       .max_in ((SYSCLK / 1000000) >> 1),
       .clk_out(int_clk)
@@ -160,7 +160,7 @@ module angle_to_step #(
   clk_divider #(
       .SIZE(SIZE)
   ) step_pulse_gen (
-      .clk_in (clk_i),
+      .clk_in (clk_in),
       .max_in ((switched_invers_div >> SF) >> 1),
       .clk_out(output_clk)
   );
