@@ -120,4 +120,19 @@ impl RegIO {
             self.spi_blocking_send(PWMCONF + WRITE_ADDR, 0x00040a74, i);
         }
     }
+
+    pub fn get_remote_control(&mut self, max_range: u32, index: u8) -> u32 {
+        let mut register = &self.remote_control0;
+        let mut shift = 0;
+
+        if index == 1 || index == 3 {
+            shift = 16;
+        }
+
+        if index > 1 {
+            register = &self.remote_control1;
+        }
+
+        return ((register.read() >> shift) & 0x0000ffff) / (50000 / max_range);
+    }
 }

@@ -51,19 +51,10 @@ fn main() -> ! {
 
     // io.motor_enable.write(0x00000000);
     // }
-    loop {
-        unsafe {
-            io.leds
-                .write(((io.remote_control0.read() & 0x0000ffff) / 25000) & 0x1);
-
-            io.leds
-                .write(((((io.remote_control0.read() & 0xffff0000) >> 16) / 25000) & 0x1) << 1);
-
-            io.leds
-                .write((((io.remote_control1.read() & 0x0000ffff) / 25000) & 0x1) << 2);
-
-            io.leds
-                .write(((((io.remote_control1.read() & 0xffff0000) >> 16) / 25000) & 0x1) << 3);
+    unsafe {
+        loop {
+            let val = io.get_remote_control(8, 2);
+            io.leds.write(val);
         }
     }
 }
