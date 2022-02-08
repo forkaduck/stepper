@@ -63,7 +63,6 @@ pub struct RegIO {
 
     pub remote_control0: RO<u32>,
     pub remote_control1: RO<u32>,
-    pub remote_control2: RO<u32>,
 
     pub motor_enable: RW<u32>,
     pub test_angle_control_upper: RW<u32>,

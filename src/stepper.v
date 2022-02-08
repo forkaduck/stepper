@@ -92,12 +92,11 @@ module stepper (
   // 
   // 9  0x1000001c  r      remote_control0
   // 10 0x10000020  r      remote_control1
-  // 11 0x10000024  r      remote_control2
   // 
-  // 12 0x10000028  rw     motor_enable
-  // 13 0x1000002c  rw     test_angle_control_upper
-  // 14 0x10000030  rw     test_angle_control_lower
-  // 15 0x10000034  r      test_angle_status
+  // 11 0x10000028  rw     motor_enable
+  // 12 0x1000002c  rw     test_angle_control_upper
+  // 13 0x10000030  rw     test_angle_control_lower
+  // 14 0x10000034  r      test_angle_status
 
   wire [31:0] enable;  // memory enable lines
 
@@ -276,7 +275,7 @@ module stepper (
 
   // Remote control registers
   generate
-    for (i = 0; i < 3; i++) begin
+    for (i = 0; i < 2; i++) begin
       wire [31:0] remote_control;
       io_register_input #(
           .DATA_WIDTH(32)
@@ -309,9 +308,7 @@ module stepper (
           .pulse_in(gp[25+i]),
           .r_width_out(remote_control[31:16])
       );
-
     end
-    // 27 - 24 gp
   endgenerate
 
   // Driver enable registers
@@ -320,7 +317,7 @@ module stepper (
       .DATA_WIDTH(32)
   ) motor_enable_reg (
       .clk_in(cpu_clk),
-      .enable_in(enable[12]),
+      .enable_in(enable[11]),
       .write_in(read_write),
       .ready_out(mem_ready),
       .data_in(mem_wdata),
@@ -336,7 +333,7 @@ module stepper (
       .DATA_WIDTH(32)
   ) test_angle_control_upper_reg (
       .clk_in(cpu_clk),
-      .enable_in(enable[13]),
+      .enable_in(enable[12]),
       .write_in(read_write),
       .ready_out(mem_ready),
       .data_in(mem_wdata),
@@ -350,7 +347,7 @@ module stepper (
       .DATA_WIDTH(32)
   ) test_angle_control_lower_reg (
       .clk_in(cpu_clk),
-      .enable_in(enable[14]),
+      .enable_in(enable[13]),
       .write_in(read_write),
       .ready_out(mem_ready),
       .data_in(mem_wdata),
@@ -363,7 +360,7 @@ module stepper (
   io_register_input #(
       .DATA_WIDTH(32)
   ) test_angle_status_reg (
-      .enable_in(enable[15]),
+      .enable_in(enable[14]),
       .ready_out(mem_ready),
       .data_out (mem_rdata),
 
