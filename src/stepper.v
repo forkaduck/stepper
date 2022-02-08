@@ -294,7 +294,7 @@ module stepper (
           .clk_in(peripheral_clk),
           .reset_n_in(reset_n),
 
-          .pulse_in(gp[24+i]),
+          .pulse_in(gp[24+i*2]),
           .r_width_out(remote_control[15:0])
       );
 
@@ -305,7 +305,7 @@ module stepper (
           .clk_in(peripheral_clk),
           .reset_n_in(reset_n),
 
-          .pulse_in(gp[25+i]),
+          .pulse_in(gp[25+i*2]),
           .r_width_out(remote_control[31:16])
       );
     end

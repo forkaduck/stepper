@@ -33,23 +33,37 @@ fn main() -> ! {
     let io = motor_driver::RegIO::get_reg_io();
 
     io.init_driver();
-    unsafe {
-        io.motor_enable.write(0x00000001);
+    // unsafe {
+    // io.motor_enable.write(0x00000001);
 
-        while io.test_angle_status.read() & 0x1 == 0x0 {}
+    // while io.test_angle_status.read() & 0x1 == 0x0 {}
 
-        io.test_angle_control_upper.write(0x00000000);
-        io.test_angle_control_lower.write(0x00000000);
+    // io.test_angle_control_upper.write(0x00000000);
+    // io.test_angle_control_lower.write(0x00000000);
 
-        io.test_angle_control_upper.write(0x00000168);
-        io.test_angle_control_lower.write(0x00000001);
+    // io.test_angle_control_upper.write(0x00000168);
+    // io.test_angle_control_lower.write(0x00000001);
 
-        while io.test_angle_status.read() & 0x1 == 0x0 {}
+    // while io.test_angle_status.read() & 0x1 == 0x0 {}
 
-        io.test_angle_control_upper.write(0x00000000);
-        io.test_angle_control_lower.write(0x00000000);
+    // io.test_angle_control_upper.write(0x00000000);
+    // io.test_angle_control_lower.write(0x00000000);
 
-        io.motor_enable.write(0x00000000);
+    // io.motor_enable.write(0x00000000);
+    // }
+    loop {
+        unsafe {
+            io.leds
+                .write(((io.remote_control0.read() & 0x0000ffff) / 25000) & 0x1);
+
+            io.leds
+                .write(((((io.remote_control0.read() & 0xffff0000) >> 16) / 25000) & 0x1) << 1);
+
+            io.leds
+                .write((((io.remote_control1.read() & 0x0000ffff) / 25000) & 0x1) << 2);
+
+            io.leds
+                .write(((((io.remote_control1.read() & 0xffff0000) >> 16) / 25000) & 0x1) << 3);
+        }
     }
-    loop {}
 }
