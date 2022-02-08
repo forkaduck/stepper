@@ -53,12 +53,18 @@ pub mod tmc2130 {
 #[repr(C)]
 pub struct RegIO {
     pub leds: RW<u32>,
+
     pub spi_outgoing_upper: RW<u32>,
     pub spi_outgoing_lower: RW<u32>,
     pub spi_ingoing_upper: RO<u32>,
     pub spi_ingoing_lower: RO<u32>,
     pub spi_config: RW<u32>,
     pub spi_status: RO<u32>,
+
+    pub remote_control0: RO<u32>,
+    pub remote_control1: RO<u32>,
+    pub remote_control2: RO<u32>,
+
     pub motor_enable: RW<u32>,
     pub test_angle_control_upper: RW<u32>,
     pub test_angle_control_lower: RW<u32>,
