@@ -65,74 +65,87 @@ pub struct RegIO {
     pub remote_control1: RO<u32>,
 
     pub motor_enable: RW<u32>,
+    pub motor_dir: RW<u32>,
     pub test_angle_control_upper: RW<u32>,
     pub test_angle_control_lower: RW<u32>,
     pub test_angle_status: RO<u32>,
 }
 
-impl RegIO {
-    pub fn get_reg_io() -> &'static mut RegIO {
-        unsafe { &mut *(0x10000000 as *mut RegIO) }
-    }
+pub struct HardwareCTX {
+    pub remote_max: u32,
+    pub regs: &'static mut RegIO,
+}
 
+impl Default for HardwareCTX {
+    fn default() -> Self {
+        HardwareCTX {
+            remote_max: 50389,
+            regs: unsafe { &mut *(0x10000000 as *mut RegIO) },
+        }
+    }
+}
+
+impl HardwareCTX {
     pub fn spi_blocking_send(&mut self, data_upper: u32, data_lower: u32, cs: u32) {
         unsafe {
             // wait until ready is 1
-            while (self.spi_status.read() & 0x1) == 0x0 {}
+            while (self.regs.spi_status.read() & 0x1) == 0x0 {}
 
             // unset send_enable and set cs
-            self.spi_config
-                .write((self.spi_config.read() & !0x1f) | ((cs & 0xf) << 1));
+            self.regs
+                .spi_config
+                .write((self.regs.spi_config.read() & !0x1f) | ((cs & 0xf) << 1));
 
-            self.spi_outgoing_upper.write(data_upper);
-            self.spi_outgoing_lower.write(data_lower);
+            self.regs.spi_outgoing_upper.write(data_upper);
+            self.regs.spi_outgoing_lower.write(data_lower);
 
             // set send_enable
-            self.spi_config
-                .write((self.spi_config.read() & !0x1f) | ((cs & 0xf) << 1) | 0x1);
+            self.regs
+                .spi_config
+                .write((self.regs.spi_config.read() & !0x1f) | ((cs & 0xf) << 1) | 0x1);
 
-            while (self.spi_status.read() & 0x1) == 0x1 {}
+            while (self.regs.spi_status.read() & 0x1) == 0x1 {}
         }
     }
 
-    pub fn init_driver(&mut self) {
+    pub fn init_driver(&mut self, index: u32) {
         use crate::motor_driver::tmc2130::*;
 
-        for i in 0..3 {
-            // GCONF
-            // I_scale_analog (external AIN reference)
-            // diag0_error (diag0 active if an error occurred)
-            self.spi_blocking_send(GCONF + WRITE_ADDR, 0x00000021, i);
+        // GCONF
+        // I_scale_analog (external AIN reference)
+        // diag0_error (diag0 active if an error occurred)
+        self.spi_blocking_send(GCONF + WRITE_ADDR, 0x00000021, index);
 
-            // CHOPCONF
-            self.spi_blocking_send(CHOPCONF + WRITE_ADDR, 0x30188113, i);
+        // CHOPCONF
+        self.spi_blocking_send(CHOPCONF + WRITE_ADDR, 0x30188113, index);
 
-            // IHOLD_IRUN IHOLDDELAY / IRUN / IHOLD
-            self.spi_blocking_send(IHOLD_IRUN + WRITE_ADDR, 0x00080a0a, i);
+        // IHOLD_IRUN IHOLDDELAY / IRUN / IHOLD
+        self.spi_blocking_send(IHOLD_IRUN + WRITE_ADDR, 0x00080a0a, index);
 
-            // TPOWERDOWN
-            self.spi_blocking_send(TPOWERDOWN + WRITE_ADDR, 0x0000000a, i);
+        // TPOWERDOWN
+        self.spi_blocking_send(TPOWERDOWN + WRITE_ADDR, 0x0000000a, index);
 
-            // THIGH
-            self.spi_blocking_send(THIGH + WRITE_ADDR, 0x00000020, i);
+        // THIGH
+        self.spi_blocking_send(THIGH + WRITE_ADDR, 0x00000020, index);
 
-            // PWMCONF
-            self.spi_blocking_send(PWMCONF + WRITE_ADDR, 0x00040a74, i);
-        }
+        // PWMCONF
+        self.spi_blocking_send(PWMCONF + WRITE_ADDR, 0x00040a74, index);
     }
 
     pub fn get_remote_control(&mut self, max_range: u32, index: u8) -> u32 {
-        let mut register = &self.remote_control0;
+        let mut register = &self.regs.remote_control0;
         let mut shift = 0;
 
         if index == 1 || index == 3 {
-            shift = 16;
+            shift = 15;
         }
 
         if index > 1 {
-            register = &self.remote_control1;
+            register = &self.regs.remote_control1;
         }
 
-        return ((register.read() >> shift) & 0x0000ffff) / (50000 / max_range);
+        let val = (register.read() >> shift) & 0x0000ffff;
+
+        return val * max_range / self.remote_max;
     }
 }

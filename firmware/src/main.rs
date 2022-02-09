@@ -1,6 +1,8 @@
 #![no_std]
 #![no_main]
 
+use motor_driver::HardwareCTX;
+
 mod halt;
 mod init;
 mod motor_driver;
@@ -30,31 +32,39 @@ pub unsafe extern "C" fn start_rust() -> ! {
 }
 
 fn main() -> ! {
-    let io = motor_driver::RegIO::get_reg_io();
+    let mut ctx = HardwareCTX::default();
 
-    io.init_driver();
-    // unsafe {
-    // io.motor_enable.write(0x00000001);
+    ctx.init_driver(0);
+    ctx.init_driver(1);
+    ctx.init_driver(2);
 
-    // while io.test_angle_status.read() & 0x1 == 0x0 {}
-
-    // io.test_angle_control_upper.write(0x00000000);
-    // io.test_angle_control_lower.write(0x00000000);
-
-    // io.test_angle_control_upper.write(0x00000168);
-    // io.test_angle_control_lower.write(0x00000001);
-
-    // while io.test_angle_status.read() & 0x1 == 0x0 {}
-
-    // io.test_angle_control_upper.write(0x00000000);
-    // io.test_angle_control_lower.write(0x00000000);
-
-    // io.motor_enable.write(0x00000000);
-    // }
     unsafe {
+        // io.motor_dir.write(0x00000001);
         loop {
-            let val = io.get_remote_control(8, 2);
-            io.leds.write(val);
+            let ding = ctx.get_remote_control(32, 1);
+            ctx.regs.leds.write(ding);
+
+            // let mut ch1 = 0x00000000;
+            // while io.get_remote_control(8, 0) < 2 {
+            // ch1 = io.get_remote_control(0x168 * 2, 1);
+            // }
+
+            // io.motor_enable.write(0x00000001);
+
+            // while io.test_angle_status.read() & 0x1 == 0x0 {}
+
+            // io.test_angle_control_upper.write(0x00000000);
+            // io.test_angle_control_lower.write(0x00000000);
+
+            // io.test_angle_control_upper.write(ch1);
+            // io.test_angle_control_lower.write(0x00000001);
+
+            // while io.test_angle_status.read() & 0x1 == 0x0 {}
+
+            // io.test_angle_control_upper.write(0x00000000);
+            // io.test_angle_control_lower.write(0x00000000);
+
+            // io.motor_enable.write(0x00000000);
         }
     }
 }
