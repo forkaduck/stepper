@@ -73,6 +73,7 @@ pub struct RegIO {
 
 pub struct HardwareCTX {
     pub remote_max: u32,
+    pub remote_min: u32,
     pub regs: &'static mut RegIO,
 }
 
@@ -80,6 +81,7 @@ impl Default for HardwareCTX {
     fn default() -> Self {
         HardwareCTX {
             remote_max: 50389,
+            remote_min: 24800,
             regs: unsafe { &mut *(0x10000000 as *mut RegIO) },
         }
     }
@@ -144,7 +146,7 @@ impl HardwareCTX {
             register = &self.regs.remote_control1;
         }
 
-        let val = (register.read() >> shift) & 0x0000ffff;
+        let val = ((register.read() >> shift) & 0x0000ffff) - self.remote_min;
 
         return val * max_range / self.remote_max;
     }
