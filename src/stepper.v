@@ -382,11 +382,11 @@ module stepper (
 
   angle_to_step #(
       .SIZE(64),
-      .SCALE({32'd3840, {(64 >> 1) {1'b0}}}),
+      .SCALE({32'd3740, {(64 >> 1) {1'b0}}}),
       .SYSCLK(12000000),
       .VRISE(500),
-      .TRISE(500000),
-      .OUTPUT_DIV_MIN(100)
+      .TRISE(100000),
+      .OUTPUT_DIV_MIN(40)
   ) test_angle_to_step (
       .clk_in(peripheral_clk),
       .enable_in(test_angle_control_lower[0]),
