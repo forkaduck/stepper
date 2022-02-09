@@ -39,11 +39,11 @@ fn main() -> ! {
     ctx.init_driver(1);
     ctx.init_driver(2);
 
-    let mut current = 180;
+    let mut current: u32 = 180;
 
     unsafe {
         loop {
-            if ctx.get_remote_control(16, 0) > 4 {
+            if ctx.get_remote_control(8, 0) < 4 {
                 ctx.regs.motor_enable.write(0x00000001);
             } else {
                 ctx.regs.motor_enable.write(0x00000000);
@@ -51,14 +51,15 @@ fn main() -> ! {
 
             let ch1 = ctx.get_remote_control(360, 1);
 
-            if current != ch1 {
+            let out = ctx.get_remote_control(16, 1);
+            ctx.regs.leds.write(out);
+
+            if current != ch1 && ctx.regs.test_angle_status.read() & 0x1 == 0x1 {
                 if current < ch1 {
                     ctx.regs.motor_dir.write(0x00000001);
                 } else {
                     ctx.regs.motor_dir.write(0x00000000);
                 }
-
-                while ctx.regs.test_angle_status.read() & 0x1 == 0x0 {}
 
                 ctx.regs.test_angle_control_upper.write(0x00000000);
                 ctx.regs.test_angle_control_lower.write(0x00000000);
@@ -67,8 +68,9 @@ fn main() -> ! {
                     .test_angle_control_upper
                     .write(current.abs_diff(ch1));
                 ctx.regs.test_angle_control_lower.write(0x00000001);
+
+                current = ch1;
             }
-            current = ch1;
         }
     }
 }
