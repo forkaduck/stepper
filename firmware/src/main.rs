@@ -1,5 +1,6 @@
 #![no_std]
 #![no_main]
+#![feature(int_abs_diff)]
 
 use motor_driver::HardwareCTX;
 
@@ -38,33 +39,36 @@ fn main() -> ! {
     ctx.init_driver(1);
     ctx.init_driver(2);
 
+    let mut current = 180;
+
     unsafe {
-        // io.motor_dir.write(0x00000001);
         loop {
-            let ding = ctx.get_remote_control(32, 1);
-            ctx.regs.leds.write(ding);
+            if ctx.get_remote_control(16, 0) > 4 {
+                ctx.regs.motor_enable.write(0x00000001);
+            } else {
+                ctx.regs.motor_enable.write(0x00000000);
+            }
 
-            // let mut ch1 = 0x00000000;
-            // while io.get_remote_control(8, 0) < 2 {
-            // ch1 = io.get_remote_control(0x168 * 2, 1);
-            // }
+            let ch1 = ctx.get_remote_control(360, 1);
 
-            // io.motor_enable.write(0x00000001);
+            if current != ch1 {
+                if current < ch1 {
+                    ctx.regs.motor_dir.write(0x00000001);
+                } else {
+                    ctx.regs.motor_dir.write(0x00000000);
+                }
 
-            // while io.test_angle_status.read() & 0x1 == 0x0 {}
+                while ctx.regs.test_angle_status.read() & 0x1 == 0x0 {}
 
-            // io.test_angle_control_upper.write(0x00000000);
-            // io.test_angle_control_lower.write(0x00000000);
+                ctx.regs.test_angle_control_upper.write(0x00000000);
+                ctx.regs.test_angle_control_lower.write(0x00000000);
 
-            // io.test_angle_control_upper.write(ch1);
-            // io.test_angle_control_lower.write(0x00000001);
-
-            // while io.test_angle_status.read() & 0x1 == 0x0 {}
-
-            // io.test_angle_control_upper.write(0x00000000);
-            // io.test_angle_control_lower.write(0x00000000);
-
-            // io.motor_enable.write(0x00000000);
+                ctx.regs
+                    .test_angle_control_upper
+                    .write(current.abs_diff(ch1));
+                ctx.regs.test_angle_control_lower.write(0x00000001);
+            }
+            current = ch1;
         }
     }
 }
