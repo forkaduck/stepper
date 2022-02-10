@@ -11,7 +11,7 @@ module pwmrx #(
     output reg [SIZE - 1:0] r_width_out
 );
   reg [SIZE - 1:0] r_count;
-  reg r_prev_pulse = 1'b0;
+  reg r_prev_pulse = 1'b1;
 
   always @(posedge clk_in, negedge reset_n_in) begin
     if (!reset_n_in) begin

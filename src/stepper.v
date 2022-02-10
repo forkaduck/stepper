@@ -382,7 +382,7 @@ module stepper (
 
   angle_to_step #(
       .SIZE(64),
-      .SCALE({32'd3740, {(64 >> 1) {1'b0}}}),
+      .SCALE({32'd3820, {(64 >> 1) {1'b0}}}),
       .SYSCLK(12000000),
       .VRISE(500),
       .TRISE(100000),
