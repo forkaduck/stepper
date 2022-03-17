@@ -22,6 +22,8 @@ module sqrt #(
   reg [N+1:0] ac, ac_next;  // accumulator (2 bits wider)
   reg [N+1:0] test_res;  // sign test result (2 bits wider)
 
+  reg prev_start_in = 1'b0;
+
   localparam ITER = (N + Q) >> 1;  // iterations are half radicand+fbits width
   reg [$clog2(ITER)-1:0] i;  // iteration counter
 
@@ -39,7 +41,7 @@ module sqrt #(
   end
 
   always @(posedge clk_in) begin
-    if (start_in) begin
+    if (start_in && !prev_start_in) begin
       busy_out <= 1;
       valid_out <= 0;
       i <= 0;
@@ -60,6 +62,8 @@ module sqrt #(
         q  <= q_next;
       end
     end
+
+    prev_start_in <= start_in;
   end
 endmodule
 

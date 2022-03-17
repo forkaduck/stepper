@@ -11,9 +11,7 @@ module read_func #(
   reg [DATA_WIDTH -1 : 0] r_table[DATA_SIZE -1 : 0];
 
   initial begin
-    if (PATH != "") begin
-      $readmemh(PATH, r_table, 0, DATA_SIZE - 1);
-    end
+    $readmemh(PATH, r_table, 0, DATA_SIZE - 1);
   end
 
   assign y_out = r_table[x_in];
