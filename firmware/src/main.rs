@@ -39,7 +39,7 @@ fn main() -> ! {
     ctx.init_driver(1);
     ctx.init_driver(2);
 
-    let mut current: u32 = 180;
+    let mut current = 180;
 
     unsafe {
         loop {
@@ -54,7 +54,9 @@ fn main() -> ! {
             let out = ctx.get_remote_control(16, 1);
             ctx.regs.leds.write(out);
 
-            if current != ch1 && ctx.regs.test_angle_status.read() & 0x1 == 0x1 {
+            if (current < (ch1 - 2) || current > (ch1 + 2))
+                && ctx.regs.test_angle_status.read() & 0x1 == 0x1
+            {
                 if current < ch1 {
                     ctx.regs.motor_dir.write(0x00000001);
                 } else {
