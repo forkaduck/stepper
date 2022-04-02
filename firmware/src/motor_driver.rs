@@ -52,8 +52,10 @@ pub mod tmc2130 {
 /// IO registers
 #[repr(C)]
 pub struct RegIO {
+    /// Debug leds
     pub leds: RW<u32>,
 
+    /// Spi module IO
     pub spi_outgoing_upper: RW<u32>,
     pub spi_outgoing_lower: RW<u32>,
     pub spi_ingoing_upper: RO<u32>,
@@ -61,9 +63,11 @@ pub struct RegIO {
     pub spi_config: RW<u32>,
     pub spi_status: RO<u32>,
 
+    /// Analog stick remote control values as 16b numbers.
     pub remote_control0: RO<u32>,
     pub remote_control1: RO<u32>,
 
+    /// Motor control registers
     pub motor_enable: RW<u32>,
     pub motor_dir: RW<u32>,
     pub test_angle_control_upper: RW<u32>,
@@ -71,12 +75,14 @@ pub struct RegIO {
     pub test_angle_status: RO<u32>,
 }
 
+/// Represents all memory mapped hardware registers.
 pub struct HardwareCTX {
     pub remote_max: u32,
     pub remote_min: u32,
     pub regs: &'static mut RegIO,
 }
 
+/// Reasonable defaults for all fields of HardwareCTX.
 impl Default for HardwareCTX {
     fn default() -> Self {
         HardwareCTX {
@@ -88,12 +94,14 @@ impl Default for HardwareCTX {
 }
 
 impl HardwareCTX {
+    /// Sends one 40 bit value over the spi bus hardware.
+    /// Blocks if the spi module is not ready to receive new data.
     pub fn spi_blocking_send(&mut self, data_upper: u32, data_lower: u32, cs: u32) {
         unsafe {
-            // wait until ready is 1
+            // Wait until ready is 1
             while (self.regs.spi_status.read() & 0x1) == 0x0 {}
 
-            // unset send_enable and set cs
+            // Unset send_enable and set cs
             self.regs
                 .spi_config
                 .write((self.regs.spi_config.read() & !0x1f) | ((cs & 0xf) << 1));
@@ -101,15 +109,17 @@ impl HardwareCTX {
             self.regs.spi_outgoing_upper.write(data_upper);
             self.regs.spi_outgoing_lower.write(data_lower);
 
-            // set send_enable
+            // Set send_enable
             self.regs
                 .spi_config
                 .write((self.regs.spi_config.read() & !0x1f) | ((cs & 0xf) << 1) | 0x1);
 
+            // Wait for the sending to start
             while (self.regs.spi_status.read() & 0x1) == 0x1 {}
         }
     }
 
+    /// Sends a reasonable default driver configuration to one TMC2130.
     pub fn init_driver(&mut self, index: u32) {
         use crate::motor_driver::tmc2130::*;
 
@@ -134,6 +144,8 @@ impl HardwareCTX {
         self.spi_blocking_send(PWMCONF + WRITE_ADDR, 0x00040a74, index);
     }
 
+    /// Maps the value of one of the remote control register to a number
+    /// range.
     pub fn get_remote_control(&mut self, max_range: u32, index: u8) -> u32 {
         let mut register = &self.regs.remote_control0;
         let mut shift = 0;

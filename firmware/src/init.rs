@@ -1,6 +1,7 @@
 // use core::sync::atomic::{compiler_fence, Ordering};
 use core::{mem, ptr};
 
+/// Initialize global variables.
 pub unsafe fn init_data(mut sdata: *mut u32, edata: *mut u32, mut sidata: *const u32) {
     while sdata < edata {
         ptr::write(sdata, ptr::read(sidata));
@@ -15,6 +16,7 @@ pub unsafe fn init_data(mut sdata: *mut u32, edata: *mut u32, mut sidata: *const
     // compiler_fence(Ordering::SeqCst);
 }
 
+/// Zero the ram section used for uninitialized variables.
 pub unsafe fn zero_bss(mut sbss: *mut u32, ebss: *mut u32) {
     while sbss < ebss {
         // NOTE(volatile) to prevent this from being transformed into `memclr`
