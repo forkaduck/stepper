@@ -1,5 +1,5 @@
-// Button debouncer adds about 20us to
-// the signal in question.
+// A simple button debouncer
+// It adds about 20us of press to signal delay to the input signal.
 module debounce (
     input clk_in,
     input in,

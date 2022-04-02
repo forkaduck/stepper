@@ -1,4 +1,4 @@
-// Dividies the clk_in with max_in * 2
+// Dividies the clk frequency by max_in * 2
 // s = 25Mhz / (max * 2)
 module clk_divider #(
     parameter SIZE = 8
@@ -21,6 +21,7 @@ module clk_divider #(
     end
   end
 
+  // Cleanup clock signal to 50% duty cycle
   toggle_ff out_div (
       .clk_in(int_clk),
       .toggle_in(1'b1),

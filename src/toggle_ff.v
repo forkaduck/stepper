@@ -1,6 +1,7 @@
 // A simple toggle flipflop
 module toggle_ff (
     input clk_in,
+
     input toggle_in,
     output reg r_q_out
 );

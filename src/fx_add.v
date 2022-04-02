@@ -1,6 +1,6 @@
+// Adds two fixed point values together.
 // Originally from https://github.com/freecoresult/verilog_fixed_point_math_library
 // Modified to be readable
-
 module fx_add #(
     parameter Q = 15,
     parameter N = 32

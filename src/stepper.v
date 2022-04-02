@@ -9,6 +9,8 @@
 // gp[11:0]   step lines
 // gp[23:12]  dir lines
 // gp[27:24]  rc channels
+//
+// The stepper module is the top level module
 module stepper (
     input clk_25mhz,
     input [6:0] btn,
@@ -45,6 +47,7 @@ module stepper (
   // step lines
   assign gp[11:1] = {12{1'b0}};
 
+  // Divide both system clocks by 2
   toggle_ff #() peripheral_clk_generator (
       .clk_in(clk_25mhz),
       .toggle_in(1'b1),
@@ -59,18 +62,33 @@ module stepper (
 
 
   // CPU Memory Bus
-  wire [31:0] mem_addr;  // memory address
-  wire [31:0] mem_wdata;  // cpu write out
-  wire [3:0] mem_wstrb;  // byte level write enable (unused)
-  wire [31:0] mem_rdata;  // cpu read in
+  // memory address
+  wire [31:0] mem_addr;
+
+  // cpu write out
+  wire [31:0] mem_wdata;
+
+  // byte level write enable (unused)
+  wire [3:0] mem_wstrb;
+
+  // cpu read in
+  wire [31:0] mem_rdata;
+
   wire [31:0] irq = 'b0;
 
-  wire mem_valid;  // cpu is ready
-  wire mem_instr;  // fetch is instruction
-  wire mem_ready;  // memory is ready
+  // cpu is ready
+  wire mem_valid;
 
+  // fetch is instruction
+  wire mem_instr;
+
+  // memory is ready
+  wire mem_ready;
+
+  // trap signal (triggers if cpu runs into invalid instruction)
   wire trap;
 
+  // Simplified read_write line (without byte wise access)
   wire read_write = mem_wstrb == 0 ? 1'b0 : 1'b1;
 
   // Memory Map (please update constantly):
@@ -164,12 +182,13 @@ module stepper (
       .mem_out(led[3:0])
   );
 
+  // Map the most important cpu signals to leds for debugging
   assign led[7] = trap;
   assign led[6] = mem_valid;
   assign led[5] = mem_instr;
   assign led[4] = read_write;
 
-  // SPI module registers
+  // SPI module out-going data registers
   wire [31:0] spi_outgoing_upper;
   io_register_output #(
       .DATA_WIDTH(32)
@@ -198,6 +217,7 @@ module stepper (
       .mem_out(spi_outgoing_lower)
   );
 
+  // SPI module in-going data registers
   wire [31:0] spi_ingoing_upper;
   io_register_input #(
       .DATA_WIDTH(32)
@@ -221,6 +241,7 @@ module stepper (
       .mem_in(spi_ingoing_lower)
   );
 
+  // SPI module control register
   // 4:1 - SPI CS Lines / 0 - SPI Send enable
   wire [31:0] spi_config;
   io_register_output #(
@@ -236,6 +257,7 @@ module stepper (
       .mem_out(spi_config)
   );
 
+  // SPI status register
   // 0 - SPI ready
   wire [31:0] spi_status;
   io_register_input #(
@@ -249,6 +271,7 @@ module stepper (
   );
   assign spi_status[31:1] = {31{1'b0}};
 
+  // SPI module instance
   spi #(
       .SIZE(40),
       .CS_SIZE(12),
@@ -271,9 +294,9 @@ module stepper (
       .r_ready_out(spi_status[0])
   );
 
-  // Remote control registers
   generate
     for (i = 0; i < 2; i = i + 1) begin
+      // HobbyRC remote control registers
       wire [31:0] remote_control;
       io_register_input #(
           .DATA_WIDTH(32)
@@ -285,6 +308,7 @@ module stepper (
           .mem_in(remote_control)
       );
 
+      // HobbyRC remote control pwm decoders
       pwmrx #(
           .SIZE  (16),
           .SYSCLK(1200000)
@@ -309,7 +333,7 @@ module stepper (
     end
   endgenerate
 
-  // Driver enable registers
+  // Motor-Driver enable line registers
   wire [31:0] motor_enable;
   io_register_output #(
       .DATA_WIDTH(32)
@@ -326,6 +350,7 @@ module stepper (
 
   assign gn[26:15] = ~motor_enable[11:0];
 
+  // Motor-Driver direction line registers
   io_register_output #(
       .DATA_WIDTH(32)
   ) motor_dir_reg (
@@ -339,6 +364,8 @@ module stepper (
       .mem_out(gp[23:12])
   );
 
+  // Debug registers mapped for testing the angle_to_step module
+  // in hardware
   wire [31:0] test_angle_control_upper;
   io_register_output #(
       .DATA_WIDTH(32)
@@ -395,9 +422,17 @@ module stepper (
       .step_out(gp[0])
   );
 
+  // The cpu softcore
+  // Most features the softcore possesses were
+  // enabled for testing purposes
   picorv32 #(
+      // Enable the RDCYCLE, RDTIME and RDINSTRET instructions
       .ENABLE_COUNTERS(1'b1),
+
+      // Enable the RDCYCLEH, RDTIMEH and RDINSTRETH
       .ENABLE_COUNTERS64(1'b1),
+
+
       .ENABLE_REGS_16_31(1'b1),
       .ENABLE_REGS_DUALPORT(1'b1),
       .LATCHED_MEM_RDATA(1'b0),
@@ -438,6 +473,4 @@ module stepper (
 
       .trap(trap)
   );
-
-
 endmodule

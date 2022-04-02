@@ -1,3 +1,5 @@
+// Counts the length of a pwm pulse in clock pulses.
+//
 // At full pulse length (which is 2ms) the module will output
 // 50000 at 25MHz
 module pwmrx #(

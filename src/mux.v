@@ -1,4 +1,4 @@
-// multiplexes the current input signal onto one of the selected outputs
+// Multiplexes the current input signal onto one of the selected outputs.
 module mux #(
     parameter SIZE = 4,
     parameter INITIAL = 0

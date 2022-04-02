@@ -1,28 +1,30 @@
 // A basic spi unit implementing spi mode 3.
+// This design tries to use as many reusable modules which makes
+// it a little more complex than it should've been.
 module spi #(
     parameter SIZE = 40,
     parameter CS_SIZE = 4,
     parameter CLK_SIZE = 3
 ) (
-    // clk and reset
+    // Clk and reset
     input reset_n_in,
     input clk_in,
     output clk_out,
     input [CLK_SIZE - 1:0] clk_count_max,
 
-    // parallel i/o
+    // Parallel i/o
     input  [SIZE - 1:0] data_in,
     output [SIZE - 1:0] data_out,
 
-    // cs selection
+    // Cs selection
     input [$clog2(CS_SIZE) - 1:0] cs_select_in,
     output reg [CS_SIZE - 1 : 0] r_cs_out_n,
 
-    // serial i/o
+    // Serial i/o
     input  serial_in,
     output serial_out,
 
-    // output control
+    // Output control
     input send_enable_in,
     output reg r_ready_out
 );
@@ -51,7 +53,7 @@ module spi #(
 
   // Output always statement
   always @(posedge clk_in) begin
-    // state machine output case
+    // State machine output case
     case (r_counter)
       0: begin
         // Pull the current cs down
@@ -109,7 +111,7 @@ module spi #(
   end
 
 
-  // initialize clock divider
+  // Initialize clock divider
   clk_divider #(
       .SIZE(CLK_SIZE)
   ) clk_divider1 (
@@ -118,7 +120,7 @@ module spi #(
       .clk_out(int_clk)
   );
 
-  // parallel in serial out module driving the mosi pin
+  // Parallel in serial out module driving the mosi pin
   piso #(
       .SIZE(SIZE)
   ) piso1 (
@@ -129,7 +131,7 @@ module spi #(
       .data_out(serial_out)
   );
 
-  // serial in parallel out module spitting out received data
+  // Serial in parallel out module spitting out received data
   sipo #(
       .SIZE(SIZE)
   ) sipo1 (

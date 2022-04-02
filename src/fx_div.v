@@ -1,6 +1,6 @@
+// Divides one fixed value by another.
 // Originally from https://github.com/freecores/verilog_fixed_point_math_library
 // Modified to be readable
-
 module fx_div #(
     parameter Q = 15,
     parameter N = 32

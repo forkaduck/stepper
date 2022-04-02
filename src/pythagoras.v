@@ -1,17 +1,23 @@
+// Implements the theorem of pythagoras
+// (pretty obvious eyy?)
 module pythagoras #(
+    // Fixed point number sizes
     parameter Q = 32,
     parameter N = 64
 ) (
     input clk_in,
+
+    // Both of the input variables
     input [N-1:0] x_in,
     input [N-1:0] y_in,
 
+    // Length of the longest side of the triangle
     output [N-1:0] len_out,
+
+    // Propagate the error outputs
     output overflow_out,
     output valid_out
 );
-
-
   wire [N-1:0] x_power_two;
   wire x_overflow;
 
@@ -54,6 +60,7 @@ module pythagoras #(
 
   assign overflow_out = y_overflow || x_overflow;
 
+  // Do the sqrt on x^2 + y^2
   read_func #(
 `ifdef __ICARUS__
       .PATH("../math_functions/sqrt.mem"),

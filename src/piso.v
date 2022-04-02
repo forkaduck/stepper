@@ -5,10 +5,14 @@
 module piso #(
     parameter SIZE = 8
 ) (
-    input [SIZE - 1:0] data_in,
     input clk_in,
     input en_in,
     input load_in,
+
+    // Parallel data in
+    input [SIZE - 1:0] data_in,
+
+    // Serial data out
     output data_out
 );
 

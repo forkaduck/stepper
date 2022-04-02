@@ -2,9 +2,13 @@
 module sipo #(
     parameter SIZE = 8
 ) (
-    input data_in,
     input clk_in,
     input en_in,
+
+    // Serial data in
+    input data_in,
+
+    // Parallel data out
     output [SIZE - 1:0] data_out
 );
 

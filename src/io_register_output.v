@@ -1,11 +1,11 @@
-// Register to hold one 32bit value. Can be
-// configured to drive some external signals.
+// Register which holds one 32bit value. Can drive
+// module internal regs using mem_out.
 module io_register_output #(
     parameter DATA_WIDTH = 32
 ) (
     input clk_in,
 
-    // port
+    // Port control lines
     input  enable_in,
     input  write_in,
     output ready_out,

@@ -11,12 +11,12 @@ module memory #(
 ) (
     input clk_in,
 
-    // mem port
+    // Memory bus port
     input  enable_in,
     input  write_in,
     output ready_out,
 
-    // bus
+    // Bus IO
     input  [DATA_WIDTH - 1:0] addr_in,
     input  [DATA_WIDTH - 1:0] data_in,
     output [DATA_WIDTH - 1:0] data_out
@@ -30,6 +30,8 @@ module memory #(
       $readmemh(PATH, r_mem, 0, DATA_SIZE - 1);
     end
 
+    // Initialize the data in the memory
+    // with the contents of an external file.
 `ifdef __ICARUS__
     for (i = 0; i < DATA_SIZE; i++) begin
       if (r_mem[i] != 'b0) begin

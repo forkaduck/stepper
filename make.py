@@ -102,7 +102,7 @@ def build():
     run_subcommand(
         [
             "nextpnr-ecp5",
-            "--12k",
+            "--25k",
             "--package",
             "CABGA381",
             "--json",
@@ -110,7 +110,7 @@ def build():
             "--lpf",
             "ulx3s_v20.lpf",
             "--speed",
-            "6",
+            "8",
             "--freq",
             "25",
             "--textcfg",
@@ -125,7 +125,7 @@ def build():
             "ulx3s_out.config",
             "ulx3s.bit",
             "--idcode",
-            "0x21111043",
+            "0x41111043",
         ],
     )
 
@@ -224,7 +224,7 @@ def load():
         ],
     )
 
-
+# Write the bitstream to the flash (more permanent)
 def flash():
     run_subcommand(
         [

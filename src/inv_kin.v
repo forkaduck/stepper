@@ -1,17 +1,24 @@
-
+// This module does the math used for
+// inverse kinematics. It is written
+// to be used with a 3 axis leg.
 module inv_kin #(
+    // Fixed point number sizes
     parameter Q = 32,
     parameter N = 64,
 
+    // Leg lengths
     parameter UPPER_HIP_LEN   = 10,
     parameter UPPER_THIGH_LEN = 10,
     parameter LOWER_THIGH_LEN = 10
 ) (
     input clk_in,
+
+    // Input of the coordinates of the end of the leg
     input [N -1:0] x_in,
     input [N -1:0] y_in,
     input [N -1:0] z_in,
 
+    // Outputs all three joint angles of one leg
     output [N -1:0] alpha_out,
     output [N -1:0] beta_out,
     output [N -1:0] gamma_out

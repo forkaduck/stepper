@@ -1,5 +1,4 @@
-// Register to hold one 32bit value. Can be
-// configured to drive some external signals.
+// Maps an external reg as memory into the cpu memory map.
 module io_register_input #(
     parameter DATA_WIDTH = 32
 ) (

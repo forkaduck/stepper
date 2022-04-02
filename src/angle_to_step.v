@@ -1,17 +1,33 @@
+// Converts a angle into the amount of steps needed for this move
+// and then outputs the amount in pulses.
 module angle_to_step #(
     parameter SIZE = 64,
+
+    // The scaling factor of the movement.
+    // It can be calculated with the following formular.
     // MICROSTEPS / (STEPANGLE / GEARING)
     // (in Q(SIZE >> 1).(SIZE>>1))
     parameter [SIZE - 1 : 0] SCALE = {32'd4000, {(SIZE >> 1) {1'b0}}},
 
+    // The system clock in Hz.
     parameter SYSCLK = 25000000,
+
+    // The linear acceleration curve factor in x and y size.
     parameter [SIZE - 1 : 0] VRISE = 20000,
     parameter [SIZE - 1 : 0] TRISE = 10000,
+
+    // The mimimum divider value of the output step pulse.
+    // An offset which stops the divider value of ever reaching 0
+    // which would not make any sense. It therefore indirectly dictates
+    // a minimum output frequency.
     parameter [SIZE - 1 : 0] OUTPUT_DIV_MIN = 50
 ) (
     input clk_in,
 
+    // Set to high to start a new move.
     input enable_in,
+
+    // Goes high if the move is done.
     output reg done_out = 1'b1,
 
     input [SIZE - 1:0] relative_angle_in,
@@ -23,14 +39,12 @@ module angle_to_step #(
   wire int_clk;
   wire output_clk;
 
-  // Used as the actual frequency divider (inverse)
-
   reg [SIZE - 1:0] r_t = INC;
   wire [SIZE - 1:0] speedup;
   wire [SIZE - 1:0] div;
   wire [SIZE - 1:0] negated_div;
-  wire [SIZE - 1:0] invers_div;
-  wire [SIZE - 1:0] switched_invers_div;
+  wire [SIZE - 1:0] inverse_div;
+  wire [SIZE - 1:0] switched_inverse_div;
 
   reg r_output_clk_prev = 1'b0;
   reg r_enable_prev = 1'b0;
@@ -49,12 +63,14 @@ module angle_to_step #(
       $display("%m>\tDisabled");
     end
 
+    // Stop while enable_in is high but the move requires
+    // no more step impulses.
     if ((steps_done >> SF) >= (steps_needed >> SF)) begin
       r_run <= 1'b0;
       done_out <= 1'b1;
     end
 
-    // Enable output
+    // Start a move.
     if (enable_in && !r_enable_prev) begin
       r_run <= 1'b1;
       done_out <= 1'b0;
@@ -92,6 +108,7 @@ module angle_to_step #(
     end
   end
 
+  // Calculates the factor of the linear acceleration curve
   /* speedup = VRISE / TRISE */
   fx_div #(
       .Q(SF),
@@ -123,17 +140,20 @@ module angle_to_step #(
   assign negated_div[SIZE-2:0] = div[SIZE-2:0];
   assign negated_div[SIZE-1]   = ~div[SIZE-1];
 
-  /* invers_div = VRISE + negated_div  */
+  /* inverse_div = VRISE + negated_div  */
   fx_add #(
       .Q(SF),
       .N(SIZE)
   ) calc_invert_div (
       .summand_a_in((VRISE + OUTPUT_DIV_MIN) << SF),
       .summand_b_in(negated_div),
-      .sum_out(invers_div)
+      .sum_out(inverse_div)
   );
 
-  assign switched_invers_div = (r_t > 0 && r_t < (TRISE << SF)) ? invers_div : OUTPUT_DIV_MIN << SF;
+  // Switch between the linear curve and a constant
+  // divider value to hold the motor at a constant
+  // rotation speed after it has accelerated.
+  assign switched_inverse_div = (r_t > 0 && r_t < (TRISE << SF)) ? inverse_div : OUTPUT_DIV_MIN << SF;
 
   /* steps_needed = relative_angle_in * SCALE; */
   fx_mult #(
@@ -147,11 +167,11 @@ module angle_to_step #(
   );
 
   // Internal clk (used for timekeeping)
+  // Should output one clock pulse every 1us.
   clk_divider #(
       .SIZE(32)
   ) internal_clk_gen (
       .clk_in (clk_in),
-      // Every 1 us
       .max_in ((SYSCLK / 1000000) >> 1),
       .clk_out(int_clk)
   );
@@ -161,7 +181,7 @@ module angle_to_step #(
       .SIZE(SIZE)
   ) step_pulse_gen (
       .clk_in (clk_in),
-      .max_in ((switched_invers_div >> SF) >> 1),
+      .max_in ((switched_inverse_div >> SF) >> 1),
       .clk_out(output_clk)
   );
 endmodule
